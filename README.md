@@ -1,0 +1,77 @@
+# Arcomunity — frontend del MVP
+
+Interfaz en **React + TypeScript + Vite** para el proyecto universitario de gestión de cuotas de vigilancia vecinal. Está lista para mostrar y probar en un navegador. **Todos los datos son ficticios.**
+
+## Abrir el proyecto
+
+Necesitas Node.js 20.19 o superior y npm. En una terminal, entra a esta carpeta y ejecuta:
+
+```bash
+npm install
+npm run dev
+```
+
+Abre la dirección que muestre la terminal, normalmente `http://localhost:5173`. Para generar la versión estática:
+
+```bash
+npm run build
+```
+
+El resultado queda en `dist/`. Si recibes la carpeta comprimida, descomprímela antes de ejecutar los comandos. `node_modules/` no se incluye porque npm lo instala automáticamente.
+
+## Cuentas de demostración
+
+Contraseña de todas las cuentas: **`Demo2026!`**. También puedes pulsar un perfil en la pantalla de acceso para completar los campos.
+
+| Rol | Correo | Qué muestra |
+| --- | --- | --- |
+| Administrador | `admin@arcomunity.demo` | Panel, configuración, cuotas, conciliación y reportes |
+| Propietario | `casa12@arcomunity.demo` | Cuota pendiente para probar el pago |
+| Propietario | `casa08@arcomunity.demo` | Cuota con pago en revisión |
+| Propietario | `dpto301@arcomunity.demo` | Otra cuenta de propietario |
+
+El código de invitación del registro es **`ARCO2026`**. Se puede cambiar desde Configuración.
+
+## Recorrido sugerido para la presentación
+
+1. Entra como administrador y revisa **Configuración**. Puedes subir una imagen de QR JPG o PNG de hasta 2 MB. El proyecto no trae un QR de cobro real.
+2. En **Cuotas**, pulsa **Generar cuotas del mes**. Si ya existen, informa cuántas había y no las duplica.
+3. Cierra sesión y entra como `casa12@arcomunity.demo`.
+4. Pulsa **Pagar** en la cuota actual. Sube una captura propia de prueba o pulsa **Cargar comprobante de ejemplo simulado**. Comprueba y envía los campos.
+5. Revisa **Transparencia**. Solo se muestran códigos de unidad, estados y fechas de pago.
+6. Entra como administrador y abre **Conciliación**. La semilla incluye un pago de Casa 08 con monto distinto que puedes aprobar o rechazar. Si rechazas, el motivo es obligatorio.
+7. Visita **Reportes** para imprimir el resumen o exportar el CSV del dataset simulado.
+
+En **Auditoría → Restablecer demo** puedes recuperar el estado inicial.
+
+## Pantallas incluidas
+
+- Acceso y registro con consentimiento obligatorio.
+- Portal del propietario, pago con comprobante y OCR en el navegador, con ingreso manual como respaldo.
+- Dashboard del administrador, configuración, padrón de unidades, cuotas, conciliación, pagos manuales, egresos, reportes, CSV y auditoría.
+- Portal de transparencia sin nombres ni comprobantes de otros vecinos.
+- Diseño adaptable a celular.
+
+La semilla contiene **30 unidades y 12 meses de cuotas**, egresos y pagos ficticios. Los cambios quedan guardados en el almacenamiento local del navegador (`localStorage`); la sesión se mantiene en `sessionStorage`.
+
+## Alcance y limitaciones
+
+Esta entrega es **solo frontend**. El inicio de sesión, permisos, conciliación y bitácora se simulan en el navegador para la demostración. El código de la cuenta registrada se almacena como un hash de prueba en `localStorage`; esto **no equivale a autenticación segura**. No hay servidor, base de datos compartida, API de Yape/Plin, verificación bancaria, almacenamiento privado de comprobantes ni despliegue público. Los cambios de un navegador no aparecen en otro.
+
+El OCR usa Tesseract.js en el navegador y puede requerir conexión a internet para descargar el modelo de idioma español. Si no logra leer una captura, los datos se pueden ingresar manualmente. El botón de comprobante de ejemplo carga información simulada para presentar el flujo sin usar un pago real.
+
+Para convertir esta demo en un producto real, habría que conectar un backend con autenticación, validaciones y permisos en el servidor, base de datos, almacenamiento privado de imágenes y reglas de conciliación del lado servidor. Nunca se debe usar la lógica de esta demo como validación de pagos reales.
+
+## Estructura
+
+```text
+src/
+  App.tsx       Rutas, acceso y registro
+  admin.tsx     Pantallas del administrador
+  owner.tsx     Portal del propietario, pago y transparencia
+  model.ts      Tipos, formatos y semilla ficticia
+  store.tsx     Estado y acciones de la demo
+  image.ts      Reducción de tamaño de imágenes
+  ui.tsx        Componentes visuales compartidos
+  styles.css    Estilos y adaptación móvil
+```
