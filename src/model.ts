@@ -38,22 +38,72 @@ export function crearDatos(): Datos {
   const cuotas: Cuota[] = []
   const pagos: Pago[] = []
   const egresos: Egreso[] = []
+  const cronicos = new Set([3, 7, 14, 20, 27])
+  const ocasionales = new Set([2, 5, 9, 13, 17, 22, 25, 29])
+  const impagasHistoricas: Record<number, number> = { 1: 3, 3: 20, 5: 7, 7: 14, 9: 27, 11: 3 }
+  const hoyDia = Number(hoy().slice(8, 10))
+
   for (let retro = 11; retro >= 0; retro--) {
     const periodo = periodoAnterior(actual, retro)
+    const esActual = retro === 0
     for (let i = 1; i <= 30; i++) {
       const cuotaId = `cuota-${periodo}-${i}`
       const vencimiento = fechaVencimiento(periodo, 10)
-      const esPendienteActual = retro === 0 && (i === 12 || i % 7 === 0)
-      const esRevisionActual = retro === 0 && i === 8
-      const pagada = !esPendienteActual && !esRevisionActual
-      const atraso = i <= 5 ? 8 + (i % 4) : i <= 13 && (retro + i) % 3 === 0 ? 4 : 0
-      const diaPago = retro === 0 ? Math.min(8 + atraso, Number(hoy().slice(8, 10))) : 8 + atraso
-      const fechaPago = pagada ? `${periodo.slice(0, 8)}${String(diaPago).padStart(2, '0')}` : undefined
+      const esPendienteActual = esActual && (i === 12 || cronicos.has(i) || i === 17 || i === 25)
+      const esRevisionActual = esActual && i === 8
+      let pagada = !esPendienteActual && !esRevisionActual
+      let diaPago = 10
+
+      if (esActual) {
+        if (pagada) {
+          diaPago = 4 + ((i * 3) % 7) // Dias 4 al 10 en mes actual (previo o al vencimiento)
+        }
+      } else {
+        if (cronicos.has(i)) {
+          if (impagasHistoricas[retro] === i) {
+            pagada = false
+          } else if ((retro + i) % 7 === 0) {
+            diaPago = 10
+          } else {
+            diaPago = 12 + ((i * 2 + retro) % 14) // Dias 12 al 25 (con atraso)
+          }
+        } else if (ocasionales.has(i)) {
+          if ((retro + i) % 5 === 0) {
+            diaPago = 11 + ((i + retro) % 8) // Dias 11 al 18 (atraso ocasional)
+          } else {
+            diaPago = 3 + ((i * 2 + retro) % 8) // Dias 3 al 10 (puntual)
+          }
+        } else {
+          diaPago = 2 + ((i + retro) % 9) // Dias 2 al 10 (puntual)
+        }
+      }
+
+      const diaLimitado = Math.min(diaPago, esActual ? hoyDia : 28)
+      const fechaPago = pagada ? `${periodo.slice(0, 8)}${String(diaLimitado).padStart(2, '0')}` : undefined
       cuotas.push({ id: cuotaId, unidadId: `unidad-${i}`, periodo, monto: 150, vencimiento, estado: esRevisionActual ? 'en_revision' : pagada ? 'pagada' : 'pendiente', fechaPago, pagoId: pagada ? `pago-${periodo}-${i}` : undefined, esSimulado: true })
-      const fechaOperacion = fechaPago || `${periodo.slice(0, 8)}${String(Math.min(9, Number(hoy().slice(8, 10)))).padStart(2, '0')}`
-      if (pagada || esRevisionActual) pagos.push({ id: `pago-${periodo}-${i}`, cuotaId, unidadId: `unidad-${i}`, monto: esRevisionActual ? 140 : 150, fecha: fechaOperacion, operacion: `SIM${periodo.replaceAll('-', '')}${String(i).padStart(3, '0')}`, metodo: i % 9 === 0 ? 'efectivo' : i % 4 === 0 ? 'yape_captura' : 'yape_qr', estado: esRevisionActual ? 'pendiente_revision' : i % 9 === 0 ? 'conciliado_manual' : 'conciliado_auto', alertas: esRevisionActual ? ['monto_no_coincide'] : [], subidoEn: `${fechaOperacion}T10:00:00.000Z`, conciliadoEn: pagada ? `${fechaOperacion}T10:02:00.000Z` : undefined, esSimulado: true })
+
+      if (pagada || esRevisionActual) {
+        const fechaOperacion = fechaPago || `${periodo.slice(0, 8)}${String(Math.min(9, hoyDia)).padStart(2, '0')}`
+        const metodo: MetodoPago = i % 5 === 0 ? 'efectivo' : i % 2 === 0 ? 'yape_captura' : 'yape_qr'
+        pagos.push({
+          id: `pago-${periodo}-${i}`,
+          cuotaId,
+          unidadId: `unidad-${i}`,
+          monto: esRevisionActual ? 140 : 150,
+          fecha: fechaOperacion,
+          operacion: metodo === 'efectivo' ? `MAN-${periodo.replaceAll('-', '')}${String(i).padStart(3, '0')}` : `SIM${periodo.replaceAll('-', '')}${String(i).padStart(3, '0')}`,
+          metodo,
+          estado: esRevisionActual ? 'pendiente_revision' : metodo === 'efectivo' ? 'conciliado_manual' : 'conciliado_auto',
+          alertas: esRevisionActual ? ['monto_no_coincide'] : [],
+          subidoEn: `${fechaOperacion}T10:00:00.000Z`,
+          conciliadoEn: pagada ? `${fechaOperacion}T10:02:00.000Z` : undefined,
+          esSimulado: true
+        })
+      }
     }
-    egresos.push({ id: `egreso-${periodo}`, fecha: `${periodo.slice(0, 8)}15`, concepto: 'pago_vigilante', beneficiario: 'Personal de vigilancia (demo)', monto: 2700, comentario: 'Egreso mensual simulado', esSimulado: true })
+    const diaEgreso = esActual ? Math.min(10, hoyDia) : 15
+    const fechaEgreso = `${periodo.slice(0, 8)}${String(diaEgreso).padStart(2, '0')}`
+    egresos.push({ id: `egreso-${periodo}`, fecha: fechaEgreso, concepto: 'pago_vigilante', beneficiario: 'Personal de vigilancia (demo)', monto: 2700, comentario: 'Egreso mensual simulado', esSimulado: true })
   }
-  return { usuarios, unidades, cuotas, pagos, egresos, auditoria: [{ id: 'auditoria-seed', fecha: new Date().toISOString(), usuario: 'Sistema demo', accion: 'datos_simulados', detalle: 'Se cargaron 30 unidades y 12 meses de historial ficticio.' }], configuracion: { nombre: 'Junta Vecinal Arcomunity — Piloto', codigoInvitacion: 'ARCO2026', cuotaMensual: 150, diaVencimiento: 10, yapeTitular: 'Titular de ejemplo (configurar)', conciliacionAutomatica: true } }
+  return { usuarios, unidades, cuotas, pagos, egresos, auditoria: [{ id: 'auditoria-seed', fecha: new Date().toISOString(), usuario: 'Sistema demo', accion: 'datos_simulados', detalle: 'Se cargaron 30 unidades y 12 meses de historial ficticio con morosidad realista.' }], configuracion: { nombre: 'Junta Vecinal Arcomunity — Piloto', codigoInvitacion: 'ARCO2026', cuotaMensual: 150, diaVencimiento: 10, yapeTitular: 'Titular de ejemplo (configurar)', conciliacionAutomatica: true } }
 }
