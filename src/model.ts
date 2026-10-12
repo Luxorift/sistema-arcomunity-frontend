@@ -113,3 +113,129 @@ export function crearDatos(): Datos {
   ]
   return { usuarios, unidades, camaras, cuotas, pagos, egresos, auditoria: [{ id: 'auditoria-seed', fecha: new Date().toISOString(), usuario: 'Sistema demo', accion: 'datos_simulados', detalle: 'Se cargaron 30 unidades y 12 meses de historial ficticio con morosidad realista.' }], configuracion: { nombre: 'Junta Vecinal Arcomunity — Piloto', codigoInvitacion: 'ARCO2026', cuotaMensual: 150, diaVencimiento: 10, yapeTitular: 'Titular de ejemplo (configurar)', conciliacionAutomatica: true } }
 }
+
+export function calcularDiasAtraso(fechaPago?: string, fechaVencimiento?: string): number {
+  if (!fechaPago || !fechaVencimiento) return 0
+  return Math.max(0, Math.round((new Date(fechaPago).getTime() - new Date(fechaVencimiento).getTime()) / 86400000))
+}
+
+export function calcularMinutosConciliacion(subidoEn: string, conciliadoEn?: string): number {
+  if (!conciliadoEn) return 0
+  return Math.max(0, (new Date(conciliadoEn).getTime() - new Date(subidoEn).getTime()) / 60000)
+}
+
+export interface OcrExtraidoModel {
+  monto?: number | string
+  fecha?: string
+  operacion?: string
+}
+
+export interface EntradaEvaluacionPago {
+  cuotaId?: string
+  monto: number
+  fecha: string
+  operacion: string
+  metodo?: MetodoPago
+  comprobante?: string
+  ocrConfianza?: number
+  ocrExtraido?: OcrExtraidoModel
+}
+
+export function evaluarReglasConciliacion(
+  entrada: EntradaEvaluacionPago,
+  cuota: Pick<Cuota, 'monto' | 'periodo'>,
+  pagosExistentes: Pick<Pago, 'operacion' | 'estado'>[],
+  fechaHoy = hoy()
+): string[] {
+  const alertas: string[] = []
+
+  // R1: Monto exacto de la cuota
+  if (Math.round(entrada.monto * 100) !== Math.round(cuota.monto * 100)) {
+    alertas.push('monto_no_coincide')
+  }
+
+  // R2: Operación única (no repetida en pagos no rechazados)
+  if (entrada.operacion && pagosExistentes.some(p => p.operacion.toLowerCase() === entrada.operacion.trim().toLowerCase() && p.estado !== 'rechazado')) {
+    alertas.push('operacion_duplicada')
+  }
+
+  // R3: Fecha dentro del periodo (primer día del periodo - 5 días hasta hoy)
+  const limite = new Date(`${cuota.periodo}T12:00:00Z`)
+  limite.setUTCDate(limite.getUTCDate() - 5)
+  if (entrada.fecha < limite.toISOString().slice(0, 10) || entrada.fecha > fechaHoy) {
+    alertas.push('fecha_fuera_de_periodo')
+  }
+
+  // R4: Calidad del dato y nivel de confianza OCR
+  const hayValoresOcr = Boolean(
+    entrada.ocrExtraido && (
+      (entrada.ocrExtraido.monto != null && entrada.ocrExtraido.monto !== '') ||
+      Boolean(entrada.ocrExtraido.fecha) ||
+      Boolean(entrada.ocrExtraido.operacion)
+    )
+  )
+  let ocrSinCorregir = false
+  if (entrada.ocrConfianza != null && entrada.ocrConfianza < 60 && hayValoresOcr && entrada.ocrExtraido) {
+    const ex = entrada.ocrExtraido
+    const montoCorregido = ex.monto != null && ex.monto !== '' ? Math.round(Number(ex.monto) * 100) !== Math.round(entrada.monto * 100) : false
+    const fechaCorregida = Boolean(ex.fecha && ex.fecha !== entrada.fecha)
+    const operacionCorregida = Boolean(ex.operacion && ex.operacion.trim().toLowerCase() !== entrada.operacion.trim().toLowerCase())
+    if (!montoCorregido && !fechaCorregida && !operacionCorregida) {
+      ocrSinCorregir = true
+    }
+  }
+  if (!entrada.operacion.trim() || !entrada.fecha || !entrada.comprobante || ocrSinCorregir) {
+    alertas.push('datos_incompletos')
+  }
+
+  return alertas
+}
+
+export function calcularCuotasFaltantes(
+  unidades: Unidad[],
+  cuotas: Cuota[],
+  periodo: string,
+  cuotaMensual: number,
+  diaVencimiento: number
+): { faltantes: Unidad[]; cuotasNuevas: Cuota[]; existentes: number } {
+  const activas = unidades.filter(u => u.activa)
+  const faltantes = activas.filter(u => !cuotas.some(c => c.unidadId === u.id && c.periodo === periodo))
+  const vencimiento = fechaVencimiento(periodo, diaVencimiento)
+  const cuotasNuevas: Cuota[] = faltantes.map(u => ({
+    id: id(),
+    unidadId: u.id,
+    periodo,
+    monto: cuotaMensual,
+    vencimiento,
+    estado: 'pendiente' as const,
+    esSimulado: true
+  }))
+  return {
+    faltantes,
+    cuotasNuevas,
+    existentes: activas.length - faltantes.length
+  }
+}
+
+export interface EntradaRegistro {
+  nombre: string
+  correo: string
+  clave: string
+  telefono?: string
+  unidadId: string
+  codigo: string
+  consentimiento: boolean
+}
+
+export function validarRegistro(
+  entrada: EntradaRegistro,
+  datos: { configuracion: Pick<Configuracion, 'codigoInvitacion'>; usuarios: Pick<Usuario, 'correo' | 'unidadId'>[]; unidades: Pick<Unidad, 'id' | 'activa'>[] }
+): string | null {
+  if (!entrada.consentimiento) return 'Debes aceptar el tratamiento de datos para registrarte.'
+  if (entrada.clave.length < 8) return 'La contraseña debe tener al menos 8 caracteres.'
+  if (entrada.codigo.trim().toUpperCase() !== datos.configuracion.codigoInvitacion.toUpperCase()) return 'El código de invitación no es válido.'
+  if (datos.usuarios.some(u => u.correo.toLowerCase() === entrada.correo.trim().toLowerCase())) return 'Este correo ya está registrado.'
+  if (datos.usuarios.some(u => u.unidadId === entrada.unidadId)) return 'Esta unidad ya tiene un propietario asignado.'
+  if (!datos.unidades.some(u => u.id === entrada.unidadId && u.activa)) return 'Selecciona una unidad disponible.'
+  return null
+}

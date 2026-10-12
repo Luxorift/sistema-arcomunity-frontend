@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { AlertCircle, ArrowDownToLine, ArrowRight, Banknote, CalendarDays, Check, CheckCircle2, Clock3, FileText, Filter, ImagePlus, Plus, Printer, RefreshCw, Search, ShieldCheck, Trash2, TrendingUp, UsersRound, XCircle } from 'lucide-react'
-import { dinero, estadoVisible, hoy, id, mes, mesVisible, periodoAnterior, type Camara, type Configuracion, type ConceptoEgreso, type TipoCamara, type Unidad } from './model'
+import { calcularDiasAtraso, calcularMinutosConciliacion, dinero, estadoVisible, hoy, id, mes, mesVisible, periodoAnterior, type Camara, type Configuracion, type ConceptoEgreso, type TipoCamara, type Unidad } from './model'
 import { useApp } from './store'
 import { optimizarImagen } from './image'
 import { Badge, DateText, Empty, Modal, Money, PageHead, Simulado, Stat } from './ui'
@@ -18,7 +18,7 @@ export function Dashboard() {
   const egresos = datos.egresos.filter(e => e.fecha.slice(0, 7) === periodo.slice(0, 7)).reduce((n, e) => n + e.monto, 0)
   const pendientes = cuotas.filter(c => c.estado !== 'pagada'); const morosos = pendientes.filter(c => estadoVisible(c) === 'morosa')
   const auto = pagos.filter(p => p.estado === 'conciliado_auto').length
-  const minutos = pagos.length ? pagos.reduce((n, p) => n + Math.max(0, (new Date(p.conciliadoEn || p.subidoEn).getTime() - new Date(p.subidoEn).getTime()) / 60000), 0) / pagos.length : 0
+  const minutos = pagos.length ? pagos.reduce((n, p) => n + calcularMinutosConciliacion(p.subidoEn, p.conciliadoEn), 0) / pagos.length : 0
   const grafico = [...periodos].reverse().map(p => ({ mes: new Intl.DateTimeFormat('es-PE', { month: 'short', timeZone: 'UTC' }).format(new Date(`${p}T12:00:00Z`)), ingresos: datos.pagos.filter(x => x.estado.startsWith('conciliado') && datos.cuotas.some(c => c.id === x.cuotaId && c.periodo === p)).reduce((n, x) => n + x.monto, 0) }))
   return <><PageHead eyebrow="VISIÓN GENERAL" title="Resumen de la junta" description="Un panorama claro de la recaudación y las cuotas vecinales." action={<SelectorMes value={periodo} onChange={setPeriodo} />} />
     <div className="hero-card"><div><div className="hero-label"><span className="hero-pulse" /> Transparencia en tiempo real</div><h2>Una comunidad más<br /><em>organizada y segura.</em></h2><p>Controla cuotas, revisa pagos y comparte resultados con tus vecinos desde un solo lugar.</p></div><div className="hero-illustration"><div className="hero-ring ring-1" /><div className="hero-ring ring-2" /><div className="hero-house">⌂</div><div className="hero-mini"><CheckCircle2 size={18} /> Pagos claros</div></div></div>
@@ -204,7 +204,7 @@ function exportarCsv(datos: ReturnType<typeof useApp>['datos']) {
   const encabezado = ['unidad_ref','periodo','monto','fecha_vencimiento','fecha_pago','dias_atraso','metodo_pago','pagos_atrasados_previos','moroso','es_simulado']
   const filas = datos.cuotas.slice().sort((a, b) => a.unidadId.localeCompare(b.unidadId) || a.periodo.localeCompare(b.periodo)).map(c => {
     const pago = datos.pagos.find(p => p.id === c.pagoId)
-    const dias = c.fechaPago ? Math.max(0, Math.round((new Date(c.fechaPago).getTime() - new Date(c.vencimiento).getTime()) / 86400000)) : 0
+    const dias = calcularDiasAtraso(c.fechaPago, c.vencimiento)
     const previas = datos.cuotas.filter(x => x.unidadId === c.unidadId && x.periodo < c.periodo && x.periodo >= periodoAnterior(c.periodo, 3) && x.fechaPago && x.fechaPago > x.vencimiento).length
     return [`U${c.unidadId.replace(/\D/g, '').padStart(3, '0')}`, c.periodo, c.monto.toFixed(2), c.vencimiento, c.fechaPago || '', dias, pago?.metodo || '', previas, dias > 0 || (!c.fechaPago && c.vencimiento < hoy()) ? 1 : 0, c.esSimulado ? 1 : 0]
   })
@@ -252,7 +252,7 @@ async function exportarExcel(datos: ReturnType<typeof useApp>['datos'], alTermin
 
     cuotasOrdenadas.forEach(c => {
       const pago = datos.pagos.find(p => p.id === c.pagoId)
-      const dias = c.fechaPago ? Math.max(0, Math.round((new Date(c.fechaPago).getTime() - new Date(c.vencimiento).getTime()) / 86400000)) : 0
+      const dias = calcularDiasAtraso(c.fechaPago, c.vencimiento)
       const previas = datos.cuotas.filter(x => x.unidadId === c.unidadId && x.periodo < c.periodo && x.periodo >= periodoAnterior(c.periodo, 3) && x.fechaPago && x.fechaPago > x.vencimiento).length
       const esMoroso = dias > 0 || (!c.fechaPago && c.vencimiento < hoy()) ? 1 : 0
 
