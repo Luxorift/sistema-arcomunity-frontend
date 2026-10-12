@@ -40,7 +40,17 @@ El código de invitación del registro es **`ARCO2026`**. Se puede cambiar desde
 4. Pulsa **Pagar** en la cuota actual. Sube una captura propia de prueba o pulsa **Cargar comprobante de ejemplo simulado**. Comprueba y envía los campos.
 5. Revisa **Transparencia**. Solo se muestran códigos de unidad, estados y fechas de pago.
 6. Entra como administrador y abre **Conciliación**. La semilla incluye un pago de Casa 08 con monto distinto que puedes aprobar o rechazar. Si rechazas, el motivo es obligatorio.
-7. Visita **Reportes** para imprimir el resumen o exportar el CSV del dataset simulado.
+7. Visita **Reportes** para imprimir el resumen, exportar el libro en Excel (`.xlsx`) para presentación o descargar el CSV para análisis.
+
+### Opciones de exportación en Reportes
+
+En la pantalla **/admin/reportes** se dispone de tres acciones de salida:
+
+- **Imprimir / PDF:** abre el diálogo de impresión del navegador para generar una vista lista para compartir o archivar.
+- **Exportar Excel (.xlsx):** genera directamente en el cliente el archivo `arcomunity_dataset_morosidad.xlsx` con dos hojas formateadas:
+  - **Dataset:** las 360 cuotas del piloto con encabezados claros en español, fechas reales (formato `dd/mm/aaaa`), montos numéricos, autofiltro activado, encabezado inmovilizado y filas con `Moroso = 1` resaltadas en rojo claro. Pensado para **presentación ejecutiva y lectura en Microsoft Excel 2016+** sin problemas de delimitadores regionales.
+  - **Diccionario de datos:** tabla explicativa con cada campo, su descripción funcional, tipo de dato, ejemplo y notas del piloto.
+- **Exportar CSV (datos):** descarga `arcomunity_dataset_morosidad_simulado.csv` con codificación UTF-8 con BOM, delimitador por comas (`,`) y nombres de columna técnicos (`unidad_ref`, `periodo`, `dias_atraso`, `moroso`, etc.). Destinado a **análisis de datos y entrenamiento del modelo de Machine Learning en Python/pandas (APF3)**.
 
 En **Auditoría → Restablecer demo** puedes recuperar el estado inicial.
 
