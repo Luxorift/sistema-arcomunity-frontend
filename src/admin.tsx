@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { AlertCircle, ArrowDownToLine, ArrowRight, Banknote, CalendarDays, Check, CheckCircle2, Clock3, FileText, Filter, ImagePlus, Plus, Printer, RefreshCw, Search, ShieldCheck, TrendingUp, UsersRound, XCircle } from 'lucide-react'
-import { dinero, estadoVisible, hoy, id, mes, mesVisible, periodoAnterior, type Configuracion, type ConceptoEgreso, type Unidad } from './model'
+import { AlertCircle, ArrowDownToLine, ArrowRight, Banknote, CalendarDays, Check, CheckCircle2, Clock3, FileText, Filter, ImagePlus, Plus, Printer, RefreshCw, Search, ShieldCheck, Trash2, TrendingUp, UsersRound, XCircle } from 'lucide-react'
+import { dinero, estadoVisible, hoy, id, mes, mesVisible, periodoAnterior, type Camara, type Configuracion, type ConceptoEgreso, type TipoCamara, type Unidad } from './model'
 import { useApp } from './store'
 import { optimizarImagen } from './image'
 import { Badge, DateText, Empty, Modal, Money, PageHead, Simulado, Stat } from './ui'
@@ -30,11 +30,137 @@ export function Dashboard() {
 }
 
 export function ConfiguracionPage() {
-  const { datos, configurar, mostrar } = useApp(); const [form, setForm] = useState<Configuracion>(datos.configuracion); const [cargando, setCargando] = useState(false)
+  const { datos, configurar, guardarCamara, cambiarEstadoCamara, eliminarCamara, mostrar } = useApp()
+  const [form, setForm] = useState<Configuracion>(datos.configuracion)
+  const [cargando, setCargando] = useState(false)
+  const [modalCamara, setModalCamara] = useState<Camara | null>(null)
+  const [nombreCamara, setNombreCamara] = useState('')
+  const [ubicacionCamara, setUbicacionCamara] = useState('')
+  const [tipoCamara, setTipoCamara] = useState<TipoCamara>('simulada')
+  const [urlCamara, setUrlCamara] = useState('')
+
   const submit = (e: FormEvent) => { e.preventDefault(); if (form.cuotaMensual <= 0 || !Number.isFinite(form.cuotaMensual)) return mostrar('Ingresa un monto válido.', 'error'); if (form.diaVencimiento < 1 || form.diaVencimiento > 28) return mostrar('El vencimiento debe estar entre el día 1 y el 28.', 'error'); configurar(form) }
   const qr = async (file?: File) => { if (!file) return; if (!['image/jpeg', 'image/png'].includes(file.type) || file.size > 2 * 1024 * 1024) return mostrar('El QR debe ser JPG o PNG de hasta 2 MB.', 'error'); setCargando(true); try { const yapeQr = await optimizarImagen(file, 620); setForm(f => ({ ...f, yapeQr })) } catch { mostrar('No se pudo leer la imagen.', 'error') } finally { setCargando(false) } }
-  return <><PageHead eyebrow="ADMINISTRACIÓN" title="Configuración" description="Define cómo y cuándo pagan los vecinos." /><form onSubmit={submit} className="settings-grid"><div className="panel form-panel"><div className="panel-heading"><div><span className="eyebrow">DATOS DE LA JUNTA</span><h2>Cuota y vencimiento</h2></div></div><div className="field-grid"><label className="field full"><span>Nombre de la junta</span><input required value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} /></label><label className="field"><span>Cuota mensual (S/)</span><input required type="number" min="0.01" step="0.01" value={form.cuotaMensual} onChange={e => setForm({ ...form, cuotaMensual: Number(e.target.value) })} /></label><label className="field"><span>Día de vencimiento</span><input required type="number" min="1" max="28" value={form.diaVencimiento} onChange={e => setForm({ ...form, diaVencimiento: Number(e.target.value) })} /></label><label className="field full"><span>Código de invitación</span><input required value={form.codigoInvitacion} onChange={e => setForm({ ...form, codigoInvitacion: e.target.value.toUpperCase() })} /><small>Compártelo solo con propietarios de la junta.</small></label></div><label className="toggle-row"><div><strong>Conciliación automática</strong><small>Los pagos sin alertas se marcan como pagados.</small></div><input type="checkbox" checked={form.conciliacionAutomatica} onChange={e => setForm({ ...form, conciliacionAutomatica: e.target.checked })} /><span className="switch" /></label></div>
-    <div className="panel form-panel"><div className="panel-heading"><div><span className="eyebrow">MÉTODO DE PAGO</span><h2>QR de Yape</h2></div></div><div className="qr-upload"><div className="qr-preview">{form.yapeQr ? <img src={form.yapeQr} alt="QR de Yape configurado" /> : <div className="qr-placeholder"><ImagePlus size={31} /><span>Aún no hay un QR cargado</span></div>}</div><label className="button button-secondary upload-button"><ImagePlus size={17} /> {cargando ? 'Procesando...' : 'Subir imagen QR'}<input type="file" accept="image/png,image/jpeg" onChange={e => void qr(e.target.files?.[0])} hidden /></label><small>Imagen JPG o PNG, máximo 2 MB.</small></div><label className="field"><span>Nombre del titular</span><input required value={form.yapeTitular} onChange={e => setForm({ ...form, yapeTitular: e.target.value })} placeholder="Nombre que aparece en Yape" /></label><div className="info-callout"><AlertCircle size={18} /><span>Este frontend solo muestra el QR que configures. Nunca confirma transferencias con Yape ni con un banco.</span></div></div><div className="form-actions full-row"><button className="button button-primary" type="submit"><Check size={18} /> Guardar cambios</button></div></form></>
+
+  const abrirNuevaCamara = () => {
+    setModalCamara({ id: '', nombre: '', ubicacion: '', tipo: 'simulada', activa: true })
+    setNombreCamara('')
+    setUbicacionCamara('')
+    setTipoCamara('simulada')
+    setUrlCamara('')
+  }
+
+  const abrirEditarCamara = (c: Camara) => {
+    setModalCamara(c)
+    setNombreCamara(c.nombre)
+    setUbicacionCamara(c.ubicacion)
+    setTipoCamara(c.tipo)
+    setUrlCamara(c.url || '')
+  }
+
+  const guardarModalCamara = (e: FormEvent) => {
+    e.preventDefault()
+    if (!modalCamara) return
+    const error = guardarCamara({
+      id: modalCamara.id || id(),
+      nombre: nombreCamara,
+      ubicacion: ubicacionCamara,
+      tipo: tipoCamara,
+      url: tipoCamara === 'simulada' ? undefined : urlCamara,
+      activa: modalCamara.id ? modalCamara.activa : true
+    })
+    if (error) mostrar(error, 'error')
+    else setModalCamara(null)
+  }
+
+  return <><PageHead eyebrow="ADMINISTRACIÓN" title="Configuración" description="Define cómo y cuándo pagan los vecinos, y gestiona las cámaras comunitarias." /><form onSubmit={submit} className="settings-grid"><div className="panel form-panel"><div className="panel-heading"><div><span className="eyebrow">DATOS DE LA JUNTA</span><h2>Cuota y vencimiento</h2></div></div><div className="field-grid"><label className="field full"><span>Nombre de la junta</span><input required value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} /></label><label className="field"><span>Cuota mensual (S/)</span><input required type="number" min="0.01" step="0.01" value={form.cuotaMensual} onChange={e => setForm({ ...form, cuotaMensual: Number(e.target.value) })} /></label><label className="field"><span>Día de vencimiento</span><input required type="number" min="1" max="28" value={form.diaVencimiento} onChange={e => setForm({ ...form, diaVencimiento: Number(e.target.value) })} /></label><label className="field full"><span>Código de invitación</span><input required value={form.codigoInvitacion} onChange={e => setForm({ ...form, codigoInvitacion: e.target.value.toUpperCase() })} /><small>Compártelo solo con propietarios de la junta.</small></label></div><label className="toggle-row"><div><strong>Conciliación automática</strong><small>Los pagos sin alertas se marcan como pagados.</small></div><input type="checkbox" checked={form.conciliacionAutomatica} onChange={e => setForm({ ...form, conciliacionAutomatica: e.target.checked })} /><span className="switch" /></label></div>
+    <div className="panel form-panel"><div className="panel-heading"><div><span className="eyebrow">MÉTODO DE PAGO</span><h2>QR de Yape</h2></div></div><div className="qr-upload"><div className="qr-preview">{form.yapeQr ? <img src={form.yapeQr} alt="QR de Yape configurado" /> : <div className="qr-placeholder"><ImagePlus size={31} /><span>Aún no hay un QR cargado</span></div>}</div><label className="button button-secondary upload-button"><ImagePlus size={17} /> {cargando ? 'Procesando...' : 'Subir imagen QR'}<input type="file" accept="image/png,image/jpeg" onChange={e => void qr(e.target.files?.[0])} hidden /></label><small>Imagen JPG o PNG, máximo 2 MB.</small></div><label className="field"><span>Nombre del titular</span><input required value={form.yapeTitular} onChange={e => setForm({ ...form, yapeTitular: e.target.value })} placeholder="Nombre que aparece en Yape" /></label><div className="info-callout"><AlertCircle size={18} /><span>Este frontend solo muestra el QR que configures. Nunca confirma transferencias con Yape ni con un banco.</span></div></div><div className="form-actions full-row"><button className="button button-primary" type="submit"><Check size={18} /> Guardar cambios</button></div></form>
+
+    <div className="panel" style={{ marginTop: '24px' }}>
+      <div className="panel-heading">
+        <div>
+          <span className="eyebrow">VIDEOVIGILANCIA</span>
+          <h2>Cámaras de seguridad</h2>
+        </div>
+        <button type="button" className="button button-primary" onClick={abrirNuevaCamara}>
+          <Plus size={18} /> Nueva cámara
+        </button>
+      </div>
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Cámara</th>
+              <th>Ubicación</th>
+              <th>Tipo</th>
+              <th>URL / Origen</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {datos.camaras.map(c => (
+              <tr key={c.id}>
+                <td className="strong">{c.nombre}</td>
+                <td>{c.ubicacion}</td>
+                <td><Badge estado={c.tipo === 'simulada' ? 'activa' : 'en_revision'} /> {c.tipo === 'simulada' ? 'Simulada' : c.tipo === 'mjpeg' ? 'MJPEG (img)' : 'Embed (iframe)'}</td>
+                <td style={{ maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.url ? <span title={c.url}>{c.url}</span> : <span className="muted">Generador canvas</span>}</td>
+                <td><Badge estado={c.activa ? 'activa' : 'inactiva'} /></td>
+                <td>
+                  <div className="table-actions">
+                    <button type="button" className="text-button" onClick={() => abrirEditarCamara(c)}>Editar</button>
+                    <button type="button" className="text-button" onClick={() => cambiarEstadoCamara(c.id, !c.activa)}>
+                      {c.activa ? 'Desactivar' : 'Activar'}
+                    </button>
+                    <button type="button" className="text-button danger" onClick={() => { if (window.confirm(`¿Eliminar la cámara "${c.nombre}"?`)) eliminarCamara(c.id) }}>
+                      <Trash2 size={15} /> Eliminar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {!datos.camaras.length && (
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '24px' }} className="muted">No hay cámaras configuradas.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {modalCamara && (
+      <Modal title={modalCamara.id ? 'Editar cámara' : 'Nueva cámara'} onClose={() => setModalCamara(null)}>
+        <form onSubmit={guardarModalCamara} className="form-stack">
+          <label className="field">
+            <span>Nombre de la cámara</span>
+            <input autoFocus required value={nombreCamara} onChange={e => setNombreCamara(e.target.value)} placeholder="Ej.: Ingreso peatonal" />
+          </label>
+          <label className="field">
+            <span>Ubicación</span>
+            <input required value={ubicacionCamara} onChange={e => setUbicacionCamara(e.target.value)} placeholder="Ej.: Portón principal / Cocheras" />
+          </label>
+          <label className="field">
+            <span>Tipo de transmisión</span>
+            <select value={tipoCamara} onChange={e => setTipoCamara(e.target.value as TipoCamara)}>
+              <option value="simulada">Simulada (animación canvas a ~10 fps)</option>
+              <option value="mjpeg">Imagen / MJPEG por URL (etiqueta &lt;img&gt;)</option>
+              <option value="embed">Embed por URL (iframe sandboxed)</option>
+            </select>
+          </label>
+          {tipoCamara !== 'simulada' && (
+            <label className="field">
+              <span>URL de transmisión (debe empezar con https://)</span>
+              <input required type="url" value={urlCamara} onChange={e => setUrlCamara(e.target.value)} placeholder="https://ejemplo.com/stream" />
+              <small>Solo se aceptan URLs seguras HTTPS. Si el sitio bloquea embeberse (X-Frame-Options/CORS), el navegador no la mostrará.</small>
+            </label>
+          )}
+          <div className="modal-actions">
+            <button type="button" className="button button-secondary" onClick={() => setModalCamara(null)}>Cancelar</button>
+            <button className="button button-primary" type="submit"><Check size={17} /> Guardar cámara</button>
+          </div>
+        </form>
+      </Modal>
+    )}
+  </>
 }
 
 export function UnidadesPage() {

@@ -1,9 +1,19 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { crearDatos, fechaVencimiento, hash, hoy, id, mes, type Configuracion, type Datos, type Egreso, type MetodoPago, type Pago, type Unidad, type Usuario } from './model'
+import { crearDatos, fechaVencimiento, hash, hoy, id, mes, type Camara, type Configuracion, type Datos, type Egreso, type MetodoPago, type Pago, type Unidad, type Usuario } from './model'
 
 const STORAGE = 'arcomunity-frontend-v1'
 const SESSION = 'arcomunity-sesion-v1'
-const initial = (): Datos => { try { const saved = localStorage.getItem(STORAGE); return saved ? JSON.parse(saved) as Datos : crearDatos() } catch { return crearDatos() } }
+const initial = (): Datos => {
+  try {
+    const saved = localStorage.getItem(STORAGE)
+    if (!saved) return crearDatos()
+    const parsed = JSON.parse(saved) as Datos
+    if (!parsed.camaras) parsed.camaras = crearDatos().camaras
+    return parsed
+  } catch {
+    return crearDatos()
+  }
+}
 type Aviso = { tipo: 'ok' | 'error' | 'info'; texto: string } | null
 type PagoEntrada = { cuotaId: string; monto: number; fecha: string; operacion: string; metodo: MetodoPago; comprobante?: string; comprobanteNombre?: string; ocrConfianza?: number }
 type Contexto = {
@@ -11,9 +21,10 @@ type Contexto = {
   entrar: (correo: string, clave: string) => Promise<boolean>; salir: () => void;
   registrar: (entrada: { nombre: string; correo: string; clave: string; telefono?: string; unidadId: string; codigo: string; consentimiento: boolean }) => Promise<string | null>;
   configurar: (config: Configuracion) => void; guardarUnidad: (unidad: Unidad) => string | null; desactivarUnidad: (unidadId: string) => void;
+  guardarCamara: (camara: Camara) => string | null; cambiarEstadoCamara: (camaraId: string, activa: boolean) => void; eliminarCamara: (camaraId: string) => void;
   generarCuotas: () => { creadas: number; existentes: number }; enviarPago: (entrada: PagoEntrada) => string | null;
   revisarPago: (pagoId: string, aprobar: boolean, motivo?: string) => string | null; pagoManual: (entrada: Omit<PagoEntrada, 'comprobante' | 'comprobanteNombre' | 'ocrConfianza'>) => string | null;
-  registrarEgreso: (egreso: Omit<Egreso, 'id' | 'esSimulado'>) => void; reiniciar: () => void;
+  registrarEgreso: (egreso: Omit<Egreso, 'id' | 'esSimulado'>) => void; registrarAuditoria: (accion: string, detalle: string) => void; reiniciar: () => void;
 }
 const Ctx = createContext<Contexto | null>(null)
 export const useApp = () => { const ctx = useContext(Ctx); if (!ctx) throw new Error('Falta el proveedor'); return ctx }
@@ -49,6 +60,47 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setDatos(d => ({ ...d, unidades: d.unidades.some(u => u.id === unidad.id) ? d.unidades.map(u => u.id === unidad.id ? { ...unidad, codigo: unidad.codigo.trim() } : u) : [...d.unidades, { ...unidad, codigo: unidad.codigo.trim() }], auditoria: auditar(d, 'guardar_unidad', unidad.codigo.trim()) })); mostrar('Unidad guardada.'); return null
   }
   const desactivarUnidad = (unidadId: string) => { setDatos(d => ({ ...d, unidades: d.unidades.map(u => u.id === unidadId ? { ...u, activa: false } : u), auditoria: auditar(d, 'desactivar_unidad', d.unidades.find(u => u.id === unidadId)?.codigo || unidadId) })); mostrar('Unidad desactivada.') }
+  const guardarCamara = (camara: Camara) => {
+    if (!camara.nombre.trim()) return 'El nombre de la cámara es obligatorio.'
+    if (!camara.ubicacion.trim()) return 'La ubicación es obligatoria.'
+    if (camara.tipo !== 'simulada') {
+      if (!camara.url?.trim()) return 'Ingresa una URL para este tipo de cámara.'
+      try {
+        const u = new URL(camara.url.trim())
+        if (u.protocol !== 'https:') return 'Solo se permiten URLs con protocolo https://.'
+      } catch {
+        return 'Ingresa una URL válida que comience con https://.'
+      }
+    }
+    const limpia = { ...camara, nombre: camara.nombre.trim(), ubicacion: camara.ubicacion.trim(), url: camara.tipo === 'simulada' ? undefined : camara.url?.trim() }
+    setDatos(d => ({
+      ...d,
+      camaras: d.camaras.some(c => c.id === limpia.id) ? d.camaras.map(c => c.id === limpia.id ? limpia : c) : [...d.camaras, limpia],
+      auditoria: auditar(d, 'guardar_camara', `${limpia.nombre} (${limpia.ubicacion})`)
+    }))
+    mostrar('Cámara guardada.')
+    return null
+  }
+  const cambiarEstadoCamara = (camaraId: string, activa: boolean) => {
+    setDatos(d => ({
+      ...d,
+      camaras: d.camaras.map(c => c.id === camaraId ? { ...c, activa } : c),
+      auditoria: auditar(d, activa ? 'activar_camara' : 'desactivar_camara', d.camaras.find(c => c.id === camaraId)?.nombre || camaraId)
+    }))
+    mostrar(activa ? 'Cámara activada.' : 'Cámara desactivada.')
+  }
+  const eliminarCamara = (camaraId: string) => {
+    const cam = datos.camaras.find(c => c.id === camaraId)
+    setDatos(d => ({
+      ...d,
+      camaras: d.camaras.filter(c => c.id !== camaraId),
+      auditoria: auditar(d, 'eliminar_camara', cam?.nombre || camaraId)
+    }))
+    mostrar('Cámara eliminada.')
+  }
+  const registrarAuditoria = (accion: string, detalle: string) => {
+    setDatos(d => ({ ...d, auditoria: auditar(d, accion, detalle) }))
+  }
   const generarCuotas = () => {
     const periodo = mes(); const activas = datos.unidades.filter(u => u.activa); const faltantes = activas.filter(u => !datos.cuotas.some(c => c.unidadId === u.id && c.periodo === periodo));
     setDatos(d => ({ ...d, cuotas: [...d.cuotas, ...faltantes.map(u => ({ id: id(), unidadId: u.id, periodo, monto: d.configuracion.cuotaMensual, vencimiento: fechaVencimiento(periodo, d.configuracion.diaVencimiento), estado: 'pendiente' as const, esSimulado: true }))], auditoria: auditar(d, 'generar_cuotas', `${faltantes.length} creadas, ${activas.length - faltantes.length} existentes (${periodo}).`) }))
@@ -91,6 +143,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
   const registrarEgreso = (egreso: Omit<Egreso, 'id' | 'esSimulado'>) => { setDatos(d => ({ ...d, egresos: [{ ...egreso, id: id(), esSimulado: true }, ...d.egresos], auditoria: auditar(d, 'registrar_egreso', `${egreso.concepto}: ${egreso.monto}`) })); mostrar('Egreso registrado.') }
   const reiniciar = () => { setDatos(crearDatos()); salir(); mostrar('Datos de demostración restablecidos.', 'info') }
-  return <Ctx.Provider value={{ datos, usuario, aviso, mostrar, entrar, salir, registrar, configurar, guardarUnidad, desactivarUnidad, generarCuotas, enviarPago, revisarPago, pagoManual, registrarEgreso, reiniciar }}>{children}</Ctx.Provider>
+  return <Ctx.Provider value={{ datos, usuario, aviso, mostrar, entrar, salir, registrar, configurar, guardarUnidad, desactivarUnidad, guardarCamara, cambiarEstadoCamara, eliminarCamara, generarCuotas, enviarPago, revisarPago, pagoManual, registrarEgreso, registrarAuditoria, reiniciar }}>{children}</Ctx.Provider>
 }
 

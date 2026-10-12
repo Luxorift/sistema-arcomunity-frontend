@@ -3,15 +3,17 @@ export type EstadoCuota = 'pendiente' | 'en_revision' | 'pagada'
 export type EstadoPago = 'conciliado_auto' | 'pendiente_revision' | 'conciliado_manual' | 'rechazado'
 export type MetodoPago = 'yape_qr' | 'yape_captura' | 'efectivo' | 'transferencia'
 export type ConceptoEgreso = 'pago_vigilante' | 'insumos' | 'otros'
+export type TipoCamara = 'simulada' | 'mjpeg' | 'embed'
 
 export interface Usuario { id: string; nombre: string; correo: string; rol: Rol; unidadId?: string; telefono?: string; claveHash: string; aceptoDatosEn?: string }
 export interface Unidad { id: string; codigo: string; activa: boolean }
+export interface Camara { id: string; nombre: string; ubicacion: string; tipo: TipoCamara; url?: string; activa: boolean }
 export interface Cuota { id: string; unidadId: string; periodo: string; monto: number; vencimiento: string; estado: EstadoCuota; fechaPago?: string; pagoId?: string; esSimulado: boolean }
 export interface Pago { id: string; cuotaId: string; unidadId: string; monto: number; fecha: string; operacion: string; metodo: MetodoPago; estado: EstadoPago; alertas: string[]; comprobante?: string; comprobanteNombre?: string; ocrConfianza?: number; motivoRechazo?: string; subidoEn: string; conciliadoEn?: string; esSimulado: boolean }
 export interface Egreso { id: string; fecha: string; concepto: ConceptoEgreso; beneficiario: string; monto: number; comentario?: string; esSimulado: boolean }
 export interface Auditoria { id: string; fecha: string; usuario: string; accion: string; detalle: string }
 export interface Configuracion { nombre: string; codigoInvitacion: string; cuotaMensual: number; diaVencimiento: number; yapeTitular: string; yapeQr?: string; conciliacionAutomatica: boolean }
-export interface Datos { usuarios: Usuario[]; unidades: Unidad[]; cuotas: Cuota[]; pagos: Pago[]; egresos: Egreso[]; auditoria: Auditoria[]; configuracion: Configuracion }
+export interface Datos { usuarios: Usuario[]; unidades: Unidad[]; camaras: Camara[]; cuotas: Cuota[]; pagos: Pago[]; egresos: Egreso[]; auditoria: Auditoria[]; configuracion: Configuracion }
 
 export const id = () => crypto.randomUUID()
 export const mes = (date = new Date()) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima', year: 'numeric', month: '2-digit' }).format(date) + '-01'
@@ -105,5 +107,9 @@ export function crearDatos(): Datos {
     const fechaEgreso = `${periodo.slice(0, 8)}${String(diaEgreso).padStart(2, '0')}`
     egresos.push({ id: `egreso-${periodo}`, fecha: fechaEgreso, concepto: 'pago_vigilante', beneficiario: 'Personal de vigilancia (demo)', monto: 2700, comentario: 'Egreso mensual simulado', esSimulado: true })
   }
-  return { usuarios, unidades, cuotas, pagos, egresos, auditoria: [{ id: 'auditoria-seed', fecha: new Date().toISOString(), usuario: 'Sistema demo', accion: 'datos_simulados', detalle: 'Se cargaron 30 unidades y 12 meses de historial ficticio con morosidad realista.' }], configuracion: { nombre: 'Junta Vecinal Arcomunity — Piloto', codigoInvitacion: 'ARCO2026', cuotaMensual: 150, diaVencimiento: 10, yapeTitular: 'Titular de ejemplo (configurar)', conciliacionAutomatica: true } }
+  const camaras: Camara[] = [
+    { id: 'camara-1', nombre: 'Ingreso principal', ubicacion: 'Puerta peatonal y vehicular', tipo: 'simulada', activa: true },
+    { id: 'camara-2', nombre: 'Estacionamiento', ubicacion: 'Zona de cocheras y rampa', tipo: 'simulada', activa: true }
+  ]
+  return { usuarios, unidades, camaras, cuotas, pagos, egresos, auditoria: [{ id: 'auditoria-seed', fecha: new Date().toISOString(), usuario: 'Sistema demo', accion: 'datos_simulados', detalle: 'Se cargaron 30 unidades y 12 meses de historial ficticio con morosidad realista.' }], configuracion: { nombre: 'Junta Vecinal Arcomunity — Piloto', codigoInvitacion: 'ARCO2026', cuotaMensual: 150, diaVencimiento: 10, yapeTitular: 'Titular de ejemplo (configurar)', conciliacionAutomatica: true } }
 }

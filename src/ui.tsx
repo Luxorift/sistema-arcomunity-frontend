@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Activity, ArrowRight, Banknote, ClipboardList, CreditCard, FileBarChart2, Home, LayoutDashboard, LogOut, Menu, ReceiptText, Settings2, ShieldCheck, UsersRound, X } from 'lucide-react'
+import { Activity, ArrowRight, Banknote, ClipboardList, CreditCard, FileBarChart2, Home, LayoutDashboard, LogOut, Menu, ReceiptText, Settings2, ShieldCheck, UsersRound, Video, X } from 'lucide-react'
 import { dinero, fechaVisible, tituloEstado } from './model'
 import { useApp } from './store'
 
@@ -27,9 +27,11 @@ export function AppLayout({ children }: { children: ReactNode }) {
     { to: '/admin/reportes', label: 'Reportes', icon: FileBarChart2 },
     { to: '/admin/auditoria', label: 'Auditoría', icon: Activity },
     { to: '/transparencia', label: 'Transparencia', icon: UsersRound },
+    { to: '/videovigilancia', label: 'Videovigilancia', icon: Video },
   ] : [
     { to: '/mi-cuenta', label: 'Mi cuenta', icon: LayoutDashboard },
     { to: '/transparencia', label: 'Transparencia', icon: UsersRound },
+    { to: '/videovigilancia', label: 'Videovigilancia', icon: Video },
   ]
   return <div className="app-shell">
     {open && <button className="sidebar-scrim" aria-label="Cerrar menú" onClick={() => setOpen(false)} />}
