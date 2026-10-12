@@ -81,7 +81,13 @@ En **Auditoría → Restablecer demo** puedes recuperar el estado inicial.
 - Videovigilancia comunitaria mínima (`/videovigilancia`) para administrador y propietarios, con transmisión simulada en canvas a ~10 fps, soporte para feeds MJPEG y embeds seguros (iframe sandboxed), control de acceso por rol y auditoría de visualización.
 - Dashboard del administrador, configuración (incluye gestión de cámaras), padrón de unidades, cuotas, conciliación, pagos manuales, egresos, reportes, Excel/CSV y auditoría.
 - Portal de transparencia sin nombres ni comprobantes de otros vecinos.
-- Diseño adaptable a celular.
+- Diseño responsivo adaptado para celulares (360 a 430 px) y tablets (768 px):
+  - Menú lateral convertido en drawer desplegable con overlay, bloqueo de scroll y cierre con tecla Escape o clic externo.
+  - Modales en formato bottom-sheet en pantallas móviles con acciones visibles y scroll vertical interno.
+  - Áreas táctiles mínimas de 44×44 px y tamaño de fuente de 16 px en campos de texto para evitar zoom no deseado en iOS.
+  - Tablas con desplazamiento horizontal interno y primera columna fija.
+  - Subida de comprobante compatible con cámara fotográfica directa o selección de galería en móviles.
+  - Cero scroll horizontal general a nivel de documento (`scrollWidth <= innerWidth`).
 
 La semilla contiene **30 unidades y 12 meses de cuotas**, egresos, 2 cámaras simuladas activas y pagos ficticios. Los cambios quedan guardados en el almacenamiento local del navegador (`localStorage`); la sesión se mantiene en `sessionStorage`.
 
