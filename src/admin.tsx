@@ -83,11 +83,169 @@ function exportarCsv(datos: ReturnType<typeof useApp>['datos']) {
   const csv = '\uFEFF' + [encabezado, ...filas].map(row => row.join(',')).join('\r\n')
   const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'arcomunity_dataset_morosidad_simulado.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
+
+async function exportarExcel(datos: ReturnType<typeof useApp>['datos'], alTerminar?: () => void) {
+  try {
+    const ExcelJS = await import('exceljs')
+    const WorkbookClass = ExcelJS.Workbook || (ExcelJS as unknown as { default: { Workbook: typeof ExcelJS.Workbook } }).default?.Workbook
+    const wb = new WorkbookClass()
+    wb.creator = 'Arcomunity S.A.C.'
+    wb.created = new Date()
+
+    // Hoja 1: Dataset
+    const ws = wb.addWorksheet('Dataset', {
+      views: [{ state: 'frozen', xSplit: 0, ySplit: 1 }]
+    })
+
+    ws.columns = [
+      { header: 'Unidad', key: 'unidad', width: 14 },
+      { header: 'Periodo', key: 'periodo', width: 15 },
+      { header: 'Monto (S/)', key: 'monto', width: 16 },
+      { header: 'Fecha de vencimiento', key: 'fecha_vencimiento', width: 24 },
+      { header: 'Fecha de pago', key: 'fecha_pago', width: 18 },
+      { header: 'Días de atraso', key: 'dias_atraso', width: 16 },
+      { header: 'Método de pago', key: 'metodo_pago', width: 18 },
+      { header: 'Atrasos previos (3 meses)', key: 'pagos_atrasados_previos', width: 28 },
+      { header: 'Moroso (1 = sí)', key: 'moroso', width: 18 },
+      { header: 'Simulado', key: 'es_simulado', width: 14 }
+    ]
+
+    const headerRow = ws.getRow(1)
+    headerRow.height = 30
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }
+    headerRow.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF173942' }
+    }
+
+    const cuotasOrdenadas = datos.cuotas.slice().sort((a, b) => a.unidadId.localeCompare(b.unidadId) || a.periodo.localeCompare(b.periodo))
+
+    cuotasOrdenadas.forEach(c => {
+      const pago = datos.pagos.find(p => p.id === c.pagoId)
+      const dias = c.fechaPago ? Math.max(0, Math.round((new Date(c.fechaPago).getTime() - new Date(c.vencimiento).getTime()) / 86400000)) : 0
+      const previas = datos.cuotas.filter(x => x.unidadId === c.unidadId && x.periodo < c.periodo && x.periodo >= periodoAnterior(c.periodo, 3) && x.fechaPago && x.fechaPago > x.vencimiento).length
+      const esMoroso = dias > 0 || (!c.fechaPago && c.vencimiento < hoy()) ? 1 : 0
+
+      const [vy, vm, vd] = c.vencimiento.split('-').map(Number)
+      const fechaVencDate = new Date(Date.UTC(vy, vm - 1, vd, 12, 0, 0))
+
+      let fechaPagoDate: Date | null = null
+      if (c.fechaPago) {
+        const [py, pm, pd] = c.fechaPago.split('-').map(Number)
+        fechaPagoDate = new Date(Date.UTC(py, pm - 1, pd, 12, 0, 0))
+      }
+
+      const row = ws.addRow({
+        unidad: `U${c.unidadId.replace(/\D/g, '').padStart(3, '0')}`,
+        periodo: c.periodo,
+        monto: Number(c.monto),
+        fecha_vencimiento: fechaVencDate,
+        fecha_pago: fechaPagoDate,
+        dias_atraso: dias,
+        metodo_pago: pago?.metodo || '—',
+        pagos_atrasados_previos: previas,
+        moroso: esMoroso,
+        es_simulado: c.esSimulado ? 1 : 0
+      })
+
+      row.getCell(3).numFmt = '#,##0.00'
+      row.getCell(4).numFmt = 'dd/mm/yyyy'
+      if (fechaPagoDate) row.getCell(5).numFmt = 'dd/mm/yyyy'
+
+      row.getCell(1).alignment = { horizontal: 'center' }
+      row.getCell(2).alignment = { horizontal: 'center' }
+      row.getCell(4).alignment = { horizontal: 'center' }
+      row.getCell(5).alignment = { horizontal: 'center' }
+      row.getCell(6).alignment = { horizontal: 'center' }
+      row.getCell(8).alignment = { horizontal: 'center' }
+      row.getCell(9).alignment = { horizontal: 'center' }
+      row.getCell(10).alignment = { horizontal: 'center' }
+
+      if (esMoroso === 1) {
+        row.eachCell({ includeEmpty: true }, cell => {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFEBEB' }
+          }
+        })
+      }
+    })
+
+    ws.autoFilter = {
+      from: { row: 1, column: 1 },
+      to: { row: cuotasOrdenadas.length + 1, column: 10 }
+    }
+
+    // Hoja 2: Diccionario de datos
+    const wsDic = wb.addWorksheet('Diccionario de datos', {
+      views: [{ state: 'frozen', xSplit: 0, ySplit: 1 }]
+    })
+
+    wsDic.columns = [
+      { header: 'Campo', key: 'campo', width: 28 },
+      { header: 'Descripción', key: 'descripcion', width: 50 },
+      { header: 'Tipo', key: 'tipo', width: 18 },
+      { header: 'Ejemplo', key: 'ejemplo', width: 28 }
+    ]
+
+    const dicHeader = wsDic.getRow(1)
+    dicHeader.height = 28
+    dicHeader.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }
+    dicHeader.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
+    dicHeader.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF173942' }
+    }
+
+    const diccionario = [
+      { campo: 'Unidad', descripcion: 'Código anonimizado de la vivienda vecinal', tipo: 'Texto', ejemplo: 'U001' },
+      { campo: 'Periodo', descripcion: 'Primer día del mes facturado (AAAA-MM-01)', tipo: 'Texto', ejemplo: '2026-10-01' },
+      { campo: 'Monto (S/)', descripcion: 'Importe de la cuota mensual en soles', tipo: 'Numérico (2 decimales)', ejemplo: '150.00' },
+      { campo: 'Fecha de vencimiento', descripcion: 'Fecha límite de pago de la cuota', tipo: 'Fecha (dd/mm/aaaa)', ejemplo: '10/10/2026' },
+      { campo: 'Fecha de pago', descripcion: 'Fecha de cancelación efectiva (vacío si no pagó)', tipo: 'Fecha (dd/mm/aaaa)', ejemplo: '08/10/2026' },
+      { campo: 'Días de atraso', descripcion: 'Días transcurridos entre vencimiento y pago', tipo: 'Entero (≥ 0)', ejemplo: '0' },
+      { campo: 'Método de pago', descripcion: 'Canal de pago utilizado', tipo: 'Texto', ejemplo: 'yape_qr, yape_captura, efectivo' },
+      { campo: 'Atrasos previos (3 meses)', descripcion: 'Cuotas pagadas con retraso en los 3 meses anteriores', tipo: 'Entero (≥ 0)', ejemplo: '0' },
+      { campo: 'Moroso (1 = sí)', descripcion: 'Variable objetivo del modelo predictivo (APF3)', tipo: 'Binario (0 o 1)', ejemplo: '1' },
+      { campo: 'Simulado', descripcion: 'Indicador de datos sintéticos de demostración', tipo: 'Binario (0 o 1)', ejemplo: '1' }
+    ]
+
+    diccionario.forEach(d => {
+      const r = wsDic.addRow(d)
+      r.getCell(1).font = { bold: true }
+      r.getCell(3).alignment = { horizontal: 'center' }
+    })
+
+    wsDic.addRow({})
+    const rNota = wsDic.addRow({
+      campo: 'NOTA:',
+      descripcion: 'Los datos son 100 % simulados para fines académicos de demostración. La columna «Moroso (1 = sí)» constituye la variable objetivo para el entrenamiento del modelo de clasificación en APF3.'
+    })
+    rNota.font = { italic: true, color: { argb: 'FF555555' } }
+
+    const buffer = await wb.xlsx.writeBuffer()
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'arcomunity_dataset_morosidad.xlsx'
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  } finally {
+    alTerminar?.()
+  }
+}
+
 export function ReportesPage() {
-  const { datos } = useApp(); const [periodo, setPeriodo] = useState(mes()); const cuotas = datos.cuotas.filter(c => c.periodo === periodo)
+  const { datos } = useApp(); const [periodo, setPeriodo] = useState(mes()); const [exportandoExcel, setExportandoExcel] = useState(false)
+  const cuotas = datos.cuotas.filter(c => c.periodo === periodo)
   const ingresos = datos.pagos.filter(p => p.estado.startsWith('conciliado') && cuotas.some(c => c.id === p.cuotaId)).reduce((n, p) => n + p.monto, 0)
   const egresos = datos.egresos.filter(e => e.fecha.slice(0, 7) === periodo.slice(0, 7)).reduce((n, e) => n + e.monto, 0)
-  return <><PageHead eyebrow="RENDICIÓN DE CUENTAS" title="Reporte mensual" description="Información lista para compartir con la junta." action={<div className="button-group"><button className="button button-secondary" onClick={() => window.print()}><Printer size={17} /> Imprimir / PDF</button><button className="button button-primary" onClick={() => exportarCsv(datos)}><ArrowDownToLine size={17} /> Exportar CSV</button></div>} /><div className="report-page"><div className="report-header"><div><span className="eyebrow">ARCOMUNITY · REPORTE SIMULADO</span><h2>Resumen de {mesVisible(periodo)}</h2><p>Junta Vecinal Arcomunity — Piloto</p></div><SelectorMes value={periodo} onChange={setPeriodo} /></div><div className="stats-grid three"><Stat label="Ingresos conciliados" value={dinero(ingresos)} icon={<TrendingUp size={19} />} tone="lime" /><Stat label="Egresos" value={dinero(egresos)} icon={<Banknote size={19} />} /><Stat label="Saldo" value={dinero(ingresos - egresos)} icon={<CheckCircle2 size={19} />} /></div><div className="panel report-table"><div className="panel-heading"><div><span className="eyebrow">DETALLE</span><h2>Estado por unidad</h2></div><Simulado /></div><div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Monto</th><th>Vencimiento</th><th>Estado</th><th>Fecha de pago</th></tr></thead><tbody>{cuotas.map(c => <tr key={c.id}><td className="strong">{nombreUnidad(datos.unidades, c.unidadId)}</td><td><Money value={c.monto} /></td><td><DateText value={c.vencimiento} /></td><td><Badge estado={estadoVisible(c)} /></td><td><DateText value={c.fechaPago} /></td></tr>)}</tbody></table></div></div><p className="report-foot">Este reporte usa exclusivamente datos simulados para una demostración académica. El CSV incluye las 30 unidades y 12 meses del piloto.</p></div></>
+  return <><PageHead eyebrow="RENDICIÓN DE CUENTAS" title="Reporte mensual" description="Información lista para compartir con la junta." action={<div className="button-group"><button className="button button-secondary" onClick={() => window.print()}><Printer size={17} /> Imprimir / PDF</button><button className="button button-secondary" disabled={exportandoExcel} onClick={() => { setExportandoExcel(true); void exportarExcel(datos, () => setExportandoExcel(false)) }}><FileText size={17} /> {exportandoExcel ? 'Generando Excel...' : 'Exportar Excel (.xlsx)'}</button><button className="button button-primary" onClick={() => exportarCsv(datos)}><ArrowDownToLine size={17} /> Exportar CSV (datos)</button></div>} /><div className="report-page"><div className="report-header"><div><span className="eyebrow">ARCOMUNITY · REPORTE SIMULADO</span><h2>Resumen de {mesVisible(periodo)}</h2><p>Junta Vecinal Arcomunity — Piloto</p></div><SelectorMes value={periodo} onChange={setPeriodo} /></div><div className="stats-grid three"><Stat label="Ingresos conciliados" value={dinero(ingresos)} icon={<TrendingUp size={19} />} tone="lime" /><Stat label="Egresos" value={dinero(egresos)} icon={<Banknote size={19} />} /><Stat label="Saldo" value={dinero(ingresos - egresos)} icon={<CheckCircle2 size={19} />} /></div><div className="panel report-table"><div className="panel-heading"><div><span className="eyebrow">DETALLE</span><h2>Estado por unidad</h2></div><Simulado /></div><div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Monto</th><th>Vencimiento</th><th>Estado</th><th>Fecha de pago</th></tr></thead><tbody>{cuotas.map(c => <tr key={c.id}><td className="strong">{nombreUnidad(datos.unidades, c.unidadId)}</td><td><Money value={c.monto} /></td><td><DateText value={c.vencimiento} /></td><td><Badge estado={estadoVisible(c)} /></td><td><DateText value={c.fechaPago} /></td></tr>)}</tbody></table></div></div><p className="report-foot">Este reporte usa exclusivamente datos simulados para una demostración académica. El dataset incluye las 30 unidades y 12 meses del piloto.</p></div></>
 }
 export function AuditoriaPage() {
   const { datos, reiniciar } = useApp(); return <><PageHead eyebrow="TRAZABILIDAD" title="Bitácora de auditoría" description="Registro de las acciones realizadas en esta demostración." action={<button className="button button-secondary" onClick={() => { if (window.confirm('¿Restablecer todos los datos simulados y cerrar la sesión?')) reiniciar() }}><RefreshCw size={17} /> Restablecer demo</button>} /><div className="panel"><div className="table-wrap"><table><thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead><tbody>{datos.auditoria.map(a => <tr key={a.id}><td>{new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', dateStyle: 'short', timeStyle: 'short' }).format(new Date(a.fecha))}</td><td className="strong">{a.usuario}</td><td><span className="audit-action">{a.accion.replaceAll('_', ' ')}</span></td><td>{a.detalle}</td></tr>)}</tbody></table></div></div></> }
