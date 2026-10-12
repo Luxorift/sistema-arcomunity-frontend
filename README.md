@@ -19,6 +19,26 @@ npm run build
 
 El resultado queda en `dist/`. Si recibes la carpeta comprimida, descomprímela antes de ejecutar los comandos. `node_modules/` no se incluye porque npm lo instala automáticamente.
 
+## Pruebas unitarias
+
+Para ejecutar la suite de pruebas unitarias automatizadas con Vitest:
+
+```bash
+npm test
+```
+
+Para ejecutarlas en modo interactivo/observador:
+
+```bash
+npx vitest
+```
+
+Las pruebas (`src/model.test.ts`) cubren:
+- **Reglas de conciliación (R1–R4):** validación de monto, unicidad de operación (y reutilización tras rechazo), validación de fecha dentro del periodo, y los 4 escenarios de la regla R4 con confianza del OCR (baja sin corregir, baja corregida, alta e ingreso manual).
+- **Generación de cuotas idempotente:** generación de cuotas solo para unidades activas faltantes y garantía de que llamadas sucesivas no duplican registros.
+- **Cálculo de métricas del piloto:** cálculo de `dias_atraso` (puntuales y morosos) y cálculo de minutos de conciliación (`subido_en` a `conciliado_en`).
+- **Validación del registro de propietarios:** consentimiento obligatorio de tratamiento de datos (Ley N.º 29733), longitud mínima de contraseña (8 caracteres), código de invitación válido de la junta, correo único y disponibilidad de unidad.
+
 ## Cuentas de demostración
 
 Contraseña de todas las cuentas: **`Demo2026!`**. También puedes pulsar un perfil en la pantalla de acceso para completar los campos.
