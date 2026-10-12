@@ -15,7 +15,8 @@ const initial = (): Datos => {
   }
 }
 type Aviso = { tipo: 'ok' | 'error' | 'info'; texto: string } | null
-type PagoEntrada = { cuotaId: string; monto: number; fecha: string; operacion: string; metodo: MetodoPago; comprobante?: string; comprobanteNombre?: string; ocrConfianza?: number }
+export type OcrExtraido = { monto?: number | string; fecha?: string; operacion?: string }
+export type PagoEntrada = { cuotaId: string; monto: number; fecha: string; operacion: string; metodo: MetodoPago; comprobante?: string; comprobanteNombre?: string; ocrConfianza?: number; ocrExtraido?: OcrExtraido }
 type Contexto = {
   datos: Datos; usuario: Usuario | null; aviso: Aviso; mostrar: (texto: string, tipo?: 'ok' | 'error' | 'info') => void;
   entrar: (correo: string, clave: string) => Promise<boolean>; salir: () => void;
@@ -23,7 +24,7 @@ type Contexto = {
   configurar: (config: Configuracion) => void; guardarUnidad: (unidad: Unidad) => string | null; desactivarUnidad: (unidadId: string) => void;
   guardarCamara: (camara: Camara) => string | null; cambiarEstadoCamara: (camaraId: string, activa: boolean) => void; eliminarCamara: (camaraId: string) => void;
   generarCuotas: () => { creadas: number; existentes: number }; enviarPago: (entrada: PagoEntrada) => string | null;
-  revisarPago: (pagoId: string, aprobar: boolean, motivo?: string) => string | null; pagoManual: (entrada: Omit<PagoEntrada, 'comprobante' | 'comprobanteNombre' | 'ocrConfianza'>) => string | null;
+  revisarPago: (pagoId: string, aprobar: boolean, motivo?: string) => string | null; pagoManual: (entrada: Omit<PagoEntrada, 'comprobante' | 'comprobanteNombre' | 'ocrConfianza' | 'ocrExtraido'>) => string | null;
   registrarEgreso: (egreso: Omit<Egreso, 'id' | 'esSimulado'>) => void; registrarAuditoria: (accion: string, detalle: string) => void; reiniciar: () => void;
 }
 const Ctx = createContext<Contexto | null>(null)
@@ -120,7 +121,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (entrada.operacion && datos.pagos.some(p => p.operacion.toLowerCase() === entrada.operacion.trim().toLowerCase() && p.estado !== 'rechazado')) alertas.push('operacion_duplicada')
     const limite = new Date(`${cuota.periodo}T12:00:00Z`); limite.setUTCDate(limite.getUTCDate() - 5)
     if (entrada.fecha < limite.toISOString().slice(0, 10) || entrada.fecha > hoy()) alertas.push('fecha_fuera_de_periodo')
-    if (!entrada.operacion.trim() || !entrada.fecha || !entrada.comprobante) alertas.push('datos_incompletos')
+    const hayValoresOcr = Boolean(entrada.ocrExtraido && ((entrada.ocrExtraido.monto != null && entrada.ocrExtraido.monto !== '') || Boolean(entrada.ocrExtraido.fecha) || Boolean(entrada.ocrExtraido.operacion)))
+    let ocrSinCorregir = false
+    if (entrada.ocrConfianza != null && entrada.ocrConfianza < 60 && hayValoresOcr && entrada.ocrExtraido) {
+      const ex = entrada.ocrExtraido
+      const montoCorregido = ex.monto != null && ex.monto !== '' ? Math.round(Number(ex.monto) * 100) !== Math.round(entrada.monto * 100) : false
+      const fechaCorregida = Boolean(ex.fecha && ex.fecha !== entrada.fecha)
+      const operacionCorregida = Boolean(ex.operacion && ex.operacion.trim().toLowerCase() !== entrada.operacion.trim().toLowerCase())
+      if (!montoCorregido && !fechaCorregida && !operacionCorregida) ocrSinCorregir = true
+    }
+    if (!entrada.operacion.trim() || !entrada.fecha || !entrada.comprobante || ocrSinCorregir) alertas.push('datos_incompletos')
     if (!datos.configuracion.conciliacionAutomatica) alertas.push('revision_manual_configurada')
     const nuevo: Pago = { id: id(), cuotaId: cuota.id, unidadId: cuota.unidadId, monto: entrada.monto, fecha: entrada.fecha, operacion: entrada.operacion.trim(), metodo: entrada.metodo, estado: alertas.length ? 'pendiente_revision' : 'conciliado_auto', alertas, comprobante: entrada.comprobante, comprobanteNombre: entrada.comprobanteNombre, ocrConfianza: entrada.ocrConfianza, subidoEn: new Date().toISOString(), conciliadoEn: alertas.length ? undefined : new Date().toISOString(), esSimulado: true }
     setDatos(d => ({ ...d, pagos: [nuevo, ...d.pagos], cuotas: d.cuotas.map(c => c.id === cuota.id ? { ...c, estado: alertas.length ? 'en_revision' : 'pagada', fechaPago: alertas.length ? undefined : nuevo.fecha, pagoId: alertas.length ? undefined : nuevo.id } : c), auditoria: auditar(d, alertas.length ? 'pago_en_revision' : 'pago_conciliado_auto', `${cuota.id}: ${alertas.length ? alertas.join(', ') : 'sin alertas'}`) }))
