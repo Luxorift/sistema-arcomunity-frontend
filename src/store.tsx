@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { crearDatos, fechaVencimiento, hash, hoy, id, mes, type Camara, type Configuracion, type Datos, type Egreso, type MetodoPago, type Pago, type Unidad, type Usuario } from './model'
+import { calcularCuotasFaltantes, crearDatos, evaluarReglasConciliacion, hash, hoy, id, mes, validarRegistro, type Camara, type Configuracion, type Datos, type Egreso, type MetodoPago, type Pago, type Unidad, type Usuario } from './model'
 
 const STORAGE = 'arcomunity-frontend-v1'
 const SESSION = 'arcomunity-sesion-v1'
@@ -46,11 +46,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
   const salir = () => { sessionStorage.removeItem(SESSION); setUsuarioId(null) }
   const registrar: Contexto['registrar'] = async entrada => {
-    if (!entrada.consentimiento) return 'Debes aceptar el tratamiento de datos para registrarte.'
-    if (entrada.codigo.trim().toUpperCase() !== datos.configuracion.codigoInvitacion.toUpperCase()) return 'El código de invitación no es válido.'
-    if (datos.usuarios.some(u => u.correo.toLowerCase() === entrada.correo.trim().toLowerCase())) return 'Este correo ya está registrado.'
-    if (datos.usuarios.some(u => u.unidadId === entrada.unidadId)) return 'Esta unidad ya tiene un propietario asignado.'
-    if (!datos.unidades.some(u => u.id === entrada.unidadId && u.activa)) return 'Selecciona una unidad disponible.'
+    const errorValidacion = validarRegistro(entrada, datos)
+    if (errorValidacion) return errorValidacion
     const nuevo: Usuario = { id: id(), nombre: entrada.nombre.trim(), correo: entrada.correo.trim().toLowerCase(), rol: 'propietario', unidadId: entrada.unidadId, telefono: entrada.telefono?.trim() || undefined, claveHash: await hash(entrada.clave), aceptoDatosEn: new Date().toISOString() }
     setDatos(d => ({ ...d, usuarios: [...d.usuarios, nuevo], auditoria: [{ id: id(), fecha: new Date().toISOString(), usuario: nuevo.nombre, accion: 'registro_propietario', detalle: `Unidad ${d.unidades.find(u => u.id === nuevo.unidadId)?.codigo}` }, ...d.auditoria] }))
     sessionStorage.setItem(SESSION, nuevo.id); setUsuarioId(nuevo.id); mostrar('Registro de demostración completado.'); return null
@@ -103,9 +100,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setDatos(d => ({ ...d, auditoria: auditar(d, accion, detalle) }))
   }
   const generarCuotas = () => {
-    const periodo = mes(); const activas = datos.unidades.filter(u => u.activa); const faltantes = activas.filter(u => !datos.cuotas.some(c => c.unidadId === u.id && c.periodo === periodo));
-    setDatos(d => ({ ...d, cuotas: [...d.cuotas, ...faltantes.map(u => ({ id: id(), unidadId: u.id, periodo, monto: d.configuracion.cuotaMensual, vencimiento: fechaVencimiento(periodo, d.configuracion.diaVencimiento), estado: 'pendiente' as const, esSimulado: true }))], auditoria: auditar(d, 'generar_cuotas', `${faltantes.length} creadas, ${activas.length - faltantes.length} existentes (${periodo}).`) }))
-    return { creadas: faltantes.length, existentes: activas.length - faltantes.length }
+    const periodo = mes()
+    const { cuotasNuevas, existentes } = calcularCuotasFaltantes(datos.unidades, datos.cuotas, periodo, datos.configuracion.cuotaMensual, datos.configuracion.diaVencimiento)
+    setDatos(d => ({ ...d, cuotas: [...d.cuotas, ...cuotasNuevas], auditoria: auditar(d, 'generar_cuotas', `${cuotasNuevas.length} creadas, ${existentes} existentes (${periodo}).`) }))
+    return { creadas: cuotasNuevas.length, existentes }
   }
   const enviarPago = (entrada: PagoEntrada) => {
     const cuota = datos.cuotas.find(c => c.id === entrada.cuotaId)
@@ -116,21 +114,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!entrada.comprobante) return 'Adjunta una imagen del comprobante.'
     if (!Number.isFinite(entrada.monto) || entrada.monto <= 0) return 'Ingresa un monto válido.'
     if (!entrada.fecha || entrada.fecha > hoy()) return 'La fecha no puede ser futura.'
-    const alertas: string[] = []
-    if (Math.round(entrada.monto * 100) !== Math.round(cuota.monto * 100)) alertas.push('monto_no_coincide')
-    if (entrada.operacion && datos.pagos.some(p => p.operacion.toLowerCase() === entrada.operacion.trim().toLowerCase() && p.estado !== 'rechazado')) alertas.push('operacion_duplicada')
-    const limite = new Date(`${cuota.periodo}T12:00:00Z`); limite.setUTCDate(limite.getUTCDate() - 5)
-    if (entrada.fecha < limite.toISOString().slice(0, 10) || entrada.fecha > hoy()) alertas.push('fecha_fuera_de_periodo')
-    const hayValoresOcr = Boolean(entrada.ocrExtraido && ((entrada.ocrExtraido.monto != null && entrada.ocrExtraido.monto !== '') || Boolean(entrada.ocrExtraido.fecha) || Boolean(entrada.ocrExtraido.operacion)))
-    let ocrSinCorregir = false
-    if (entrada.ocrConfianza != null && entrada.ocrConfianza < 60 && hayValoresOcr && entrada.ocrExtraido) {
-      const ex = entrada.ocrExtraido
-      const montoCorregido = ex.monto != null && ex.monto !== '' ? Math.round(Number(ex.monto) * 100) !== Math.round(entrada.monto * 100) : false
-      const fechaCorregida = Boolean(ex.fecha && ex.fecha !== entrada.fecha)
-      const operacionCorregida = Boolean(ex.operacion && ex.operacion.trim().toLowerCase() !== entrada.operacion.trim().toLowerCase())
-      if (!montoCorregido && !fechaCorregida && !operacionCorregida) ocrSinCorregir = true
-    }
-    if (!entrada.operacion.trim() || !entrada.fecha || !entrada.comprobante || ocrSinCorregir) alertas.push('datos_incompletos')
+    const alertas = evaluarReglasConciliacion(entrada, cuota, datos.pagos)
     if (!datos.configuracion.conciliacionAutomatica) alertas.push('revision_manual_configurada')
     const nuevo: Pago = { id: id(), cuotaId: cuota.id, unidadId: cuota.unidadId, monto: entrada.monto, fecha: entrada.fecha, operacion: entrada.operacion.trim(), metodo: entrada.metodo, estado: alertas.length ? 'pendiente_revision' : 'conciliado_auto', alertas, comprobante: entrada.comprobante, comprobanteNombre: entrada.comprobanteNombre, ocrConfianza: entrada.ocrConfianza, subidoEn: new Date().toISOString(), conciliadoEn: alertas.length ? undefined : new Date().toISOString(), esSimulado: true }
     setDatos(d => ({ ...d, pagos: [nuevo, ...d.pagos], cuotas: d.cuotas.map(c => c.id === cuota.id ? { ...c, estado: alertas.length ? 'en_revision' : 'pagada', fechaPago: alertas.length ? undefined : nuevo.fecha, pagoId: alertas.length ? undefined : nuevo.id } : c), auditoria: auditar(d, alertas.length ? 'pago_en_revision' : 'pago_conciliado_auto', `${cuota.id}: ${alertas.length ? alertas.join(', ') : 'sin alertas'}`) }))
