@@ -160,7 +160,7 @@ export function VideovigilanciaPage() {
       <PageHead
         eyebrow="SEGURIDAD Y CONTROL"
         title="Videovigilancia comunitaria"
-        description="Supervisión en tiempo real de los accesos y áreas compartidas del condominio."
+        description="Vista de demostración con cámaras simuladas"
       />
 
       <div className="notice" style={{ alignItems: 'center' }}>
@@ -184,7 +184,7 @@ export function VideovigilanciaPage() {
               </div>
               <div className="camera-feed">
                 <span className="camera-live-badge">
-                  <span className="camera-live-dot" /> EN VIVO
+                  <span className="camera-live-dot" /> SIMULADO
                 </span>
                 {cam.tipo === 'simulada' && <SimuladaCanvas camara={cam} />}
                 {cam.tipo === 'mjpeg' && (
