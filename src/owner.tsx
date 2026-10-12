@@ -1,12 +1,226 @@
-import { useState, type FormEvent } from 'react'
+import { useState, useEffect, useRef, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { AlertCircle, ArrowLeft, ArrowRight, Camera, CheckCircle2, Clock3, CreditCard, FileImage, Home, ImageUp, LockKeyhole, ScanText, ShieldCheck, Sparkles, UploadCloud, Wallet, XCircle } from 'lucide-react'
-import { dinero, estadoVisible, fechaVisible, hoy, mes, mesVisible, periodoAnterior, type Cuota } from './model'
+import { dinero, estadoVisible, fechaVisible, hoy, mes, mesVisible, periodoAnterior, type Camara, type Cuota } from './model'
 import { useApp } from './store'
 import { optimizarImagen } from './image'
 import { Badge, Empty, PageHead, Simulado, Stat } from './ui'
 
 const periodos = Array.from({ length: 12 }, (_, i) => periodoAnterior(mes(), i))
+
+function SimuladaCanvas({ camara }: { camara: Camara }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+
+  useEffect(() => {
+    let animId: number
+    let lastTime = 0
+    const fps = 10
+    const interval = 1000 / fps
+
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    let scanlineOffset = 0
+
+    const render = (currentTime: number) => {
+      animId = requestAnimationFrame(render)
+      if (currentTime - lastTime < interval) return
+      lastTime = currentTime
+
+      const w = canvas.width
+      const h = canvas.height
+
+      // Fondo oscuro de cámara de vigilancia
+      ctx.fillStyle = '#0b1619'
+      ctx.fillRect(0, 0, w, h)
+
+      // Cuadrícula sutil
+      ctx.strokeStyle = '#183136'
+      ctx.lineWidth = 1
+      for (let x = 0; x < w; x += 40) {
+        ctx.beginPath()
+        ctx.moveTo(x, 0)
+        ctx.lineTo(x, h)
+        ctx.stroke()
+      }
+      for (let y = 0; y < h; y += 40) {
+        ctx.beginPath()
+        ctx.moveTo(0, y)
+        ctx.lineTo(w, y)
+        ctx.stroke()
+      }
+
+      // Geometría representativa según ubicación
+      ctx.fillStyle = '#1c393f'
+      if (camara.nombre.toLowerCase().includes('ingreso') || camara.ubicacion.toLowerCase().includes('peatonal')) {
+        // Silueta de portón / arco de entrada
+        ctx.fillRect(w * 0.25, h * 0.35, w * 0.5, h * 0.65)
+        ctx.fillStyle = '#284e56'
+        ctx.fillRect(w * 0.35, h * 0.45, w * 0.3, h * 0.55)
+      } else {
+        // Silueta de cocheras / carriles
+        ctx.beginPath()
+        ctx.moveTo(w * 0.1, h)
+        ctx.lineTo(w * 0.4, h * 0.4)
+        ctx.lineTo(w * 0.6, h * 0.4)
+        ctx.lineTo(w * 0.9, h)
+        ctx.fill()
+      }
+
+      // Efecto scanline móvil
+      scanlineOffset = (scanlineOffset + 3) % h
+      ctx.fillStyle = 'rgba(215, 235, 150, 0.04)'
+      ctx.fillRect(0, scanlineOffset, w, 6)
+
+      // Ruido digital sutil
+      for (let n = 0; n < 30; n++) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)'
+        ctx.fillRect(Math.random() * w, Math.random() * h, 2, 2)
+      }
+
+      // Mira central / retícula
+      ctx.strokeStyle = '#6e9b88'
+      ctx.lineWidth = 1.5
+      const cx = w / 2
+      const cy = h / 2
+      ctx.beginPath()
+      ctx.moveTo(cx - 15, cy); ctx.lineTo(cx + 15, cy)
+      ctx.moveTo(cx, cy - 15); ctx.lineTo(cx, cy + 15)
+      ctx.stroke()
+
+      // Esquinas de visor
+      const cs = 18
+      ctx.beginPath()
+      // Superior izq
+      ctx.moveTo(25, 25 + cs); ctx.lineTo(25, 25); ctx.lineTo(25 + cs, 25)
+      // Superior der
+      ctx.moveTo(w - 25 - cs, 25); ctx.lineTo(w - 25, 25); ctx.lineTo(w - 25, 25 + cs)
+      // Inferior izq
+      ctx.moveTo(25, h - 25 - cs); ctx.lineTo(25, h - 25); ctx.lineTo(25 + cs, h - 25)
+      // Inferior der
+      ctx.moveTo(w - 25 - cs, h - 25); ctx.lineTo(w - 25, h - 25); ctx.lineTo(w - 25, h - 25 - cs)
+      ctx.stroke()
+
+      // Textos OSD (On-Screen Display)
+      ctx.fillStyle = '#bce2a4'
+      ctx.font = 'bold 12px monospace'
+      ctx.fillText(`CAM: ${camara.nombre.toUpperCase()}`, 35, 45)
+      ctx.fillText(`LOC: ${camara.ubicacion.toUpperCase()}`, 35, 62)
+
+      // Reloj con fecha y hora actual en vivo
+      const ahora = new Date()
+      const horaStr = new Intl.DateTimeFormat('es-PE', {
+        timeZone: 'America/Lima',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+      }).format(ahora)
+      const fechaStr = new Intl.DateTimeFormat('es-PE', {
+        timeZone: 'America/Lima',
+        day: '2-digit', month: '2-digit', year: 'numeric'
+      }).format(ahora)
+
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 13px monospace'
+      ctx.fillText(`${fechaStr} ${horaStr}`, w - 190, 45)
+
+      ctx.fillStyle = '#efab80'
+      ctx.font = 'bold 10px monospace'
+      ctx.fillText('10 FPS · MODO DEMO', w - 150, 62)
+    }
+
+    animId = requestAnimationFrame(render)
+
+    return () => {
+      cancelAnimationFrame(animId)
+    }
+  }, [camara])
+
+  return <canvas ref={canvasRef} width={640} height={360} aria-label={`Transmisión de ${camara.nombre}`} />
+}
+
+export function VideovigilanciaPage() {
+  const { datos, registrarAuditoria } = useApp()
+  const activas = datos.camaras.filter(c => c.activa)
+  const auditadoRef = useRef(false)
+
+  useEffect(() => {
+    if (!auditadoRef.current) {
+      registrarAuditoria('ver_camara', `Acceso a panel de videovigilancia (${activas.length} cámaras activas)`)
+      auditadoRef.current = true
+    }
+  }, [activas.length, registrarAuditoria])
+
+  const seleccionarCamara = (c: Camara) => {
+    registrarAuditoria('ver_camara', `Enfoque en cámara ${c.nombre} (${c.tipo})`)
+  }
+
+  return (
+    <>
+      <PageHead
+        eyebrow="SEGURIDAD Y CONTROL"
+        title="Videovigilancia comunitaria"
+        description="Vista de demostración con cámaras simuladas"
+      />
+
+      <div className="notice" style={{ alignItems: 'center' }}>
+        <ShieldCheck size={20} style={{ flexShrink: 0 }} />
+        <div>
+          <strong>Finalidad de seguridad vecinal (Ley N.º 29733)</strong>
+          <p>Las imágenes se usan solo para la seguridad de las zonas comunes (Ley N.º 29733). El sistema no almacena grabaciones en esta versión académica del MVP.</p>
+        </div>
+      </div>
+
+      {activas.length ? (
+        <div className="cameras-grid">
+          {activas.map(cam => (
+            <div key={cam.id} className="camera-card" onClick={() => seleccionarCamara(cam)}>
+              <div className="camera-card-head">
+                <div>
+                  <h2>{cam.nombre}</h2>
+                  <small>{cam.ubicacion}</small>
+                </div>
+                <Badge estado={cam.tipo === 'simulada' ? 'activa' : 'en_revision'} />
+              </div>
+              <div className="camera-feed">
+                <span className="camera-live-badge">
+                  <span className="camera-live-dot" /> SIMULADO
+                </span>
+                {cam.tipo === 'simulada' && <SimuladaCanvas camara={cam} />}
+                {cam.tipo === 'mjpeg' && (
+                  <img
+                    src={cam.url}
+                    alt={`Transmisión en vivo de ${cam.nombre}`}
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none'
+                    }}
+                  />
+                )}
+                {cam.tipo === 'embed' && (
+                  <iframe
+                    src={cam.url}
+                    title={cam.nombre}
+                    sandbox="allow-scripts allow-same-origin"
+                    loading="lazy"
+                  />
+                )}
+              </div>
+              <div className="camera-card-foot">
+                <span>Tipo: <strong>{cam.tipo === 'simulada' ? 'TRANSMISIÓN SIMULADA' : cam.tipo === 'mjpeg' ? 'MJPEG / Stream URL' : 'Embed externo'}</strong></span>
+                <span>Resolución: <strong>720p</strong></span>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <Empty
+          title="Sin cámaras activas"
+          text="El administrador no ha habilitado ninguna cámara en la configuración."
+        />
+      )}
+    </>
+  )
+}
 export function MiCuenta() {
   const { datos, usuario } = useApp(); const cuotas = datos.cuotas.filter(c => c.unidadId === usuario?.unidadId).sort((a, b) => b.periodo.localeCompare(a.periodo))
   const unidad = datos.unidades.find(u => u.id === usuario?.unidadId)
@@ -31,7 +245,7 @@ function imagenMuestra(): Promise<string> {
 export function PagarPage() {
   const { cuotaId } = useParams(); const navigate = useNavigate(); const { datos, usuario, enviarPago, mostrar } = useApp()
   const cuota = datos.cuotas.find(c => c.id === cuotaId && c.unidadId === usuario?.unidadId)
-  const [imagen, setImagen] = useState<string>(''); const [nombreImagen, setNombreImagen] = useState(''); const [monto, setMonto] = useState(''); const [fecha, setFecha] = useState(''); const [operacion, setOperacion] = useState(''); const [confianza, setConfianza] = useState<number | undefined>(); const [progreso, setProgreso] = useState(0); const [leyendo, setLeyendo] = useState(false)
+  const [imagen, setImagen] = useState<string>(''); const [nombreImagen, setNombreImagen] = useState(''); const [monto, setMonto] = useState(''); const [fecha, setFecha] = useState(''); const [operacion, setOperacion] = useState(''); const [confianza, setConfianza] = useState<number | undefined>(); const [ocrExtraido, setOcrExtraido] = useState<{ monto?: string; fecha?: string; operacion?: string } | undefined>(); const [progreso, setProgreso] = useState(0); const [leyendo, setLeyendo] = useState(false)
   if (!cuota) return <Empty title="Cuota no encontrada" text="No tienes acceso a esta cuota o ya no existe." action={<Link className="button button-primary" to="/mi-cuenta">Volver a mi cuenta</Link>} />
   const cargarArchivo = async (file?: File) => {
     if (!file) return; if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) return mostrar('Sube una imagen JPG, PNG o WEBP de hasta 5 MB.', 'error')
@@ -39,14 +253,17 @@ export function PagarPage() {
       const Tesseract = await import('tesseract.js')
       const result = await Tesseract.recognize(file, 'spa', { logger: m => { if (m.status === 'recognizing text') setProgreso(Math.round(m.progress * 100)) } })
       const parsed = extraerTexto(result.data.text); setConfianza(result.data.confidence)
+      const hayDatos = Boolean(parsed.monto || parsed.fecha || parsed.operacion)
+      setOcrExtraido(hayDatos ? { monto: parsed.monto || undefined, fecha: parsed.fecha || undefined, operacion: parsed.operacion || undefined } : undefined)
       if (parsed.monto) setMonto(parsed.monto); if (parsed.fecha) setFecha(parsed.fecha); if (parsed.operacion) setOperacion(parsed.operacion)
-      mostrar(parsed.monto || parsed.fecha || parsed.operacion ? 'Lectura completada. Revisa y corrige los datos.' : 'No pudimos leer la imagen. Ingresa los datos manualmente.', parsed.monto || parsed.fecha || parsed.operacion ? 'ok' : 'info')
-    } catch { mostrar('No pudimos leer la imagen. Ingresa los datos manualmente.', 'info') } finally { setLeyendo(false); setProgreso(100) }
+      mostrar(hayDatos ? 'Lectura completada. Revisa y corrige los datos.' : 'No pudimos leer la imagen. Ingresa los datos manualmente.', hayDatos ? 'ok' : 'info')
+    } catch { setConfianza(undefined); setOcrExtraido(undefined); mostrar('No pudimos leer la imagen. Ingresa los datos manualmente.', 'info') } finally { setLeyendo(false); setProgreso(100) }
   }
-  const cargarEjemplo = async () => { const muestra = await imagenMuestra(); setImagen(muestra); setNombreImagen('comprobante_simulado.jpg'); setMonto(String(cuota.monto)); setFecha(hoy()); setOperacion(`DEMO${Date.now().toString().slice(-9)}`); setConfianza(undefined); mostrar('Ejemplo simulado cargado. Revisa los campos antes de enviar.', 'info') }
-  const submit = (e: FormEvent) => { e.preventDefault(); if (!imagen) return mostrar('Adjunta una imagen del comprobante.', 'error'); if (!/^\d+(\.\d{1,2})?$/.test(monto) || Number(monto) <= 0) return mostrar('Ingresa un monto válido.', 'error'); if (!fecha || fecha > hoy()) return mostrar('La fecha no puede ser futura.', 'error'); if (!operacion.trim()) return mostrar('Completa el número de operación.', 'error'); const error = enviarPago({ cuotaId: cuota.id, monto: Number(monto), fecha, operacion, metodo: 'yape_captura', comprobante: imagen, comprobanteNombre: nombreImagen, ocrConfianza: confianza }); if (error) mostrar(error, 'error'); else navigate('/mi-cuenta') }
+  const cargarEjemplo = async () => { const muestra = await imagenMuestra(); setImagen(muestra); setNombreImagen('comprobante_simulado.jpg'); setMonto(String(cuota.monto)); setFecha(hoy()); setOperacion(`DEMO${Date.now().toString().slice(-9)}`); setConfianza(100); setOcrExtraido(undefined); mostrar('Ejemplo simulado cargado. Revisa los campos antes de enviar.', 'info') }
+  const cargarEjemploBajaConfianza = async () => { const muestra = await imagenMuestra(); const op = `DEMO${Date.now().toString().slice(-9)}`; setImagen(muestra); setNombreImagen('comprobante_baja_confianza.jpg'); setMonto(String(cuota.monto)); setFecha(hoy()); setOperacion(op); setConfianza(45); setOcrExtraido({ monto: String(cuota.monto), fecha: hoy(), operacion: op }); mostrar('Ejemplo con OCR de baja confianza (45%) cargado para pruebas.', 'info') }
+  const submit = (e: FormEvent) => { e.preventDefault(); if (!imagen) return mostrar('Adjunta una imagen del comprobante.', 'error'); if (!/^\d+(\.\d{1,2})?$/.test(monto) || Number(monto) <= 0) return mostrar('Ingresa un monto válido.', 'error'); if (!fecha || fecha > hoy()) return mostrar('La fecha no puede ser futura.', 'error'); if (!operacion.trim()) return mostrar('Completa el número de operación.', 'error'); const error = enviarPago({ cuotaId: cuota.id, monto: Number(monto), fecha, operacion, metodo: 'yape_captura', comprobante: imagen, comprobanteNombre: nombreImagen, ocrConfianza: confianza, ocrExtraido }); if (error) mostrar(error, 'error'); else navigate('/mi-cuenta') }
   const inhabilitado = cuota.estado !== 'pendiente'
-  return <><div className="back-line"><Link to="/mi-cuenta"><ArrowLeft size={17} /> Volver a mi cuenta</Link></div><PageHead eyebrow="PAGO DE CUOTA" title={`Pagar ${mesVisible(cuota.periodo)}`} description="Sigue los pasos para informar tu pago a la junta." /><div className="payment-grid"><div className="payment-main"><div className="panel payment-card"><div className="step-heading"><span>01</span><div><h2>Realiza tu pago</h2><p>Escanea el QR desde Yape y confirma el monto.</p></div></div><div className="payment-amount"><span>Total a pagar</span><strong>{dinero(cuota.monto)}</strong><small>Vence el {fechaVisible(cuota.vencimiento)}</small></div><div className="pay-qr">{datos.configuracion.yapeQr ? <img src={datos.configuracion.yapeQr} alt="QR de Yape de la junta" /> : <div className="qr-placeholder"><Camera size={30} /><span>El administrador aún no ha configurado el QR.</span></div>}</div><div className="holder-line"><ShieldCheck size={17} /><span>Titular: <strong>{datos.configuracion.yapeTitular}</strong></span></div><div className="info-callout"><AlertCircle size={18} /><span>El pago se realiza fuera de esta web. La demo no conecta con Yape ni verifica dinero recibido.</span></div></div></div><div className="panel payment-card"><div className="step-heading"><span>02</span><div><h2>Sube tu comprobante</h2><p>Extraeremos los datos para que puedas revisarlos.</p></div></div>{inhabilitado ? <div className="notice"><AlertCircle size={19} /><span>Esta cuota está {estadoVisible(cuota).replace('_', ' ')}. No se puede subir otro comprobante ahora.</span></div> : <form onSubmit={submit} className="form-stack"><label className="dropzone"><UploadCloud size={31} /><strong>{nombreImagen || 'Toca para seleccionar una imagen'}</strong><span>JPG, PNG o WEBP · máximo 5 MB</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={e => void cargarArchivo(e.target.files?.[0])} hidden /></label><button type="button" className="text-button sample-link" onClick={() => void cargarEjemplo()}><Sparkles size={17} /> Cargar comprobante de ejemplo simulado</button>{imagen && <div className="uploaded-file"><FileImage size={19} /><span>{nombreImagen}</span><CheckCircle2 size={17} /></div>}{leyendo && <div className="ocr-progress"><div><ScanText size={18} /> Leyendo imagen... <strong>{progreso}%</strong></div><div className="progress-line"><span style={{ width: `${progreso}%` }} /></div></div>}<div className="form-divider" /><p className="form-hint">Confirma o corrige estos datos antes de enviar. Si el OCR falla, escríbelos manualmente.</p><div className="field-grid"><label className="field"><span>Monto pagado (S/)</span><input type="number" required min="0.01" step="0.01" value={monto} onChange={e => setMonto(e.target.value)} placeholder="150.00" /></label><label className="field"><span>Fecha de operación</span><input type="date" required max={hoy()} value={fecha} onChange={e => setFecha(e.target.value)} /></label></div><label className="field"><span>N.º de operación</span><input required value={operacion} onChange={e => setOperacion(e.target.value)} placeholder="Ej.: 123456789" /></label><button className="button button-primary full-width" disabled={leyendo}><ImageUp size={18} /> Enviar comprobante</button></form>}</div></div></>
+  return <><div className="back-line"><Link to="/mi-cuenta"><ArrowLeft size={17} /> Volver a mi cuenta</Link></div><PageHead eyebrow="PAGO DE CUOTA" title={`Pagar ${mesVisible(cuota.periodo)}`} description="Sigue los pasos para informar tu pago a la junta." /><div className="payment-grid"><div className="payment-main"><div className="panel payment-card"><div className="step-heading"><span>01</span><div><h2>Realiza tu pago</h2><p>Escanea el QR desde Yape y confirma el monto.</p></div></div><div className="payment-amount"><span>Total a pagar</span><strong>{dinero(cuota.monto)}</strong><small>Vence el {fechaVisible(cuota.vencimiento)}</small></div><div className="pay-qr">{datos.configuracion.yapeQr ? <img src={datos.configuracion.yapeQr} alt="QR de Yape de la junta" /> : <div className="qr-placeholder"><Camera size={30} /><span>El administrador aún no ha configurado el QR.</span></div>}</div><div className="holder-line"><ShieldCheck size={17} /><span>Titular: <strong>{datos.configuracion.yapeTitular}</strong></span></div><div className="info-callout"><AlertCircle size={18} /><span>El pago se realiza fuera de esta web. La demo no conecta con Yape ni verifica dinero recibido.</span></div></div></div><div className="panel payment-card"><div className="step-heading"><span>02</span><div><h2>Sube tu comprobante</h2><p>Extraeremos los datos para que puedas revisarlos.</p></div></div>{inhabilitado ? <div className="notice"><AlertCircle size={19} /><span>Esta cuota está {estadoVisible(cuota).replace('_', ' ')}. No se puede subir otro comprobante ahora.</span></div> : <form onSubmit={submit} className="form-stack"><label className="dropzone"><UploadCloud size={31} /><strong>{nombreImagen || 'Toca para seleccionar una imagen'}</strong><span>JPG, PNG o WEBP · máximo 5 MB</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={e => void cargarArchivo(e.target.files?.[0])} hidden /></label><div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}><button type="button" className="text-button sample-link" onClick={() => void cargarEjemplo()}><Sparkles size={17} /> Cargar comprobante de ejemplo simulado</button><button type="button" className="text-button sample-link" onClick={() => void cargarEjemploBajaConfianza()}><ScanText size={17} /> Cargar ejemplo OCR baja confianza (45%)</button></div>{imagen && <div className="uploaded-file"><FileImage size={19} /><span>{nombreImagen}</span><CheckCircle2 size={17} /></div>}{leyendo && <div className="ocr-progress"><div><ScanText size={18} /> Leyendo imagen... <strong>{progreso}%</strong></div><div className="progress-line"><span style={{ width: `${progreso}%` }} /></div></div>}<div className="form-divider" /><p className="form-hint">Confirma o corrige estos datos antes de enviar. Si el OCR falla, escríbelos manualmente.</p><div className="field-grid"><label className="field"><span>Monto pagado (S/)</span><input type="number" required min="0.01" step="0.01" value={monto} onChange={e => setMonto(e.target.value)} placeholder="150.00" /></label><label className="field"><span>Fecha de operación</span><input type="date" required max={hoy()} value={fecha} onChange={e => setFecha(e.target.value)} /></label></div><label className="field"><span>N.º de operación</span><input required value={operacion} onChange={e => setOperacion(e.target.value)} placeholder="Ej.: 123456789" /></label><button className="button button-primary full-width" disabled={leyendo}><ImageUp size={18} /> Enviar comprobante</button></form>}</div></div></>
 }
 
 export function TransparenciaPage() {
