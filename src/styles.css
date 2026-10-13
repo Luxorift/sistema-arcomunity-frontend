@@ -138,3 +138,4 @@
 @keyframes cameraPulse{0%,100%{opacity:1}50%{opacity:.3}}
 .camera-card-foot{padding:12px 20px;background:#fafcf9;border-top:1px solid #edf1ee;font-size:11px;color:#788e89;display:flex;justify-content:space-between;align-items:center}
 @media(max-width:640px){.cameras-grid{grid-template-columns:1fr}}
+.form-error{background:#fbeceb;border:1px solid #e3b4af;color:#8c2f27;border-radius:10px;padding:11px 14px;font-size:12px;font-weight:700;line-height:1.45;margin:4px 0 2px}
