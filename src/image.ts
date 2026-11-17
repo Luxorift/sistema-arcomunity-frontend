@@ -10,3 +10,7 @@ export async function optimizarImagen(file: File, maxWidth = 900): Promise<strin
   bitmap.close()
   return canvas.toDataURL('image/jpeg', .72)
 }
+
+export async function dataUrlABlob(dataUrl: string): Promise<Blob> {
+  return (await fetch(dataUrl)).blob()
+}
