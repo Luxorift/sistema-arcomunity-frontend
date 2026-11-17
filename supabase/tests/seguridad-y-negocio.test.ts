@@ -103,6 +103,13 @@ describe('Registro y roles', () => {
     expect(libres.map(u => u.codigo)).toEqual(['Casa 03'])
   })
 
+  it('anon obtiene la hora del servidor en America/Lima', async () => {
+    await como(db, { tipo: 'anon' })
+    const [r] = await filas<{ r: { hoy_lima: string; zona_horaria: string } }>(db, 'select public.servidor_ahora() as r')
+    expect(r.r.zona_horaria).toBe('America/Lima')
+    expect(r.r.hoy_lima).toBe(hoy)
+  })
+
   it('anon no puede leer tablas ni llamar funciones administrativas', async () => {
     await como(db, { tipo: 'anon' })
     for (const tabla of ['juntas', 'cuotas', 'pagos', 'perfiles', 'auditoria', 'egresos', 'juntas_invitacion']) {
