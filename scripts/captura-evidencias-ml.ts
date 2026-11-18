@@ -35,7 +35,7 @@ try {
   await selector.selectOption(siguiente!)
   if (await p.getByText('Aún no hay cuotas este mes').isVisible().catch(() => false)) {
     await p.getByRole('button', { name: /Generar cuotas/ }).click()
-    await p.locator('.modal').getByRole('button', { name: 'Generar' }).click()
+    await p.locator('.modal').getByRole('button', { name: 'Generar cuotas' }).click()
     await p.locator('.toast').waitFor({ timeout: 15000 })
   }
   await p.locator('table tbody tr').first().waitFor({ timeout: 15000 })

@@ -54,7 +54,7 @@ try {
   await vecina.getByPlaceholder('150.00').fill('140')
   check('Edge: avisa que el monto es distinto antes de enviar', await vecina.getByText(/Es distinto a tu cuota/).isVisible())
   await vecina.getByRole('button', { name: /Enviar comprobante/ }).click()
-  await vecina.getByText('Recibimos tu comprobante').waitFor({ timeout: 20000 })
+  await vecina.getByText('Tu comprobante fue enviado correctamente').waitFor({ timeout: 20000 })
   check('Edge: el pago queda en revisión y explica el motivo', await vecina.getByText('El monto no coincide con tu cuota.').isVisible())
 
   console.log('\n3. Revisión en Chrome (tiempo real, sin recargar)')
@@ -67,7 +67,7 @@ try {
   await admin.locator('.receipt-link img').waitFor({ timeout: 10000 })
   check('Chrome: abre el comprobante con URL firmada', (await admin.locator('.receipt-link img').getAttribute('src'))!.includes('/object/sign/comprobantes/'))
   await admin.getByPlaceholder(/Verificado en la app/).fill('Diferencia autorizada por la junta (prueba)')
-  await admin.getByRole('button', { name: 'Aprobar pago' }).click()
+  await admin.getByRole('button', { name: /Aprobar pago de/ }).click()
   await admin.getByText('Pago aprobado y cuota actualizada.').waitFor({ timeout: 15000 })
   check('Chrome: aprueba el pago desde la interfaz', true)
 
