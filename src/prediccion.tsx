@@ -8,7 +8,7 @@ import { fechaVisible, mesVisible, mes, periodoAnterior } from './model'
 import { supabase } from './lib/supabase'
 import { useApp } from './store'
 import { useRpc } from './lib/usarRpc'
-import { Cargando, Empty, PageHead, Stat } from './ui'
+import { Ayuda, Cargando, ConfirmDialog, Empty, PageHead, Stat } from './ui'
 
 type Prediccion = { cuota_id: string; unidad_codigo: string; fecha_vencimiento: string; probabilidad: number; nivel_riesgo: 'bajo' | 'medio' | 'alto'; factores: { variable: string; aporte: number }[]; modelo_version: string; generado_en: string }
 type Modelo = { version: string; algoritmo: string; umbral: number; entrenado_en: string; metricas: { prueba_meses_11_12?: Record<string, number>; validacion_anidada_meses_5_10?: Record<string, number> } }
@@ -29,6 +29,7 @@ export function PrediccionPage() {
   const [version, setVersion] = useState(0)
   const [modelo, setModelo] = useState<Modelo | null | undefined>(undefined)
   const [calculando, setCalculando] = useState(false)
+  const [confirmar, setConfirmar] = useState(false)
   const p = useRpc<Prediccion[]>('predicciones_vigentes', usuario ? { p_junta: usuario.juntaId } : null, [version])
   const hoyIso = new Date().toISOString().slice(0, 10)
   const proximas = datos.cuotas.filter(c => c.estado === 'pendiente' && c.vencimiento >= hoyIso).length
@@ -42,14 +43,17 @@ export function PrediccionPage() {
   }, [])
 
   const calcular = async () => {
-    if (!usuario) return
+    if (!usuario) return null
     setCalculando(true)
     const r = await rpc<{ cuotas: number; alto: number; medio: number }>('calcular_riesgo_morosidad', { p_junta: usuario.juntaId })
     setCalculando(false)
-    if (!r.ok) return mostrar(r.error, 'error')
+    if (!r.ok) { mostrar(r.error, 'error'); return r.error }
     mostrar(r.data.cuotas ? `Riesgo calculado para ${r.data.cuotas} cuotas: ${r.data.alto} con riesgo alto.` : 'No hay cuotas por vencer en los próximos 31 días.', r.data.cuotas ? 'ok' : 'info')
     setVersion(v => v + 1)
+    return null
   }
+  // Si ya hay resultados de hoy, se avisa antes de reemplazarlos.
+  const pedirCalculo = () => { if ((p.data ?? []).some(x => x.generado_en.slice(0, 10) === hoyIso)) setConfirmar(true); else void calcular() }
 
   const lista = [...(p.data ?? [])].sort((a, b) => Number(b.probabilidad) - Number(a.probabilidad))
   const alto = lista.filter(x => x.nivel_riesgo === 'alto').length
@@ -73,10 +77,11 @@ export function PrediccionPage() {
   const prueba = modelo.metricas.prueba_meses_11_12
   return <>
     <PageHead eyebrow="Apoyo a la cobranza" title="Predicción de morosidad" description="Prioriza recordatorios antes del vencimiento según el riesgo de pago con atraso."
-      action={<button className="button button-primary" disabled={calculando} onClick={() => void calcular()}><RefreshCw size={17} /> {calculando ? 'Calculando…' : 'Calcular riesgo de hoy'}</button>} />
+      action={<button className="button button-primary" disabled={calculando} aria-busy={calculando} onClick={pedirCalculo}><RefreshCw size={17} aria-hidden="true" /> {calculando ? 'Calculando…' : 'Calcular riesgo de hoy'}</button>} />
     <div className="info-callout aviso-experimental" role="note"><AlertCircle size={18} /><span>
       <strong>Modelo experimental (APF3).</strong> Se entrenó con datos simulados de la junta de demostración; sus probabilidades no están validadas con vecinos reales. Úsalo solo como apoyo para priorizar recordatorios, nunca para sancionar ni para decidir sobre un vecino.
     </span></div>
+    <Ayuda pregunta="¿Qué significa el riesgo de morosidad?">Es la probabilidad, estimada por el modelo, de que una cuota que aún no vence se pague tarde. Se calcula solo con el historial de pagos anteriores de cada unidad. <strong>Riesgo alto</strong> significa que conviene enviar un recordatorio antes del vencimiento; <strong>bajo</strong>, que la unidad suele pagar a tiempo. Es una ayuda para priorizar, no una acusación: nunca se usa para sancionar.</Ayuda>
     <div className="stats-grid three">
       <Stat label="Cuotas evaluadas" value={lista.length} note="por vencer en los próximos 31 días" icon={<CalendarClock size={20} />} />
       <Stat label="Riesgo alto" value={alto} note="recordatorios sugeridos" icon={<AlertCircle size={20} />} tone="coral" />
@@ -84,7 +89,7 @@ export function PrediccionPage() {
     </div>
     <div className="panel">
       <div className="panel-heading"><div><span className="eyebrow">Cuotas por vencer</span><h2>Riesgo de pago con atraso</h2></div><span className="count-pill">Modelo {modelo.version}</span></div>
-      {lista.length ? <div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Vence</th><th>Probabilidad de atraso</th><th>Riesgo</th><th>Por qué</th><th>Acción sugerida</th></tr></thead><tbody>
+      {lista.length ? <div className="table-wrap" tabIndex={0} role="region" aria-label="Tabla con desplazamiento horizontal"><table><thead><tr><th>Unidad</th><th>Vence</th><th>Probabilidad de atraso</th><th>Riesgo</th><th>Por qué</th><th>Acción sugerida</th></tr></thead><tbody>
         {lista.map(x => <tr key={x.cuota_id}><td className="strong">{x.unidad_codigo}</td><td>{fechaVisible(x.fecha_vencimiento)}</td><td>{probabilidad(Number(x.probabilidad))}</td>
           <td><span className={`badge badge-riesgo-${x.nivel_riesgo}`}>{x.nivel_riesgo}</span></td>
           <td className="celda-factores">{x.factores.length ? x.factores.map(f => FACTOR[f.variable] ?? f.variable).join(' · ') : 'Sin atrasos relevantes'}</td><td>{ACCION[x.nivel_riesgo]}</td></tr>)}
@@ -98,5 +103,6 @@ export function PrediccionPage() {
       Solo la administración ve estas predicciones: los propietarios no ven su riesgo.
     </span></div>
     {p.error && <Empty title="No se pudo consultar" text={p.error} />}
+    {confirmar && <ConfirmDialog titulo="¿Volver a calcular el riesgo?" icono={<RefreshCw size={22} />} descripcion={`Ya hay ${lista.length} predicciones calculadas hoy. Se calcularán otra vez con el modelo ${modelo.version} y los datos actuales, y reemplazarán a las anteriores.`} advertencias={['Si nadie pagó desde el último cálculo, el resultado será el mismo.']} textoConfirmar="Calcular de nuevo" textoProcesando="Calculando…" onCerrar={() => setConfirmar(false)} onConfirmar={calcular} />}
   </>
 }
