@@ -28,7 +28,8 @@ const ACCION = { alto: 'Priorizar recordatorio', medio: 'Hacer seguimiento', baj
 const unDecimal = new Intl.NumberFormat('es-PE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 const porcentaje = { format: (x: number) => `${unDecimal.format(x * 100)} %` }
 const tresDecimales = new Intl.NumberFormat('es-PE', { minimumFractionDigits: 3, maximumFractionDigits: 3 })
-const fechaHora = new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', dateStyle: 'short', timeStyle: 'short' })
+// 24 horas («18/11/2026, 17:59»): evita «p. m.» seguido del punto final de la frase.
+const fechaHora = new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
 
 /** Tarjeta de una métrica del modelo: valor, conteo que la explica y una frase sencilla. */
 function KpiModelo({ titulo, valor, proporcion, detalle, explicacion, icono }: { titulo: string; valor: string; proporcion: number; detalle?: string; explicacion: string; icono: ReactNode }) {
