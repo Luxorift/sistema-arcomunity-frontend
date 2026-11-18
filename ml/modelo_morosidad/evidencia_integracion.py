@@ -6,9 +6,11 @@
 3. Verifica que las variables calculadas por la base coinciden con las que se usaron para entrenar
    (caracteristicas.py sobre el CSV): misma definición en entrenamiento y en producción.
 
-Solo lectura: no escribe en `predicciones_morosidad` ni modifica datos. Requiere en el .env.local del
-proyecto (nunca en el repositorio) VITE_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY.
-Uso: python evidencia_integracion.py [--corte 2026-11-01]
+Por defecto solo lee. Con --comparar-sql (requiere la migración 1200 y autorización, porque guarda
+predicciones en `predicciones_morosidad` con esa fecha de corte) pide a PostgreSQL que calcule el riesgo con
+`calcular_riesgo_morosidad` y compara cada probabilidad con la de Python.
+Requiere en el .env.local del proyecto (nunca en el repositorio) VITE_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY.
+Uso: python evidencia_integracion.py [--corte 2026-11-01] [--comparar-sql]
 """
 from __future__ import annotations
 
@@ -46,6 +48,7 @@ def rpc(url: str, clave: str, funcion: str, cuerpo: dict) -> list[dict]:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--corte", default="2026-11-01", help="fecha de corte (antes del vencimiento del día 10)")
+    ap.add_argument("--comparar-sql", action="store_true", help="calcular también en PostgreSQL (escribe predicciones)")
     args = ap.parse_args()
     env = leer_env(AQUI.parents[1] / ".env.local")
     registros = rpc(env["VITE_SUPABASE_URL"], env["SUPABASE_SERVICE_ROLE_KEY"], "ml_caracteristicas_cuotas",
@@ -76,6 +79,20 @@ def main() -> None:
     for p in altos[:5]:
         print(f"  {p['unidad_ref']}  prob {p['probabilidad']:.3f}  {p['nivel_riesgo']}  factores {[f['variable'] for f in p['factores']]}")
 
+    comparacion_sql = None
+    if args.comparar_sql:
+        url, clave = env["VITE_SUPABASE_URL"], env["SUPABASE_SERVICE_ROLE_KEY"]
+        resumen = rpc(url, clave, "calcular_riesgo_morosidad", {"p_junta": JUNTA_DEMO, "p_fecha_corte": args.corte, "p_horizonte_dias": 31})
+        req = urllib.request.Request(f"{url}/rest/v1/predicciones_morosidad?select=cuota_id,probabilidad,nivel_riesgo&junta_id=eq.{JUNTA_DEMO}&fecha_corte=eq.{args.corte}",
+                                     headers={"apikey": clave, "Authorization": f"Bearer {clave}"})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            en_sql = {x["cuota_id"]: x for x in json.loads(r.read())}
+        difs = [abs(float(en_sql[p["cuota_id"]]["probabilidad"]) - p["probabilidad"]) for p in salida["predicciones"] if p["cuota_id"] in en_sql]
+        mismos = sum(en_sql[p["cuota_id"]]["nivel_riesgo"] == p["nivel_riesgo"] for p in salida["predicciones"] if p["cuota_id"] in en_sql)
+        comparacion_sql = {"resumen_postgresql": resumen, "cuotas_comparadas": len(difs),
+                           "diferencia_maxima_probabilidad": max(difs) if difs else None, "mismo_nivel_de_riesgo": mismos}
+        print(f"PostgreSQL vs. Python: {len(difs)} cuotas, diferencia máxima {comparacion_sql['diferencia_maxima_probabilidad']}, mismo nivel en {mismos}")
+
     evidencia = {
         "generado_en": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "fuente": "Supabase · rpc ml_caracteristicas_cuotas (junta de demostración, datos simulados)",
@@ -83,7 +100,8 @@ def main() -> None:
         "ejemplo_entrada": registros[0] if registros else None,
         "salida": salida,
         "consistencia_con_entrenamiento": {"comparadas": comparadas, "diferencias": diferencias},
-        "escritura_en_base": "ninguna (solo lectura)",
+        "calculo_en_postgresql": comparacion_sql,
+        "escritura_en_base": "predicciones con fecha de corte histórica" if args.comparar_sql else "ninguna (solo lectura)",
     }
     destino = AQUI / "resultados" / "evidencia_integracion.json"
     destino.write_text(json.dumps(evidencia, ensure_ascii=False, indent=2), encoding="utf-8")

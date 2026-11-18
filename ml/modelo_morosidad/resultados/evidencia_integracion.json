@@ -1,5 +1,5 @@
 {
-  "generado_en": "2026-11-18T06:15:12+00:00",
+  "generado_en": "2026-11-18T17:00:09+00:00",
   "fuente": "Supabase · rpc ml_caracteristicas_cuotas (junta de demostración, datos simulados)",
   "fecha_corte": "2026-11-01",
   "cuotas": 30,
@@ -443,5 +443,6 @@
     "comparadas": 29,
     "diferencias": []
   },
+  "calculo_en_postgresql": null,
   "escritura_en_base": "ninguna (solo lectura)"
 }
