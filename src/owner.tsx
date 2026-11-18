@@ -88,7 +88,7 @@ export function VideovigilanciaPage() {
 // Mi cuenta
 // ---------------------------------------------------------------------------------------------
 export function MiCuenta() {
-  const { datos, usuario, cargandoDatos } = useApp()
+  const { datos, usuario, datosListos } = useApp()
   const cuotas = [...datos.cuotas].sort((a, b) => b.periodo.localeCompare(a.periodo))
   const porPagar = cuotas.filter(c => c.estado === 'pendiente')
   const vencidas = porPagar.filter(c => estadoVisible(c) === 'morosa')
@@ -98,7 +98,7 @@ export function MiCuenta() {
   const proxima = [...porPagar].sort((a, b) => a.vencimiento.localeCompare(b.vencimiento))[0]
   const deuda = porPagar.reduce((n, c) => n + c.monto, 0)
 
-  if (cargandoDatos && !datos.cuotas.length) return <Cargando texto="Cargando tu estado de cuenta…" />
+  if (!datosListos) return <Cargando texto="Cargando tu estado de cuenta…" />
   return <>
     <PageHead eyebrow="MI ESPACIO" title={`Hola, ${usuario?.nombre.split(' ')[0] ?? ''}`} description={`${usuario?.unidadCodigo ?? 'Sin unidad'} · ${datos.configuracion.nombre}`} />
     {ultimoRechazo && <div className="notice notice-danger" role="alert"><XCircle size={20} /><div><strong>La junta observó tu pago</strong><p>{ultimoRechazo.motivoRechazo}. Puedes volver a enviarlo desde la cuota.</p></div></div>}
@@ -158,7 +158,7 @@ function Pasos({ actual }: { actual: 1 | 2 | 3 }) {
 
 export function PagarPage() {
   const { cuotaId } = useParams()
-  const { datos, enviarPago, mostrar, cargandoDatos } = useApp()
+  const { datos, enviarPago, mostrar, datosListos } = useApp()
   const cuota = datos.cuotas.find(c => c.id === cuotaId)
   const [paso, setPaso] = useState<1 | 2 | 3>(1)
   const [imagen, setImagen] = useState('')
@@ -175,7 +175,7 @@ export function PagarPage() {
   const topRef = useRef<HTMLDivElement>(null)
   useEffect(() => { topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, [paso, resultado])
 
-  if (!cuota) return cargandoDatos ? <Cargando /> : <Empty title="Cuota no encontrada" text="Esta cuota no existe o no pertenece a tu unidad." action={<Link className="button button-primary" to="/mi-cuenta">Volver a mi cuenta</Link>} />
+  if (!cuota) return !datosListos ? <Cargando /> : <Empty title="Cuota no encontrada" text="Esta cuota no existe o no pertenece a tu unidad." action={<Link className="button button-primary" to="/mi-cuenta">Volver a mi cuenta</Link>} />
 
   if (resultado) {
     const ok = resultado.estado === 'conciliado_auto'

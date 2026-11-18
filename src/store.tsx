@@ -81,11 +81,30 @@ const aCamara = (r: Fila): Camara => ({
   id: String(r.id), nombre: String(r.nombre), ubicacion: String(r.ubicacion), tipo: r.tipo as TipoCamara,
   url: str(r.url), activa: Boolean(r.activa),
 })
+const ETIQUETAS: Record<string, string> = {
+  monto: 'Monto', monto_declarado: 'Monto declarado', monto_cuota: 'Monto de la cuota', periodo: 'Periodo', metodo: 'Medio',
+  motivo: 'Motivo', estado_anterior: 'Estado anterior', alertas: 'Alertas', creadas: 'Creadas', existentes: 'Ya existían',
+  unidad: 'Unidad', codigo: 'Código', nombre: 'Nombre', tipo: 'Tipo', activa: 'Activa', concepto: 'Concepto', fecha: 'Fecha',
+  detalle: 'Detalle', con_qr: 'Con QR', consentimiento_ley_29733: 'Consentimiento Ley 29733', cuota_mensual: 'Cuota mensual',
+  dia_vencimiento: 'Día de vencimiento', conciliacion_automatica: 'Validación automática', transparencia_detalle_unidades: 'Detalle en transparencia',
+  unidades: 'Unidades', cuotas: 'Cuotas', nota: 'Nota',
+}
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const valorLegible = (v: unknown): string => {
+  if (typeof v === 'boolean') return v ? 'sí' : 'no'
+  if (Array.isArray(v)) return v.map(valorLegible).join(', ')
+  if (v && typeof v === 'object') {
+    const o = v as Record<string, unknown>
+    return 'antes' in o ? `${valorLegible(o.antes)} → ${valorLegible(o.despues)}` : JSON.stringify(o)
+  }
+  return String(v).replaceAll('_', ' ')
+}
+// Detalle de auditoría legible: oculta identificadores internos y traduce los campos.
 const textoDetalle = (d: unknown) => {
   if (!d || typeof d !== 'object') return ''
   return Object.entries(d as Record<string, unknown>)
-    .filter(([, v]) => v !== null && v !== '' && !(Array.isArray(v) && v.length === 0))
-    .map(([k, v]) => `${k.replaceAll('_', ' ')}: ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`)
+    .filter(([k, v]) => v !== null && v !== '' && !k.endsWith('_id') && !(typeof v === 'string' && UUID.test(v)) && !(Array.isArray(v) && v.length === 0))
+    .map(([k, v]) => `${ETIQUETAS[k] ?? k.replaceAll('_', ' ')}: ${valorLegible(v)}`)
     .join(' · ')
 }
 const aAuditoria = (r: Fila): Auditoria => ({
@@ -122,6 +141,8 @@ type Contexto = {
   usuario: Usuario | null
   datos: Datos
   cargandoDatos: boolean
+  /** true cuando los datos de la junta ya se cargaron al menos una vez para el usuario actual */
+  datosListos: boolean
   aviso: Aviso
   mostrar: (texto: string, tipo?: 'ok' | 'error' | 'info') => void
   recargar: () => Promise<void>
@@ -162,6 +183,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null)
   const [datos, setDatos] = useState<Datos>(datosVacios)
   const [cargandoDatos, setCargandoDatos] = useState(false)
+  const [datosListos, setDatosListos] = useState(false)
   const [aviso, setAviso] = useState<Aviso>(null)
   const usuarioRef = useRef<Usuario | null>(null)
   usuarioRef.current = usuario
@@ -191,7 +213,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const uid = sesion === undefined ? undefined : sesion?.user.id ?? null
   useEffect(() => {
     if (uid === undefined) return
-    if (uid === null) { setUsuario(null); setDatos(datosVacios); setEstado('sin_sesion'); return }
+    if (uid === null) { setUsuario(null); setDatos(datosVacios); setDatosListos(false); setEstado('sin_sesion'); return }
     let activo = true
     setEstado('cargando')
     ;(async () => {
@@ -266,6 +288,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         cuotas: cp.cuotas,
         pagos: cp.pagos,
       })
+      setDatosListos(true)
     } catch (error) {
       mostrar(mensajeError(error), 'error')
     } finally {
@@ -322,7 +345,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const valor = useMemo<Contexto>(() => {
     const junta = () => usuarioRef.current?.juntaId ?? ''
     return {
-      estado, usuario, datos, cargandoDatos, aviso, mostrar, recargar, rpc,
+      estado, usuario, datos, cargandoDatos, datosListos, aviso, mostrar, recargar, rpc,
 
       entrar: async (correo, clave) => {
         const { error } = await supabase.auth.signInWithPassword({ email: correo.trim().toLowerCase(), password: clave })
@@ -419,7 +442,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return data.signedUrl
       },
     }
-  }, [estado, usuario, datos, cargandoDatos, aviso, mostrar, recargar, rpc, accion])
+  }, [estado, usuario, datos, cargandoDatos, datosListos, aviso, mostrar, recargar, rpc, accion])
 
   return <Ctx.Provider value={valor}>{children}</Ctx.Provider>
 }

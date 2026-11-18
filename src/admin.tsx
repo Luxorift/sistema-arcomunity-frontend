@@ -71,8 +71,15 @@ export function Dashboard() {
 
 // ---------------------------------------------------------------------------------------------
 export function ConfiguracionPage() {
+  const { datosListos, datos } = useApp()
+  // El formulario se crea cuando la configuración ya llegó del servidor (evita enviar valores vacíos).
+  if (!datosListos) return <Cargando texto="Cargando configuración…" />
+  return <ConfiguracionFormulario inicial={datos.configuracion} />
+}
+
+function ConfiguracionFormulario({ inicial }: { inicial: Configuracion }) {
   const { datos, configurar, subirQr, guardarCamara, eliminarCamara, mostrar } = useApp()
-  const [form, setForm] = useState<Configuracion>(datos.configuracion)
+  const [form, setForm] = useState<Configuracion>(inicial)
   const [guardando, setGuardando] = useState(false)
   const [subiendoQr, setSubiendoQr] = useState(false)
   const [modalCamara, setModalCamara] = useState<CamaraEdicion | null>(null)
