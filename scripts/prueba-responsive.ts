@@ -29,6 +29,8 @@ const TODOS: Tamano[] = [
   // 1366×768 con el navegador al 200 %: la ventana útil equivale a 683×384 px CSS.
   { nombre: 'zoom-200', w: 683, h: 384, movil: false },
 ]
+// ESCENAS=prediccion,resumen → solo esas escenas.
+const SOLO_ESCENAS = process.env.ESCENAS?.split(',')
 const ESQUEMA = process.env.TEMA === 'oscuro' ? 'dark' as const : 'light' as const
 const filtro = process.env.TAMANOS?.split(',')
 const TAMANOS = filtro ? TODOS.filter(t => filtro.includes(`${t.w}x${t.h}`)) : TODOS
@@ -201,7 +203,7 @@ async function revisar(nav: Browser, navNombre: string, t: Tamano) {
   }
   await entrar(paginas.propietario, 'casa12@arcomunity.demo')
   await entrar(paginas.admin, 'admin@arcomunity.demo')
-  for (const e of ESCENAS) {
+  for (const e of ESCENAS.filter(x => !SOLO_ESCENAS || SOLO_ESCENAS.includes(x.nombre))) {
     const p = paginas[e.rol]
     const etiqueta = `[${navNombre} ${t.w}×${t.h}] ${e.rol} ${e.nombre}`
     try {
