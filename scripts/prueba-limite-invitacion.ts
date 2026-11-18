@@ -1,6 +1,6 @@
 // Prueba contra Supabase real del límite de intentos del código de invitación (migraciones 0900 y 1000).
-// Envía 10 códigos falsos cambiando X-Forwarded-For en cada intento: si el límite se basa en una
-// cabecera que controla el cliente, el intento 11 pasaría. Al final libera el bloqueo de esta prueba
+// Envía códigos falsos cambiando X-Forwarded-For en cada intento: si el límite se basa en una
+// cabecera que controla el cliente, pasarían más de 10. Al final libera el bloqueo de esta prueba
 // (borra solo los intentos registrados desde que empezó) y comprueba que la IP vuelve a funcionar.
 // Uso: npm run test:limite   (requiere VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY y SUPABASE_SERVICE_ROLE_KEY)
 import { createClient } from '@supabase/supabase-js'
@@ -25,10 +25,17 @@ check('la IP se toma de una cabecera que fija el proxy', ['cf-connecting-ip', 'x
 const inicio = (await servicio.rpc('servidor_ahora')).data?.ahora as string | undefined
 const desde = inicio ?? new Date(Date.now() - 5000).toISOString()
 try {
-  const errores: (string | null)[] = []
-  for (let i = 0; i < 10; i++) errores.push(await intentar(`192.0.2.${i + 1}`))
-  check('los 10 primeros códigos falsos se rechazan sin bloquear', errores.every(e => e === null), JSON.stringify(errores.filter(Boolean)))
-  check('el intento 11 se bloquea aunque cambie X-Forwarded-For', /Demasiados intentos/.test((await intentar('192.0.2.200')) ?? ''))
+  // Puede haber fallos previos de esta IP (por ejemplo, de test:remoto): se cuenta cuántos intentos
+  // pasan antes del bloqueo cambiando X-Forwarded-For en cada uno. Nunca deben ser más de 10.
+  let aceptados = 0
+  let bloqueado = false
+  for (let i = 0; i < 12 && !bloqueado; i++) {
+    const e = await intentar(`192.0.2.${i + 1}`)
+    if (e === null) aceptados++
+    else bloqueado = /Demasiados intentos/.test(e)
+  }
+  check('cambiando X-Forwarded-For no pasan más de 10 códigos falsos', bloqueado && aceptados <= 10, `aceptados=${aceptados} bloqueado=${bloqueado}`)
+  check('una vez bloqueada, otra cabecera falsa sigue bloqueada', /Demasiados intentos/.test((await intentar('192.0.2.200')) ?? ''))
   check('también se bloquea sin cabecera falsa (misma IP real)', /Demasiados intentos/.test((await intentar()) ?? ''))
 } finally {
   const borrado = await servicio.from('intentos_invitacion').delete().gte('creado_en', desde)
