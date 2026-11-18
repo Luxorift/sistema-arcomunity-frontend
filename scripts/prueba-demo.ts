@@ -47,7 +47,7 @@ const cuotasDe = async (c: SupabaseClient) => ((await c.from('cuotas').select('u
 const c12 = await cuotasDe(casa12), c301 = await cuotasDe(dpto301), cAdmin = await cuotasDe(admin)
 check('el propietario solo ve las cuotas de su unidad', c12.length === 12 && new Set(c12.map(c => c.unidad_id)).size === 1, `${c12.length} cuotas`)
 check('el administrador ve las 360 cuotas de la junta', cAdmin.length === 360, String(cAdmin.length))
-const hoy = (await servicio.rpc('hoy_lima')).data as string
+const hoy = ((await createClient(URL_SB, ANON, opciones).rpc('servidor_ahora')).data as { hoy_lima: string }).hoy_lima
 check('Casa 12 tiene una cuota vencida', c12.some(c => c.estado === 'pendiente' && c.fecha_vencimiento < hoy))
 check('Dpto 301 está al día', c301.length === 12 && c301.every(c => c.estado === 'pagada'))
 check('Casa 08 tiene un pago en revisión', ((await casa08.from('pagos').select('estado')).data ?? []).some(p => p.estado === 'pendiente_revision'))

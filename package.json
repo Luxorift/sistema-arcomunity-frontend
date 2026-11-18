@@ -17,7 +17,8 @@
     "test:limite": "node --env-file=.env.local scripts/prueba-limite-invitacion.ts",
     "test:responsive": "node scripts/prueba-responsive.ts",
     "demo:restaurar": "node --env-file=.env.local scripts/restaurar-demo.ts",
-    "test:demo": "node --env-file=.env.local scripts/prueba-demo.ts"
+    "test:demo": "node --env-file=.env.local scripts/prueba-demo.ts",
+    "test:acceso": "node scripts/prueba-acceso-demo.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
