@@ -1,379 +1,436 @@
-import { useState, type FormEvent } from 'react'
-import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { AlertCircle, ArrowDownToLine, ArrowRight, Banknote, CalendarDays, Check, CheckCircle2, Clock3, FileText, Filter, ImagePlus, Plus, Printer, RefreshCw, Search, ShieldCheck, Trash2, TrendingUp, UsersRound, XCircle } from 'lucide-react'
-import { calcularDiasAtraso, calcularMinutosConciliacion, dinero, estadoVisible, hoy, id, mes, mesVisible, periodoAnterior, type Camara, type Configuracion, type ConceptoEgreso, type TipoCamara, type Unidad } from './model'
-import { useApp } from './store'
-import { optimizarImagen } from './image'
-import { Badge, DateText, Empty, Modal, Money, PageHead, Simulado, Stat } from './ui'
+import { useMemo, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { AlertCircle, ArrowDownToLine, ArrowRight, Banknote, CalendarDays, Check, CheckCircle2, Clock3, ExternalLink, FileText, Filter, ImagePlus, Plus, Printer, Search, ShieldCheck, Trash2, TrendingUp, UserMinus, UsersRound, XCircle } from 'lucide-react'
+import { dinero, estadoVisible, hoy, mes, mesVisible, periodoAnterior, type Camara, type ConceptoEgreso, type Configuracion, type Pago, type TipoCamara, type Unidad } from './model'
+import { useApp, type CamaraEdicion } from './store'
+import { useRpc } from './lib/usarRpc'
+import { optimizarImagen, dataUrlABlob } from './image'
+import { Badge, Cargando, Confirmar, DateText, Empty, Modal, Money, PageHead, Simulado, Stat } from './ui'
 
-const periodos = Array.from({ length: 12 }, (_, i) => periodoAnterior(mes(), i))
+// Mes siguiente (para generar cuotas por adelantado) y los 12 anteriores.
+const periodos = Array.from({ length: 13 }, (_, i) => periodoAnterior(mes(), i - 1))
 const SelectorMes = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => <label className="select-wrap"><CalendarDays size={17} /><select aria-label="Seleccionar mes" value={value} onChange={e => onChange(e.target.value)}>{periodos.map(p => <option value={p} key={p}>{mesVisible(p)}</option>)}</select></label>
 const nombreUnidad = (unidades: Unidad[], idUnidad: string) => unidades.find(u => u.id === idUnidad)?.codigo || 'Unidad'
+const textoAlerta: Record<string, string> = {
+  monto_no_coincide: 'Monto distinto a la cuota',
+  operacion_duplicada: 'N.º de operación repetido',
+  fecha_fuera_de_periodo: 'Fecha fuera del periodo',
+  datos_incompletos: 'Lectura OCR poco confiable sin corregir',
+  comprobante_repetido: 'Imagen ya usada en otro pago',
+  revision_manual_configurada: 'Revisión manual activada',
+}
+const metodoVisible: Record<string, string> = { yape_qr: 'Yape (QR)', yape_captura: 'Yape', plin_captura: 'Plin', efectivo: 'Efectivo', transferencia: 'Transferencia' }
 
+type Metricas = {
+  cuotas_total: number; cuotas_pagadas: number; cuotas_en_revision: number; cuotas_pendientes: number; cuotas_morosas: number
+  monto_por_cobrar: number; recaudado: number; egresos: number; saldo: number; pagos_conciliados: number; pagos_auto: number
+  minutos_promedio: number; pagos_en_revision: number
+}
+
+// ---------------------------------------------------------------------------------------------
 export function Dashboard() {
-  const { datos } = useApp(); const [periodo, setPeriodo] = useState(mes())
-  const cuotas = datos.cuotas.filter(c => c.periodo === periodo)
-  const pagos = datos.pagos.filter(p => p.estado.startsWith('conciliado') && datos.cuotas.some(c => c.id === p.cuotaId && c.periodo === periodo))
-  const recaudado = pagos.reduce((n, p) => n + p.monto, 0)
-  const egresos = datos.egresos.filter(e => e.fecha.slice(0, 7) === periodo.slice(0, 7)).reduce((n, e) => n + e.monto, 0)
-  const pendientes = cuotas.filter(c => c.estado !== 'pagada'); const morosos = pendientes.filter(c => estadoVisible(c) === 'morosa')
-  const auto = pagos.filter(p => p.estado === 'conciliado_auto').length
-  const minutos = pagos.length ? pagos.reduce((n, p) => n + calcularMinutosConciliacion(p.subidoEn, p.conciliadoEn), 0) / pagos.length : 0
-  const grafico = [...periodos].reverse().map(p => ({ mes: new Intl.DateTimeFormat('es-PE', { month: 'short', timeZone: 'UTC' }).format(new Date(`${p}T12:00:00Z`)), ingresos: datos.pagos.filter(x => x.estado.startsWith('conciliado') && datos.cuotas.some(c => c.id === x.cuotaId && c.periodo === p)).reduce((n, x) => n + x.monto, 0) }))
-  return <><PageHead eyebrow="VISIÓN GENERAL" title="Resumen de la junta" description="Un panorama claro de la recaudación y las cuotas vecinales." action={<SelectorMes value={periodo} onChange={setPeriodo} />} />
-    <div className="hero-card"><div><div className="hero-label"><span className="hero-pulse" /> Transparencia en tiempo real</div><h2>Una comunidad más<br /><em>organizada y segura.</em></h2><p>Controla cuotas, revisa pagos y comparte resultados con tus vecinos desde un solo lugar.</p></div><div className="hero-illustration"><div className="hero-ring ring-1" /><div className="hero-ring ring-2" /><div className="hero-house">⌂</div><div className="hero-mini"><CheckCircle2 size={18} /> Pagos claros</div></div></div>
-    <div className="stats-grid four"><Stat label="Recaudado" value={dinero(recaudado)} note="Pagos conciliados del mes" icon={<TrendingUp size={20} />} tone="lime" /><Stat label="Por cobrar" value={dinero(pendientes.reduce((n, c) => n + c.monto, 0))} note={`${pendientes.length} cuotas pendientes`} icon={<Clock3 size={20} />} /><Stat label="Unidades al día" value={`${cuotas.length ? Math.round(cuotas.filter(c => c.estado === 'pagada').length / cuotas.length * 100) : 0}%`} note={`${morosos.length} morosas de ${cuotas.length}`} icon={<UsersRound size={20} />} /><Stat label="Saldo del mes" value={dinero(recaudado - egresos)} note={`Egresos: ${dinero(egresos)}`} icon={<Banknote size={20} />} /></div>
-    <div className="section-grid"><div className="panel chart-panel"><div className="panel-heading"><div><span className="eyebrow">EVOLUCIÓN</span><h2>Ingresos mensuales</h2></div><span className="panel-muted">Últimos 12 meses</span></div><div className="chart-wrap"><ResponsiveContainer width="100%" height="100%"><BarChart data={grafico} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}><CartesianGrid stroke="#e9eeec" vertical={false} /><XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: '#8a9b9e', fontSize: 12 }} /><YAxis axisLine={false} tickLine={false} tick={{ fill: '#8a9b9e', fontSize: 12 }} /><Tooltip formatter={(value) => dinero(Number(value))} /><Bar dataKey="ingresos" fill="#b8d77b" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer></div></div>
-      <div className="panel insight-panel"><div className="panel-heading"><div><span className="eyebrow">EFICIENCIA</span><h2>Conciliación</h2></div><ShieldCheck size={24} /></div><div className="big-metric">{pagos.length ? Math.round(auto / pagos.length * 100) : 0}<span>%</span></div><p>de pagos conciliados automáticamente</p><div className="progress-line"><span style={{ width: `${pagos.length ? auto / pagos.length * 100 : 0}%` }} /></div><div className="insight-bottom"><Clock3 size={19} /><div><strong>{minutos.toFixed(1)} min</strong><span>Tiempo promedio por pago</span></div></div></div></div>
-    <div className="panel"><div className="panel-heading"><div><span className="eyebrow">SEGUIMIENTO</span><h2>Unidades morosas</h2></div><span className="count-pill">{morosos.length} unidades</span></div>{morosos.length ? <div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Periodo</th><th>Vencimiento</th><th>Monto</th><th>Estado</th></tr></thead><tbody>{morosos.map(c => <tr key={c.id}><td className="strong">{nombreUnidad(datos.unidades, c.unidadId)}</td><td>{mesVisible(c.periodo)}</td><td><DateText value={c.vencimiento} /></td><td><Money value={c.monto} /></td><td><Badge estado="morosa" /></td></tr>)}</tbody></table></div> : <Empty title="Sin morosidad" text="No hay cuotas vencidas pendientes en este periodo." />}</div>
+  const { datos, usuario } = useApp()
+  const [periodo, setPeriodo] = useState(mes())
+  const m = useRpc<Metricas>('metricas_periodo', usuario ? { p_junta: usuario.juntaId, p_periodo: periodo } : null)
+  const serie = useRpc<{ periodo: string; recaudado: number; egresos: number }[]>('serie_mensual', usuario ? { p_junta: usuario.juntaId, p_meses: 12 } : null)
+  const morosas = datos.cuotas.filter(c => c.periodo === periodo && estadoVisible(c) === 'morosa')
+  const met = m.data
+  const grafico = (serie.data ?? []).map(s => ({ mes: new Intl.DateTimeFormat('es-PE', { month: 'short', timeZone: 'UTC' }).format(new Date(`${s.periodo}T12:00:00Z`)), ingresos: Number(s.recaudado), egresos: Number(s.egresos) }))
+  const pctAlDia = met && met.cuotas_total ? Math.round(met.cuotas_pagadas / met.cuotas_total * 100) : 0
+  const pctAuto = met && met.pagos_conciliados ? Math.round(met.pagos_auto / met.pagos_conciliados * 100) : 0
+
+  return <>
+    <PageHead eyebrow="VISIÓN GENERAL" title="Resumen de la junta" description="Recaudación, cuotas y pagos por revisar, calculados desde la base de datos." action={<SelectorMes value={periodo} onChange={setPeriodo} />} />
+    {m.error && <div className="notice notice-danger" role="alert"><AlertCircle size={19} /><span>{m.error}</span></div>}
+    {!met ? <Cargando texto="Calculando indicadores…" /> : <>
+      {met.pagos_en_revision > 0 && <Link className="notice notice-action" to="/admin/conciliacion"><ShieldCheck size={20} /><div><strong>{met.pagos_en_revision} {met.pagos_en_revision === 1 ? 'pago espera' : 'pagos esperan'} tu revisión</strong><p>Revísalos en Conciliación para que las cuotas queden al día.</p></div><ArrowRight size={18} /></Link>}
+      <div className="stats-grid four">
+        <Stat label="Recaudado" value={dinero(Number(met.recaudado))} note="Pagos validados o aprobados" icon={<TrendingUp size={20} />} tone="lime" />
+        <Stat label="Por cobrar" value={dinero(Number(met.monto_por_cobrar))} note={`${met.cuotas_total - met.cuotas_pagadas} cuotas sin pagar`} icon={<Clock3 size={20} />} />
+        <Stat label="Unidades al día" value={`${pctAlDia}%`} note={`${met.cuotas_morosas} vencidas de ${met.cuotas_total}`} icon={<UsersRound size={20} />} tone={met.cuotas_morosas ? 'coral' : 'normal'} />
+        <Stat label="Saldo del mes" value={dinero(Number(met.saldo))} note={`Egresos: ${dinero(Number(met.egresos))}`} icon={<Banknote size={20} />} />
+      </div>
+      <div className="section-grid">
+        <div className="panel chart-panel"><div className="panel-heading"><div><span className="eyebrow">EVOLUCIÓN</span><h2>Ingresos y egresos</h2></div><span className="panel-muted">Últimos 12 meses</span></div>
+          <div className="chart-wrap" role="img" aria-label="Gráfico de ingresos y egresos de los últimos 12 meses">{serie.data ? <ResponsiveContainer width="100%" height="100%"><BarChart data={grafico} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}><CartesianGrid stroke="#e9eeec" vertical={false} /><XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: '#6b7f82', fontSize: 12 }} /><YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7f82', fontSize: 12 }} /><Tooltip formatter={(value, name) => [dinero(Number(value)), name === 'ingresos' ? 'Ingresos' : 'Egresos']} /><Bar dataKey="ingresos" fill="#8fbf5a" radius={[5, 5, 0, 0]} /><Bar dataKey="egresos" fill="#e8a27c" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer> : <Cargando />}</div>
+        </div>
+        <div className="panel insight-panel"><div className="panel-heading"><div><span className="eyebrow">EFICIENCIA</span><h2>Conciliación</h2></div><ShieldCheck size={24} /></div>
+          <div className="big-metric">{pctAuto}<span>%</span></div><p>de los pagos del mes se validaron con las reglas sin revisión manual</p>
+          <div className="progress-line"><span style={{ width: `${pctAuto}%` }} /></div>
+          <div className="insight-bottom"><Clock3 size={19} /><div><strong>{Number(met.minutos_promedio).toFixed(1)} min</strong><span>Tiempo promedio hasta conciliar</span></div></div>
+        </div>
+      </div>
+      <div className="panel"><div className="panel-heading"><div><span className="eyebrow">SEGUIMIENTO</span><h2>Cuotas vencidas sin pagar</h2></div><span className="count-pill">{morosas.length} unidades</span></div>
+        {morosas.length ? <div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Propietario</th><th>Vencimiento</th><th>Monto</th><th>Estado</th></tr></thead><tbody>{morosas.map(c => { const u = datos.unidades.find(x => x.id === c.unidadId); return <tr key={c.id}><td className="strong">{u?.codigo}</td><td>{u?.propietario?.nombre ?? <span className="muted">Sin registrar</span>}</td><td><DateText value={c.vencimiento} /></td><td><Money value={c.monto} /></td><td><Badge estado="morosa" /></td></tr> })}</tbody></table></div>
+          : <Empty title="Sin cuotas vencidas" text="Ninguna unidad tiene cuotas vencidas en este periodo." />}
+      </div>
+    </>}
   </>
 }
 
+// ---------------------------------------------------------------------------------------------
 export function ConfiguracionPage() {
-  const { datos, configurar, guardarCamara, cambiarEstadoCamara, eliminarCamara, mostrar } = useApp()
-  const [form, setForm] = useState<Configuracion>(datos.configuracion)
-  const [cargando, setCargando] = useState(false)
-  const [modalCamara, setModalCamara] = useState<Camara | null>(null)
-  const [nombreCamara, setNombreCamara] = useState('')
-  const [ubicacionCamara, setUbicacionCamara] = useState('')
-  const [tipoCamara, setTipoCamara] = useState<TipoCamara>('simulada')
-  const [urlCamara, setUrlCamara] = useState('')
+  const { datosListos, datos } = useApp()
+  // El formulario se crea cuando la configuración ya llegó del servidor (evita enviar valores vacíos).
+  if (!datosListos) return <Cargando texto="Cargando configuración…" />
+  return <ConfiguracionFormulario inicial={datos.configuracion} />
+}
 
-  const submit = (e: FormEvent) => { e.preventDefault(); if (form.cuotaMensual <= 0 || !Number.isFinite(form.cuotaMensual)) return mostrar('Ingresa un monto válido.', 'error'); if (form.diaVencimiento < 1 || form.diaVencimiento > 28) return mostrar('El vencimiento debe estar entre el día 1 y el 28.', 'error'); configurar(form) }
-  const qr = async (file?: File) => { if (!file) return; if (!['image/jpeg', 'image/png'].includes(file.type) || file.size > 2 * 1024 * 1024) return mostrar('El QR debe ser JPG o PNG de hasta 2 MB.', 'error'); setCargando(true); try { const yapeQr = await optimizarImagen(file, 620); setForm(f => ({ ...f, yapeQr })) } catch { mostrar('No se pudo leer la imagen.', 'error') } finally { setCargando(false) } }
+function ConfiguracionFormulario({ inicial }: { inicial: Configuracion }) {
+  const { datos, configurar, subirQr, guardarCamara, eliminarCamara, mostrar } = useApp()
+  const [form, setForm] = useState<Configuracion>(inicial)
+  const [guardando, setGuardando] = useState(false)
+  const [subiendoQr, setSubiendoQr] = useState(false)
+  const [modalCamara, setModalCamara] = useState<CamaraEdicion | null>(null)
+  const [borrar, setBorrar] = useState<Camara | null>(null)
 
-  const abrirNuevaCamara = () => {
-    setModalCamara({ id: '', nombre: '', ubicacion: '', tipo: 'simulada', activa: true })
-    setNombreCamara('')
-    setUbicacionCamara('')
-    setTipoCamara('simulada')
-    setUrlCamara('')
-  }
-
-  const abrirEditarCamara = (c: Camara) => {
-    setModalCamara(c)
-    setNombreCamara(c.nombre)
-    setUbicacionCamara(c.ubicacion)
-    setTipoCamara(c.tipo)
-    setUrlCamara(c.url || '')
-  }
-
-  const guardarModalCamara = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!modalCamara) return
-    const error = guardarCamara({
-      id: modalCamara.id || id(),
-      nombre: nombreCamara,
-      ubicacion: ubicacionCamara,
-      tipo: tipoCamara,
-      url: tipoCamara === 'simulada' ? undefined : urlCamara,
-      activa: modalCamara.id ? modalCamara.activa : true
-    })
-    if (error) mostrar(error, 'error')
-    else setModalCamara(null)
+    if (!Number.isFinite(form.cuotaMensual) || form.cuotaMensual <= 0) return mostrar('Ingresa un monto de cuota válido.', 'error')
+    if (form.diaVencimiento < 1 || form.diaVencimiento > 28) return mostrar('El vencimiento debe estar entre el día 1 y el 28.', 'error')
+    setGuardando(true)
+    await configurar(form)
+    setGuardando(false)
+  }
+  const qr = async (file?: File) => {
+    if (!file) return
+    if (!['image/jpeg', 'image/png'].includes(file.type) || file.size > 2 * 1024 * 1024) return mostrar('El QR debe ser una imagen JPG o PNG de hasta 2 MB.', 'error')
+    setSubiendoQr(true)
+    try { await subirQr(await dataUrlABlob(await optimizarImagen(file, 620))) } catch { mostrar('No se pudo leer la imagen.', 'error') } finally { setSubiendoQr(false) }
+  }
+  const guardarModal = async (e: FormEvent) => {
+    e.preventDefault()
+    if (modalCamara && !(await guardarCamara(modalCamara))) setModalCamara(null)
   }
 
-  return <><PageHead eyebrow="ADMINISTRACIÓN" title="Configuración" description="Define cómo y cuándo pagan los vecinos, y gestiona las cámaras comunitarias." /><form onSubmit={submit} className="settings-grid"><div className="panel form-panel"><div className="panel-heading"><div><span className="eyebrow">DATOS DE LA JUNTA</span><h2>Cuota y vencimiento</h2></div></div><div className="field-grid"><label className="field full"><span>Nombre de la junta</span><input required value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} /></label><label className="field"><span>Cuota mensual (S/)</span><input required type="number" min="0.01" step="0.01" value={form.cuotaMensual} onChange={e => setForm({ ...form, cuotaMensual: Number(e.target.value) })} /></label><label className="field"><span>Día de vencimiento</span><input required type="number" min="1" max="28" value={form.diaVencimiento} onChange={e => setForm({ ...form, diaVencimiento: Number(e.target.value) })} /></label><label className="field full"><span>Código de invitación</span><input required value={form.codigoInvitacion} onChange={e => setForm({ ...form, codigoInvitacion: e.target.value.toUpperCase() })} /><small>Compártelo solo con propietarios de la junta.</small></label></div><label className="toggle-row"><div><strong>Conciliación automática</strong><small>Los pagos sin alertas se marcan como pagados.</small></div><input type="checkbox" checked={form.conciliacionAutomatica} onChange={e => setForm({ ...form, conciliacionAutomatica: e.target.checked })} /><span className="switch" /></label></div>
-    <div className="panel form-panel"><div className="panel-heading"><div><span className="eyebrow">MÉTODO DE PAGO</span><h2>QR de Yape</h2></div></div><div className="qr-upload"><div className="qr-preview">{form.yapeQr ? <img src={form.yapeQr} alt="QR de Yape configurado" /> : <div className="qr-placeholder"><ImagePlus size={31} /><span>Aún no hay un QR cargado</span></div>}</div><label className="button button-secondary upload-button"><ImagePlus size={17} /> {cargando ? 'Procesando...' : 'Subir imagen QR'}<input type="file" accept="image/png,image/jpeg" onChange={e => void qr(e.target.files?.[0])} hidden /></label><small>Imagen JPG o PNG, máximo 2 MB.</small></div><label className="field"><span>Nombre del titular</span><input required value={form.yapeTitular} onChange={e => setForm({ ...form, yapeTitular: e.target.value })} placeholder="Nombre que aparece en Yape" /></label><div className="info-callout"><AlertCircle size={18} /><span>Este frontend solo muestra el QR que configures. Nunca confirma transferencias con Yape ni con un banco.</span></div></div><div className="form-actions full-row"><button className="button button-primary" type="submit"><Check size={18} /> Guardar cambios</button></div></form>
-
-    <div className="panel" style={{ marginTop: '24px' }}>
-      <div className="panel-heading">
-        <div>
-          <span className="eyebrow">VIDEOVIGILANCIA</span>
-          <h2>Cámaras de seguridad</h2>
+  return <>
+    <PageHead eyebrow="ADMINISTRACIÓN" title="Configuración" description="Cuánto y cuándo pagan los vecinos, cómo se concilia y qué ve la comunidad." />
+    <form onSubmit={e => void submit(e)} className="settings-grid">
+      <div className="panel form-panel"><div className="panel-heading"><div><span className="eyebrow">DATOS DE LA JUNTA</span><h2>Cuota y vencimiento</h2></div></div>
+        <div className="field-grid">
+          <label className="field full"><span>Nombre de la junta</span><input required value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} /></label>
+          <label className="field"><span>Cuota mensual (S/)</span><input required type="number" min="0.01" step="0.01" value={form.cuotaMensual} onChange={e => setForm({ ...form, cuotaMensual: Number(e.target.value) })} /><small>Se aplica a las cuotas que generes desde ahora.</small></label>
+          <label className="field"><span>Día de vencimiento</span><input required type="number" min="1" max="28" value={form.diaVencimiento} onChange={e => setForm({ ...form, diaVencimiento: Number(e.target.value) })} /></label>
+          <label className="field full"><span>Código de invitación</span><input required minLength={6} maxLength={32} value={form.codigoInvitacion} onChange={e => setForm({ ...form, codigoInvitacion: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '') })} /><small>Compártelo solo con propietarios de la junta. Cámbialo si se filtró.</small></label>
         </div>
-        <button type="button" className="button button-primary" onClick={abrirNuevaCamara}>
-          <Plus size={18} /> Nueva cámara
-        </button>
+        <label className="toggle-row"><div><strong>Validación automática por reglas</strong><small>Los comprobantes sin alertas marcan la cuota como pagada. No equivale a confirmación bancaria: puedes revertirlos en Pagos.</small></div><input type="checkbox" checked={form.conciliacionAutomatica} onChange={e => setForm({ ...form, conciliacionAutomatica: e.target.checked })} /><span className="switch" /></label>
+        <label className="toggle-row"><div><strong>Mostrar estado por unidad en Transparencia</strong><small>Si lo desactivas, los vecinos solo ven totales de la comunidad.</small></div><input type="checkbox" checked={form.transparenciaDetalle ?? true} onChange={e => setForm({ ...form, transparenciaDetalle: e.target.checked })} /><span className="switch" /></label>
       </div>
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Cámara</th>
-              <th>Ubicación</th>
-              <th>Tipo</th>
-              <th>URL / Origen</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {datos.camaras.map(c => (
-              <tr key={c.id}>
-                <td className="strong">{c.nombre}</td>
-                <td>{c.ubicacion}</td>
-                <td><Badge estado={c.tipo === 'simulada' ? 'activa' : 'en_revision'} /> {c.tipo === 'simulada' ? 'Simulada' : c.tipo === 'mjpeg' ? 'MJPEG (img)' : 'Embed (iframe)'}</td>
-                <td style={{ maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.url ? <span title={c.url}>{c.url}</span> : <span className="muted">Generador canvas</span>}</td>
-                <td><Badge estado={c.activa ? 'activa' : 'inactiva'} /></td>
-                <td>
-                  <div className="table-actions">
-                    <button type="button" className="text-button" onClick={() => abrirEditarCamara(c)}>Editar</button>
-                    <button type="button" className="text-button" onClick={() => cambiarEstadoCamara(c.id, !c.activa)}>
-                      {c.activa ? 'Desactivar' : 'Activar'}
-                    </button>
-                    <button type="button" className="text-button danger" onClick={() => { if (window.confirm(`¿Eliminar la cámara "${c.nombre}"?`)) eliminarCamara(c.id) }}>
-                      <Trash2 size={15} /> Eliminar
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {!datos.camaras.length && (
-              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '24px' }} className="muted">No hay cámaras configuradas.</td></tr>
-            )}
-          </tbody>
-        </table>
+      <div className="panel form-panel"><div className="panel-heading"><div><span className="eyebrow">MÉTODO DE PAGO</span><h2>QR de Yape</h2></div></div>
+        <div className="qr-upload"><div className="qr-preview">{datos.configuracion.yapeQr ? <img src={datos.configuracion.yapeQr} alt="QR de Yape configurado" /> : <div className="qr-placeholder"><ImagePlus size={31} /><span>Aún no hay un QR cargado</span></div>}</div>
+          <label className="button button-secondary upload-button"><ImagePlus size={17} /> {subiendoQr ? 'Subiendo…' : 'Subir imagen QR'}<input type="file" accept="image/png,image/jpeg" onChange={e => void qr(e.target.files?.[0])} hidden disabled={subiendoQr} /></label><small>JPG o PNG, máximo 2 MB. Se guarda en almacenamiento privado.</small></div>
+        <label className="field"><span>Nombre del titular</span><input value={form.yapeTitular} onChange={e => setForm({ ...form, yapeTitular: e.target.value })} placeholder="Nombre que aparece en Yape" /></label>
+        <div className="info-callout"><AlertCircle size={18} /><span>Arcomunity no se conecta con Yape ni con bancos. Verifica en tu app los pagos dudosos antes de aprobarlos.</span></div>
       </div>
+      <div className="form-actions full-row"><button className="button button-primary" type="submit" disabled={guardando}><Check size={18} /> {guardando ? 'Guardando…' : 'Guardar cambios'}</button></div>
+    </form>
+
+    <div className="panel section-gap">
+      <div className="panel-heading"><div><span className="eyebrow">VIDEOVIGILANCIA</span><h2>Cámaras de zonas comunes</h2></div>
+        <button type="button" className="button button-primary" onClick={() => setModalCamara({ id: null, nombre: '', ubicacion: '', tipo: 'simulada', activa: true })}><Plus size={18} /> Nueva cámara</button></div>
+      {datos.camaras.length ? <div className="table-wrap"><table><thead><tr><th>Cámara</th><th>Ubicación</th><th>Tipo</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+        {datos.camaras.map(c => <tr key={c.id}><td className="strong">{c.nombre}</td><td>{c.ubicacion}</td><td>{c.tipo === 'simulada' ? 'Simulada' : c.tipo === 'mjpeg' ? 'Imagen / MJPEG' : 'Embed'}</td><td><Badge estado={c.activa ? 'activa' : 'inactiva'} /></td>
+          <td><div className="table-actions"><button type="button" className="text-button" onClick={() => setModalCamara({ ...c })}>Editar</button><button type="button" className="text-button" onClick={() => void guardarCamara({ ...c, activa: !c.activa })}>{c.activa ? 'Desactivar' : 'Activar'}</button><button type="button" className="text-button danger" onClick={() => setBorrar(c)}><Trash2 size={15} /> Eliminar</button></div></td></tr>)}
+      </tbody></table></div> : <Empty title="Sin cámaras" text="Agrega una cámara simulada o una URL HTTPS de transmisión." />}
     </div>
 
-    {modalCamara && (
-      <Modal title={modalCamara.id ? 'Editar cámara' : 'Nueva cámara'} onClose={() => setModalCamara(null)}>
-        <form onSubmit={guardarModalCamara} className="form-stack">
-          <label className="field">
-            <span>Nombre de la cámara</span>
-            <input autoFocus required value={nombreCamara} onChange={e => setNombreCamara(e.target.value)} placeholder="Ej.: Ingreso peatonal" />
-          </label>
-          <label className="field">
-            <span>Ubicación</span>
-            <input required value={ubicacionCamara} onChange={e => setUbicacionCamara(e.target.value)} placeholder="Ej.: Portón principal / Cocheras" />
-          </label>
-          <label className="field">
-            <span>Tipo de transmisión</span>
-            <select value={tipoCamara} onChange={e => setTipoCamara(e.target.value as TipoCamara)}>
-              <option value="simulada">Simulada (animación canvas a ~10 fps)</option>
-              <option value="mjpeg">Imagen / MJPEG por URL (etiqueta &lt;img&gt;)</option>
-              <option value="embed">Embed por URL (iframe sandboxed)</option>
-            </select>
-          </label>
-          {tipoCamara !== 'simulada' && (
-            <label className="field">
-              <span>URL de transmisión (debe empezar con https://)</span>
-              <input required type="url" value={urlCamara} onChange={e => setUrlCamara(e.target.value)} placeholder="https://ejemplo.com/stream" />
-              <small>Solo se aceptan URLs seguras HTTPS. Si el sitio bloquea embeberse (X-Frame-Options/CORS), el navegador no la mostrará.</small>
-            </label>
-          )}
-          <div className="modal-actions">
-            <button type="button" className="button button-secondary" onClick={() => setModalCamara(null)}>Cancelar</button>
-            <button className="button button-primary" type="submit"><Check size={17} /> Guardar cámara</button>
-          </div>
-        </form>
-      </Modal>
-    )}
+    {modalCamara && <Modal title={modalCamara.id ? 'Editar cámara' : 'Nueva cámara'} onClose={() => setModalCamara(null)}>
+      <form onSubmit={e => void guardarModal(e)} className="form-stack">
+        <label className="field"><span>Nombre</span><input autoFocus required value={modalCamara.nombre} onChange={e => setModalCamara({ ...modalCamara, nombre: e.target.value })} placeholder="Ej.: Ingreso peatonal" /></label>
+        <label className="field"><span>Ubicación</span><input required value={modalCamara.ubicacion} onChange={e => setModalCamara({ ...modalCamara, ubicacion: e.target.value })} placeholder="Ej.: Portón principal" /></label>
+        <label className="field"><span>Tipo de transmisión</span><select value={modalCamara.tipo} onChange={e => setModalCamara({ ...modalCamara, tipo: e.target.value as TipoCamara })}><option value="simulada">Simulada (demostración)</option><option value="mjpeg">Imagen / MJPEG por URL</option><option value="embed">Embed por URL (iframe aislado)</option></select></label>
+        {modalCamara.tipo !== 'simulada' && <label className="field"><span>URL de transmisión (https://)</span><input required type="url" pattern="https://.*" value={modalCamara.url ?? ''} onChange={e => setModalCamara({ ...modalCamara, url: e.target.value })} placeholder="https://ejemplo.com/stream" /><small>Si el sitio bloquea ser embebido, el navegador no lo mostrará.</small></label>}
+        <div className="modal-actions"><button type="button" className="button button-secondary" onClick={() => setModalCamara(null)}>Cancelar</button><button className="button button-primary" type="submit"><Check size={17} /> Guardar cámara</button></div>
+      </form>
+    </Modal>}
+    {borrar && <Confirmar titulo="Eliminar cámara" texto={<>¿Eliminar la cámara <strong>{borrar.nombre}</strong>? Quedará registrado en la auditoría.</>} confirmar="Eliminar" peligro onCancelar={() => setBorrar(null)} onConfirmar={async () => { if (!(await eliminarCamara(borrar.id))) setBorrar(null) }} />}
   </>
 }
 
+// ---------------------------------------------------------------------------------------------
 export function UnidadesPage() {
-  const { datos, guardarUnidad, desactivarUnidad, mostrar } = useApp(); const [buscar, setBuscar] = useState(''); const [modal, setModal] = useState<Unidad | null>(null); const [codigo, setCodigo] = useState('')
-  const lista = datos.unidades.filter(u => u.codigo.toLowerCase().includes(buscar.toLowerCase()))
-  const guardar = (e: FormEvent) => { e.preventDefault(); const error = guardarUnidad({ id: modal?.id || id(), codigo, activa: modal?.activa ?? true }); if (error) mostrar(error, 'error'); else setModal(null) }
-  return <><PageHead eyebrow="PADRÓN VECINAL" title="Unidades" description="Administra las viviendas que participan en la junta." action={<button className="button button-primary" onClick={() => { setModal({ id: '', codigo: '', activa: true }); setCodigo('') }}><Plus size={18} /> Nueva unidad</button>} /><div className="panel"><div className="table-tools"><label className="search-box"><Search size={18} /><input placeholder="Buscar unidad..." value={buscar} onChange={e => setBuscar(e.target.value)} /></label><span className="count-pill">{datos.unidades.filter(u => u.activa).length} activas</span></div><div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Propietario demo</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>{lista.map(u => <tr key={u.id}><td className="strong">{u.codigo}</td><td>{datos.usuarios.find(x => x.unidadId === u.id)?.nombre || <span className="muted">Sin asignar</span>}</td><td><Badge estado={u.activa ? 'activa' : 'inactiva'} /></td><td><div className="table-actions"><button className="text-button" onClick={() => { setModal(u); setCodigo(u.codigo) }}>Editar</button>{u.activa && <button className="text-button danger" onClick={() => { if (window.confirm(`¿Desactivar ${u.codigo}?`)) desactivarUnidad(u.id) }}>Desactivar</button>}</div></td></tr>)}</tbody></table></div></div>{modal && <Modal title={modal.id ? 'Editar unidad' : 'Nueva unidad'} onClose={() => setModal(null)}><form onSubmit={guardar}><label className="field"><span>Código de la unidad</span><input autoFocus required maxLength={30} value={codigo} onChange={e => setCodigo(e.target.value)} placeholder="Ej.: Casa 31" /></label><div className="modal-actions"><button type="button" className="button button-secondary" onClick={() => setModal(null)}>Cancelar</button><button className="button button-primary"><Check size={17} /> Guardar</button></div></form></Modal>}</>
+  const { datos, guardarUnidad, cambiarEstadoUnidad, desvincularPropietario } = useApp()
+  const [buscar, setBuscar] = useState('')
+  const [modal, setModal] = useState<{ id: string | null; codigo: string } | null>(null)
+  const [confirmar, setConfirmar] = useState<{ tipo: 'desactivar' | 'desvincular'; unidad: Unidad } | null>(null)
+  const q = buscar.trim().toLowerCase()
+  const lista = datos.unidades.filter(u => !q || u.codigo.toLowerCase().includes(q) || u.propietario?.nombre.toLowerCase().includes(q) || u.propietario?.correo.toLowerCase().includes(q))
+  const guardar = async (e: FormEvent) => { e.preventDefault(); if (modal && !(await guardarUnidad(modal.id, modal.codigo))) setModal(null) }
+  const libres = datos.unidades.filter(u => u.activa && !u.propietario).length
+
+  return <>
+    <PageHead eyebrow="PADRÓN VECINAL" title="Unidades y vecinos" description="Viviendas de la junta y su propietario registrado." action={<button className="button button-primary" onClick={() => setModal({ id: null, codigo: '' })}><Plus size={18} /> Nueva unidad</button>} />
+    <div className="info-callout section-gap-bottom"><UsersRound size={18} /><span>Los propietarios se registran solos con el código <strong>{datos.configuracion.codigoInvitacion || '—'}</strong> y eligen su unidad. Hay {libres} unidades activas sin propietario.</span></div>
+    <div className="panel"><div className="table-tools"><label className="search-box"><Search size={18} /><input aria-label="Buscar unidad o vecino" placeholder="Buscar unidad, nombre o correo…" value={buscar} onChange={e => setBuscar(e.target.value)} /></label><span className="count-pill">{datos.unidades.filter(u => u.activa).length} activas</span></div>
+      <div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Propietario</th><th>Contacto</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+        {lista.map(u => <tr key={u.id}><td className="strong">{u.codigo}</td><td>{u.propietario?.nombre ?? <span className="muted">Sin asignar</span>}</td><td>{u.propietario ? <span className="muted">{u.propietario.correo}{u.propietario.telefono ? ` · ${u.propietario.telefono}` : ''}</span> : '—'}</td><td><Badge estado={u.activa ? 'activa' : 'inactiva'} /></td>
+          <td><div className="table-actions"><button className="text-button" onClick={() => setModal({ id: u.id, codigo: u.codigo })}>Editar</button>
+            {u.propietario && <button className="text-button" onClick={() => setConfirmar({ tipo: 'desvincular', unidad: u })}><UserMinus size={15} /> Desvincular</button>}
+            {u.activa ? <button className="text-button danger" onClick={() => setConfirmar({ tipo: 'desactivar', unidad: u })}>Desactivar</button> : <button className="text-button" onClick={() => void cambiarEstadoUnidad(u.id, true)}>Activar</button>}</div></td></tr>)}
+      </tbody></table></div>
+      {!lista.length && <Empty title="Sin resultados" text="Ninguna unidad coincide con la búsqueda." />}
+    </div>
+    {modal && <Modal title={modal.id ? 'Editar unidad' : 'Nueva unidad'} onClose={() => setModal(null)}><form onSubmit={e => void guardar(e)} className="form-stack"><label className="field"><span>Código de la unidad</span><input autoFocus required maxLength={30} value={modal.codigo} onChange={e => setModal({ ...modal, codigo: e.target.value })} placeholder="Ej.: Casa 31" /></label><div className="modal-actions"><button type="button" className="button button-secondary" onClick={() => setModal(null)}>Cancelar</button><button className="button button-primary"><Check size={17} /> Guardar</button></div></form></Modal>}
+    {confirmar?.tipo === 'desactivar' && <Confirmar titulo="Desactivar unidad" texto={<>¿Desactivar <strong>{confirmar.unidad.codigo}</strong>? No se generarán nuevas cuotas para ella. El historial se conserva.</>} confirmar="Desactivar" peligro onCancelar={() => setConfirmar(null)} onConfirmar={async () => { if (!(await cambiarEstadoUnidad(confirmar.unidad.id, false))) setConfirmar(null) }} />}
+    {confirmar?.tipo === 'desvincular' && <Confirmar titulo="Desvincular propietario" texto={<><strong>{confirmar.unidad.propietario?.nombre}</strong> dejará de tener acceso a <strong>{confirmar.unidad.codigo}</strong>. Úsalo cuando la vivienda cambie de dueño. El historial de pagos se conserva.</>} confirmar="Desvincular" peligro onCancelar={() => setConfirmar(null)} onConfirmar={async () => { if (!(await desvincularPropietario(confirmar.unidad.id))) setConfirmar(null) }} />}
+  </>
 }
 
+// ---------------------------------------------------------------------------------------------
 export function CuotasPage() {
-  const { datos, generarCuotas, mostrar } = useApp(); const [periodo, setPeriodo] = useState(mes()); const [estado, setEstado] = useState('todas')
-  const cuotas = datos.cuotas.filter(c => c.periodo === periodo && (estado === 'todas' || estadoVisible(c) === estado)).sort((a, b) => nombreUnidad(datos.unidades, a.unidadId).localeCompare(nombreUnidad(datos.unidades, b.unidadId)))
-  return <><PageHead eyebrow="COBRANZA" title="Cuotas" description="Genera y consulta las cuotas mensuales de cada unidad." action={<button className="button button-primary" onClick={() => { const r = generarCuotas(); mostrar(`${r.creadas} cuotas creadas · ${r.existentes} ya existían.`) }}><Plus size={18} /> Generar cuotas del mes</button>} /><div className="stats-grid three"><Stat label="Cuotas del periodo" value={datos.cuotas.filter(c => c.periodo === periodo).length} icon={<FileText size={20} />} /><Stat label="Pagadas" value={datos.cuotas.filter(c => c.periodo === periodo && c.estado === 'pagada').length} icon={<CheckCircle2 size={20} />} tone="lime" /><Stat label="Por cobrar" value={dinero(datos.cuotas.filter(c => c.periodo === periodo && c.estado !== 'pagada').reduce((n, c) => n + c.monto, 0))} icon={<Clock3 size={20} />} /></div><div className="panel"><div className="table-tools"><SelectorMes value={periodo} onChange={setPeriodo} /><label className="select-wrap"><Filter size={17} /><select aria-label="Filtrar estado" value={estado} onChange={e => setEstado(e.target.value)}><option value="todas">Todos los estados</option><option value="pagada">Pagadas</option><option value="pendiente">Pendientes</option><option value="morosa">Morosas</option><option value="en_revision">En revisión</option></select></label></div><div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Concepto</th><th>Vencimiento</th><th>Monto</th><th>Estado</th><th>Fecha de pago</th></tr></thead><tbody>{cuotas.map(c => <tr key={c.id}><td className="strong">{nombreUnidad(datos.unidades, c.unidadId)}</td><td>Vigilancia</td><td><DateText value={c.vencimiento} /></td><td><Money value={c.monto} /></td><td><Badge estado={estadoVisible(c)} /></td><td><DateText value={c.fechaPago} /></td></tr>)}</tbody></table></div>{!cuotas.length && <Empty title="Sin cuotas" text="No hay cuotas con estos filtros." />}</div></>
+  const { datos, generarCuotas, mostrar } = useApp()
+  const [periodo, setPeriodo] = useState(mes())
+  const [estado, setEstado] = useState('todas')
+  const [generar, setGenerar] = useState(false)
+  const delPeriodo = datos.cuotas.filter(c => c.periodo === periodo)
+  const cuotas = delPeriodo.filter(c => estado === 'todas' || estadoVisible(c) === estado).sort((a, b) => nombreUnidad(datos.unidades, a.unidadId).localeCompare(nombreUnidad(datos.unidades, b.unidadId), 'es', { numeric: true }))
+  const activas = datos.unidades.filter(u => u.activa).length
+  return <>
+    <PageHead eyebrow="COBRANZA" title="Cuotas" description="Genera y consulta las cuotas mensuales de cada unidad." action={<button className="button button-primary" onClick={() => setGenerar(true)}><Plus size={18} /> Generar cuotas</button>} />
+    <div className="stats-grid three"><Stat label="Cuotas del periodo" value={delPeriodo.length} note={`${activas} unidades activas`} icon={<FileText size={20} />} /><Stat label="Pagadas" value={delPeriodo.filter(c => c.estado === 'pagada').length} icon={<CheckCircle2 size={20} />} tone="lime" /><Stat label="Por cobrar" value={dinero(delPeriodo.filter(c => c.estado !== 'pagada').reduce((n, c) => n + c.monto, 0))} icon={<Clock3 size={20} />} /></div>
+    <div className="panel"><div className="table-tools"><SelectorMes value={periodo} onChange={setPeriodo} /><label className="select-wrap"><Filter size={17} /><select aria-label="Filtrar por estado" value={estado} onChange={e => setEstado(e.target.value)}><option value="todas">Todos los estados</option><option value="pagada">Pagadas</option><option value="pendiente">Pendientes</option><option value="morosa">Vencidas</option><option value="en_revision">En revisión</option></select></label></div>
+      {cuotas.length ? <div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Vencimiento</th><th>Monto</th><th>Estado</th><th>Fecha de pago</th><th>Atraso</th></tr></thead><tbody>{cuotas.map(c => <tr key={c.id}><td className="strong">{nombreUnidad(datos.unidades, c.unidadId)}</td><td><DateText value={c.vencimiento} /></td><td><Money value={c.monto} /></td><td><Badge estado={estadoVisible(c)} /></td><td><DateText value={c.fechaPago} /></td><td>{c.diasAtraso ? `${c.diasAtraso} días` : '—'}</td></tr>)}</tbody></table></div>
+        : <Empty title={delPeriodo.length ? 'Sin cuotas con este filtro' : 'Aún no hay cuotas este mes'} text={delPeriodo.length ? 'Prueba con otro estado.' : 'Pulsa «Generar cuotas» para crear una cuota por cada unidad activa.'} />}
+    </div>
+    {generar && <Confirmar titulo="Generar cuotas" texto={<>Se creará una cuota de <strong>{dinero(datos.configuracion.cuotaMensual)}</strong> por cada unidad activa ({activas}) para <strong>{mesVisible(periodo)}</strong>, con vencimiento el día {datos.configuracion.diaVencimiento}. Las que ya existan no se duplican.</>} confirmar="Generar" onCancelar={() => setGenerar(false)} onConfirmar={async () => { const r = await generarCuotas(periodo); if (r.ok) { mostrar(`${r.data.creadas} cuotas creadas · ${r.data.existentes} ya existían.`); setGenerar(false) } }} />}
+  </>
 }
 
-const textoAlerta = (alerta: string) => alerta === 'datos_incompletos' ? 'datos incompletos (OCR poco confiable)' : alerta.replaceAll('_', ' ')
+// ---------------------------------------------------------------------------------------------
+function VisorComprobante({ pago }: { pago: Pago }) {
+  const { urlComprobante } = useApp()
+  const [url, setUrl] = useState<string | null>(null)
+  const [cargando, setCargando] = useState(false)
+  if (!pago.comprobantePath) return <div className="receipt-empty"><FileText size={34} /><span>Sin imagen adjunta</span><small>{pago.esSimulado ? 'Pago de la semilla de demostración.' : 'Pago registrado manualmente.'}</small></div>
+  if (!url) return <div className="receipt-empty"><FileText size={34} /><button type="button" className="button button-secondary" disabled={cargando} onClick={async () => { setCargando(true); setUrl(await urlComprobante(pago.comprobantePath!)); setCargando(false) }}>{cargando ? 'Abriendo…' : 'Ver comprobante'}</button><small>Enlace privado válido por 5 minutos.</small></div>
+  return <a href={url} target="_blank" rel="noreferrer" className="receipt-link"><img src={url} alt="Comprobante subido por el propietario" /><span><ExternalLink size={14} /> Abrir en tamaño completo</span></a>
+}
 
 export function ConciliacionPage() {
-  const { datos, revisarPago, mostrar } = useApp(); const [seleccion, setSeleccion] = useState<string | null>(null); const [motivo, setMotivo] = useState(''); const [modo, setModo] = useState<'aprobar' | 'rechazar'>('aprobar')
-  const pendientes = datos.pagos.filter(p => p.estado === 'pendiente_revision'); const elegido = pendientes.find(p => p.id === seleccion)
-  const revisar = () => { if (!elegido) return; const error = revisarPago(elegido.id, modo === 'aprobar', motivo); if (error) mostrar(error, 'error'); else { setSeleccion(null); setMotivo('') } }
-  return <><PageHead eyebrow="CONTROL DE PAGOS" title="Conciliación" description="Revisa los comprobantes que presentan alertas antes de aprobarlos." /><div className="stats-grid two"><Stat label="Pendientes de revisión" value={pendientes.length} note="Requieren decisión del administrador" icon={<AlertCircle size={20} />} tone="coral" /><Stat label="Conciliados automáticamente" value={datos.pagos.filter(p => p.estado === 'conciliado_auto').length} note="Historial de pagos simulados" icon={<ShieldCheck size={20} />} tone="lime" /></div><div className="panel"><div className="panel-heading"><div><span className="eyebrow">COLA DE REVISIÓN</span><h2>Pagos con alertas</h2></div><span className="count-pill">{pendientes.length} por revisar</span></div>{pendientes.length ? <div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Fecha</th><th>Monto</th><th>Operación</th><th>Alerta</th><th></th></tr></thead><tbody>{pendientes.map(p => <tr key={p.id}><td className="strong">{nombreUnidad(datos.unidades, p.unidadId)}</td><td><DateText value={p.fecha} /></td><td><Money value={p.monto} /></td><td>{p.operacion || 'Sin número'}</td><td><div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>{p.alertas.map(a => <span key={a} className="alert-tag">{textoAlerta(a)}</span>)}</div></td><td><button className="text-button" onClick={() => { setSeleccion(p.id); setModo('aprobar') }}>Revisar <ArrowRight size={15} /></button></td></tr>)}</tbody></table></div> : <Empty title="Todo al día" text="No hay pagos esperando revisión manual." />}</div>{elegido && <Modal title="Revisar comprobante" onClose={() => setSeleccion(null)} wide><div className="review-grid"><div className="receipt-view">{elegido.comprobante ? <img src={elegido.comprobante} alt="Comprobante subido por el propietario" /> : <div className="receipt-empty"><FileText size={34} /><span>Pago de semilla sin imagen adjunta</span><small>El dato está marcado como simulado.</small></div>}</div><div className="review-details"><div className="detail-row"><span>Unidad</span><strong>{nombreUnidad(datos.unidades, elegido.unidadId)}</strong></div><div className="detail-row"><span>Monto declarado</span><strong><Money value={elegido.monto} /></strong></div><div className="detail-row"><span>Monto de la cuota</span><strong><Money value={datos.cuotas.find(c => c.id === elegido.cuotaId)?.monto || 0} /></strong></div><div className="detail-row"><span>Fecha de operación</span><strong><DateText value={elegido.fecha} /></strong></div><div className="detail-row"><span>N.º de operación</span><strong>{elegido.operacion || '—'}</strong></div><div className="detail-row"><span>OCR</span><strong>{elegido.ocrConfianza == null ? 'Ingreso manual / semilla' : `${Math.round(elegido.ocrConfianza)}%`}</strong></div><div className="alert-box"><AlertCircle size={17} /><div><strong>Alertas detectadas</strong><div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>{elegido.alertas.map(a => <span key={a} className="alert-tag">{textoAlerta(a)}</span>)}</div></div></div><div className="segmented"><button type="button" className={modo === 'aprobar' ? 'selected' : ''} onClick={() => setModo('aprobar')}><Check size={16} /> Aprobar</button><button type="button" className={modo === 'rechazar' ? 'selected' : ''} onClick={() => setModo('rechazar')}><XCircle size={16} /> Rechazar</button></div>{modo === 'rechazar' && <label className="field"><span>Motivo del rechazo *</span><textarea value={motivo} onChange={e => setMotivo(e.target.value)} placeholder="Explica al propietario qué debe corregir" rows={3} /></label>}<button className={`button ${modo === 'aprobar' ? 'button-primary' : 'button-danger'} full-width`} onClick={revisar}>{modo === 'aprobar' ? 'Aprobar pago' : 'Rechazar pago'}</button></div></div></Modal>}</>
+  const { datos, revisarPago } = useApp()
+  const [seleccion, setSeleccion] = useState<string | null>(null)
+  const [motivo, setMotivo] = useState('')
+  const [modo, setModo] = useState<'aprobar' | 'rechazar'>('aprobar')
+  const [ocupado, setOcupado] = useState(false)
+  const pendientes = datos.pagos.filter(p => p.estado === 'pendiente_revision').sort((a, b) => a.subidoEn.localeCompare(b.subidoEn))
+  const elegido = pendientes.find(p => p.id === seleccion)
+  const cuota = elegido && datos.cuotas.find(c => c.id === elegido.cuotaId)
+  const revisar = async () => {
+    if (!elegido) return
+    setOcupado(true)
+    const err = await revisarPago(elegido.id, modo, motivo)
+    setOcupado(false)
+    if (!err) { setSeleccion(null); setMotivo('') }
+  }
+  return <>
+    <PageHead eyebrow="CONTROL DE PAGOS" title="Conciliación" description="Pagos declarados que necesitan tu decisión. Verifica en tu app de Yape/Plin antes de aprobar." />
+    <div className="stats-grid two"><Stat label="Por revisar" value={pendientes.length} note="Se actualiza en tiempo real" icon={<AlertCircle size={20} />} tone={pendientes.length ? 'coral' : 'normal'} /><Stat label="Validados por reglas este mes" value={datos.pagos.filter(p => p.estado === 'conciliado_auto' && p.fecha.slice(0, 7) === mes().slice(0, 7)).length} note="Puedes revertirlos desde Pagos" icon={<ShieldCheck size={20} />} tone="lime" /></div>
+    <div className="panel"><div className="panel-heading"><div><span className="eyebrow">COLA DE REVISIÓN</span><h2>Pagos con alertas</h2></div><span className="count-pill">{pendientes.length} por revisar</span></div>
+      {pendientes.length ? <div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Recibido</th><th>Monto</th><th>Operación</th><th>Motivo de revisión</th><th></th></tr></thead><tbody>{pendientes.map(p => <tr key={p.id}><td className="strong">{nombreUnidad(datos.unidades, p.unidadId)}</td><td><DateText value={p.subidoEn.slice(0, 10)} /></td><td><Money value={p.monto} /></td><td>{p.operacion || '—'}</td><td><div className="tag-list">{p.alertas.map(a => <span key={a} className="alert-tag">{textoAlerta[a] ?? a}</span>)}</div></td><td><button className="button button-secondary button-small" onClick={() => { setSeleccion(p.id); setModo('aprobar'); setMotivo('') }}>Revisar <ArrowRight size={15} /></button></td></tr>)}</tbody></table></div>
+        : <Empty title="Todo al día" text="No hay pagos esperando revisión." />}
+    </div>
+    {elegido && <Modal title={`Revisar pago · ${nombreUnidad(datos.unidades, elegido.unidadId)}`} onClose={() => setSeleccion(null)} wide>
+      <div className="review-grid"><div className="receipt-view"><VisorComprobante pago={elegido} /></div>
+        <div className="review-details">
+          <div className="detail-row"><span>Monto declarado</span><strong className={cuota && cuota.monto !== elegido.monto ? 'text-danger' : ''}><Money value={elegido.monto} /></strong></div>
+          <div className="detail-row"><span>Monto de la cuota</span><strong><Money value={cuota?.monto ?? 0} /></strong></div>
+          <div className="detail-row"><span>Periodo</span><strong>{cuota ? mesVisible(cuota.periodo) : '—'}</strong></div>
+          <div className="detail-row"><span>Fecha de operación</span><strong><DateText value={elegido.fecha} /></strong></div>
+          <div className="detail-row"><span>N.º de operación</span><strong>{elegido.operacion || '—'}</strong></div>
+          <div className="detail-row"><span>Medio</span><strong>{metodoVisible[elegido.metodo] ?? elegido.metodo}</strong></div>
+          <div className="detail-row"><span>Lectura OCR</span><strong>{elegido.ocrConfianza == null ? 'Ingreso manual' : `${Math.round(elegido.ocrConfianza)} % de confianza`}</strong></div>
+          <div className="alert-box"><AlertCircle size={17} /><div><strong>Por qué está en revisión</strong><div className="tag-list">{elegido.alertas.map(a => <span key={a} className="alert-tag">{textoAlerta[a] ?? a}</span>)}</div></div></div>
+          <div className="segmented" role="radiogroup" aria-label="Decisión"><button type="button" role="radio" aria-checked={modo === 'aprobar'} className={modo === 'aprobar' ? 'selected' : ''} onClick={() => setModo('aprobar')}><Check size={16} /> Aprobar</button><button type="button" role="radio" aria-checked={modo === 'rechazar'} className={modo === 'rechazar' ? 'selected' : ''} onClick={() => setModo('rechazar')}><XCircle size={16} /> Rechazar u observar</button></div>
+          <label className="field"><span>{modo === 'rechazar' ? 'Motivo (lo verá el propietario) *' : 'Nota interna (opcional)'}</span><textarea value={motivo} onChange={e => setMotivo(e.target.value)} placeholder={modo === 'rechazar' ? 'Ej.: El monto no coincide; sube el comprobante completo.' : 'Ej.: Verificado en la app de Yape.'} rows={3} maxLength={500} /></label>
+          <button className={`button ${modo === 'aprobar' ? 'button-primary' : 'button-danger'} full-width`} disabled={ocupado} onClick={() => void revisar()}>{ocupado ? 'Guardando…' : modo === 'aprobar' ? 'Aprobar pago' : 'Rechazar pago'}</button>
+        </div></div>
+    </Modal>}
+  </>
 }
 
+// ---------------------------------------------------------------------------------------------
 export function PagosPage() {
-  const { datos, pagoManual, mostrar } = useApp(); const [modal, setModal] = useState(false); const [cuotaId, setCuotaId] = useState(''); const [monto, setMonto] = useState('150'); const [fecha, setFecha] = useState(hoy()); const [metodo, setMetodo] = useState<'efectivo' | 'transferencia'>('efectivo'); const [operacion, setOperacion] = useState(''); const [periodo, setPeriodo] = useState(mes())
-  const lista = datos.pagos.filter(p => datos.cuotas.some(c => c.id === p.cuotaId && c.periodo === periodo)).sort((a, b) => b.subidoEn.localeCompare(a.subidoEn))
-  const pendientes = datos.cuotas.filter(c => c.estado === 'pendiente' && c.periodo === mes())
-  const submit = (e: FormEvent) => { e.preventDefault(); const error = pagoManual({ cuotaId, monto: Number(monto), fecha, metodo, operacion }); if (error) mostrar(error, 'error'); else { setModal(false); setCuotaId(''); setOperacion('') } }
-  return <><PageHead eyebrow="MOVIMIENTOS" title="Pagos" description="Consulta el historial y registra pagos recibidos fuera de la plataforma." action={<button className="button button-primary" onClick={() => setModal(true)}><Plus size={18} /> Registrar pago manual</button>} /><div className="panel"><div className="table-tools"><SelectorMes value={periodo} onChange={setPeriodo} /><span className="count-pill">{lista.length} registros</span></div><div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Fecha</th><th>Método</th><th>Operación</th><th>Monto</th><th>Estado</th></tr></thead><tbody>{lista.map(p => <tr key={p.id}><td className="strong">{nombreUnidad(datos.unidades, p.unidadId)}</td><td><DateText value={p.fecha} /></td><td>{p.metodo.replaceAll('_', ' ')}</td><td>{p.operacion}</td><td><Money value={p.monto} /></td><td><Badge estado={p.estado} /></td></tr>)}</tbody></table></div></div>{modal && <Modal title="Registrar pago manual" onClose={() => setModal(false)}><form onSubmit={submit} className="form-stack"><label className="field"><span>Cuota pendiente</span><select required value={cuotaId} onChange={e => { setCuotaId(e.target.value); setMonto(String(datos.cuotas.find(c => c.id === e.target.value)?.monto || 150)) }}><option value="">Selecciona una unidad</option>{pendientes.map(c => <option key={c.id} value={c.id}>{nombreUnidad(datos.unidades, c.unidadId)} · {mesVisible(c.periodo)}</option>)}</select></label><div className="field-grid"><label className="field"><span>Monto (S/)</span><input type="number" min="0.01" step="0.01" required value={monto} onChange={e => setMonto(e.target.value)} /></label><label className="field"><span>Fecha</span><input type="date" max={hoy()} required value={fecha} onChange={e => setFecha(e.target.value)} /></label></div><label className="field"><span>Método</span><select value={metodo} onChange={e => setMetodo(e.target.value as 'efectivo' | 'transferencia')}><option value="efectivo">Efectivo</option><option value="transferencia">Transferencia</option></select></label><label className="field"><span>N.º de operación (opcional para efectivo)</span><input value={operacion} onChange={e => setOperacion(e.target.value)} /></label><div className="modal-actions"><button type="button" className="button button-secondary" onClick={() => setModal(false)}>Cancelar</button><button className="button button-primary">Registrar pago</button></div></form></Modal>}</>
+  const { datos, pagoManual, revisarPago } = useApp()
+  const [periodo, setPeriodo] = useState(mes())
+  const [modal, setModal] = useState(false)
+  const [f, setF] = useState({ cuotaId: '', monto: '', fecha: hoy(), metodo: 'efectivo' as 'efectivo' | 'transferencia' | 'yape_qr', operacion: '', nota: '' })
+  const [revertir, setRevertir] = useState<Pago | null>(null)
+  const [motivo, setMotivo] = useState('')
+  const cuotasPeriodo = new Set(datos.cuotas.filter(c => c.periodo === periodo).map(c => c.id))
+  const lista = datos.pagos.filter(p => cuotasPeriodo.has(p.cuotaId)).sort((a, b) => b.subidoEn.localeCompare(a.subidoEn))
+  const pendientes = datos.cuotas.filter(c => c.estado === 'pendiente').sort((a, b) => b.periodo.localeCompare(a.periodo) || nombreUnidad(datos.unidades, a.unidadId).localeCompare(nombreUnidad(datos.unidades, b.unidadId), 'es', { numeric: true }))
+  const cuotaElegida = datos.cuotas.find(c => c.id === f.cuotaId)
+  const submit = async (e: FormEvent) => {
+    e.preventDefault()
+    const err = await pagoManual({ cuotaId: f.cuotaId, metodo: f.metodo, monto: Number(f.monto), fecha: f.fecha, operacion: f.operacion, nota: f.nota })
+    if (!err) { setModal(false); setF({ ...f, cuotaId: '', operacion: '', nota: '' }) }
+  }
+  return <>
+    <PageHead eyebrow="MOVIMIENTOS" title="Pagos" description="Historial de pagos y registro de pagos recibidos fuera de la app (efectivo o transferencia)." action={<button className="button button-primary" onClick={() => setModal(true)}><Plus size={18} /> Registrar pago manual</button>} />
+    <div className="panel"><div className="table-tools"><SelectorMes value={periodo} onChange={setPeriodo} /><span className="count-pill">{lista.length} registros</span></div>
+      {lista.length ? <div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Fecha</th><th>Medio</th><th>Operación</th><th>Monto</th><th>Estado</th><th></th></tr></thead><tbody>{lista.map(p => <tr key={p.id}><td className="strong">{nombreUnidad(datos.unidades, p.unidadId)}</td><td><DateText value={p.fecha} /></td><td>{metodoVisible[p.metodo] ?? p.metodo}</td><td>{p.operacion || '—'}</td><td><Money value={p.monto} /></td><td><Badge estado={p.estado} />{p.motivoRechazo && <small className="cell-note">{p.motivoRechazo}</small>}</td><td>{(p.estado === 'conciliado_auto' || p.estado === 'conciliado_manual') && <button className="text-button danger" onClick={() => { setRevertir(p); setMotivo('') }}>Revertir</button>}</td></tr>)}</tbody></table></div>
+        : <Empty title="Sin pagos en este periodo" text="Cuando los vecinos paguen, sus comprobantes aparecerán aquí." />}
+    </div>
+    {modal && <Modal title="Registrar pago manual" onClose={() => setModal(false)}><form onSubmit={e => void submit(e)} className="form-stack">
+      <label className="field"><span>Cuota pendiente</span><select required value={f.cuotaId} onChange={e => { const c = datos.cuotas.find(x => x.id === e.target.value); setF({ ...f, cuotaId: e.target.value, monto: c ? c.monto.toFixed(2) : '' }) }}><option value="">Selecciona unidad y mes</option>{pendientes.map(c => <option key={c.id} value={c.id}>{nombreUnidad(datos.unidades, c.unidadId)} · {mesVisible(c.periodo)}</option>)}</select></label>
+      <div className="field-grid"><label className="field"><span>Monto (S/)</span><input type="number" min="0.01" step="0.01" required value={f.monto} onChange={e => setF({ ...f, monto: e.target.value })} />{cuotaElegida && Number(f.monto) !== cuotaElegida.monto && f.monto && <small className="text-warning">Distinto a la cuota ({dinero(cuotaElegida.monto)}). Quedará anotado.</small>}</label><label className="field"><span>Fecha</span><input type="date" max={hoy()} required value={f.fecha} onChange={e => setF({ ...f, fecha: e.target.value })} /></label></div>
+      <label className="field"><span>Medio</span><select value={f.metodo} onChange={e => setF({ ...f, metodo: e.target.value as typeof f.metodo })}><option value="efectivo">Efectivo</option><option value="transferencia">Transferencia</option><option value="yape_qr">Yape (verificado en mi app)</option></select></label>
+      <label className="field"><span>N.º de operación {f.metodo === 'efectivo' ? '(opcional)' : ''}</span><input required={f.metodo !== 'efectivo'} value={f.operacion} onChange={e => setF({ ...f, operacion: e.target.value })} /></label>
+      <label className="field"><span>Nota (opcional)</span><input maxLength={500} value={f.nota} onChange={e => setF({ ...f, nota: e.target.value })} placeholder="Ej.: Pagó en caja el sábado" /></label>
+      <div className="modal-actions"><button type="button" className="button button-secondary" onClick={() => setModal(false)}>Cancelar</button><button className="button button-primary">Registrar pago</button></div>
+    </form></Modal>}
+    {revertir && <Confirmar titulo="Revertir pago" texto={<>La cuota de <strong>{nombreUnidad(datos.unidades, revertir.unidadId)}</strong> volverá a pendiente y el propietario verá el motivo. Úsalo si el dinero no llegó.</>} confirmar="Revertir pago" peligro onCancelar={() => setRevertir(null)} onConfirmar={async () => { if (!(await revisarPago(revertir.id, 'rechazar', motivo))) setRevertir(null) }}>
+      <label className="field"><span>Motivo *</span><textarea rows={3} maxLength={500} value={motivo} onChange={e => setMotivo(e.target.value)} placeholder="Ej.: No figura en la app de Yape." /></label>
+    </Confirmar>}
+  </>
 }
+
+// ---------------------------------------------------------------------------------------------
+const conceptoVisible: Record<ConceptoEgreso, string> = { pago_vigilante: 'Pago al personal de vigilancia', insumos: 'Insumos', otros: 'Otros' }
 
 export function EgresosPage() {
-  const { datos, registrarEgreso, mostrar } = useApp(); const [modal, setModal] = useState(false); const [fecha, setFecha] = useState(hoy()); const [concepto, setConcepto] = useState<ConceptoEgreso>('pago_vigilante'); const [beneficiario, setBeneficiario] = useState(''); const [monto, setMonto] = useState(''); const [comentario, setComentario] = useState(''); const [periodo, setPeriodo] = useState(mes())
+  const { datos, registrarEgreso, anularEgreso } = useApp()
+  const [periodo, setPeriodo] = useState(mes())
+  const [modal, setModal] = useState(false)
+  const [f, setF] = useState({ fecha: hoy(), concepto: 'pago_vigilante' as ConceptoEgreso, beneficiario: '', monto: '', comentario: '' })
+  const [anular, setAnular] = useState<string | null>(null)
+  const [motivo, setMotivo] = useState('')
   const lista = datos.egresos.filter(e => e.fecha.slice(0, 7) === periodo.slice(0, 7))
-  const submit = (e: FormEvent) => { e.preventDefault(); if (Number(monto) <= 0) return mostrar('Ingresa un monto válido.', 'error'); registrarEgreso({ fecha, concepto, beneficiario: beneficiario.trim(), monto: Number(monto), comentario: comentario.trim() }); setModal(false); setBeneficiario(''); setMonto(''); setComentario('') }
-  return <><PageHead eyebrow="GASTOS DE LA JUNTA" title="Egresos" description="Registra y consulta los pagos de vigilancia y otros gastos." action={<button className="button button-primary" onClick={() => setModal(true)}><Plus size={18} /> Nuevo egreso</button>} /><div className="stats-grid two"><Stat label="Total de egresos" value={dinero(lista.reduce((n, e) => n + e.monto, 0))} note={mesVisible(periodo)} icon={<Banknote size={20} />} /><Stat label="Movimientos" value={lista.length} note="Incluye registros simulados" icon={<FileText size={20} />} /></div><div className="panel"><div className="table-tools"><SelectorMes value={periodo} onChange={setPeriodo} /></div><div className="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Beneficiario</th><th>Comentario</th><th>Monto</th></tr></thead><tbody>{lista.map(e => <tr key={e.id}><td><DateText value={e.fecha} /></td><td>{e.concepto.replaceAll('_', ' ')}</td><td className="strong">{e.beneficiario}</td><td>{e.comentario || '—'}</td><td><Money value={e.monto} /></td></tr>)}</tbody></table></div></div>{modal && <Modal title="Nuevo egreso" onClose={() => setModal(false)}><form onSubmit={submit} className="form-stack"><div className="field-grid"><label className="field"><span>Fecha</span><input type="date" required max={hoy()} value={fecha} onChange={e => setFecha(e.target.value)} /></label><label className="field"><span>Monto (S/)</span><input type="number" required min="0.01" step="0.01" value={monto} onChange={e => setMonto(e.target.value)} /></label></div><label className="field"><span>Concepto</span><select value={concepto} onChange={e => setConcepto(e.target.value as ConceptoEgreso)}><option value="pago_vigilante">Pago al personal de vigilancia</option><option value="insumos">Insumos</option><option value="otros">Otros</option></select></label><label className="field"><span>Beneficiario</span><input required value={beneficiario} onChange={e => setBeneficiario(e.target.value)} placeholder="Nombre o referencia" /></label><label className="field"><span>Comentario (opcional)</span><textarea rows={3} value={comentario} onChange={e => setComentario(e.target.value)} /></label><div className="modal-actions"><button type="button" className="button button-secondary" onClick={() => setModal(false)}>Cancelar</button><button className="button button-primary">Guardar egreso</button></div></form></Modal>}</>
-}
-
-function exportarCsv(datos: ReturnType<typeof useApp>['datos']) {
-  const encabezado = ['unidad_ref','periodo','monto','fecha_vencimiento','fecha_pago','dias_atraso','metodo_pago','pagos_atrasados_previos','moroso','es_simulado']
-  const filas = datos.cuotas.slice().sort((a, b) => a.unidadId.localeCompare(b.unidadId) || a.periodo.localeCompare(b.periodo)).map(c => {
-    const pago = datos.pagos.find(p => p.id === c.pagoId)
-    const dias = calcularDiasAtraso(c.fechaPago, c.vencimiento)
-    const previas = datos.cuotas.filter(x => x.unidadId === c.unidadId && x.periodo < c.periodo && x.periodo >= periodoAnterior(c.periodo, 3) && x.fechaPago && x.fechaPago > x.vencimiento).length
-    return [`U${c.unidadId.replace(/\D/g, '').padStart(3, '0')}`, c.periodo, c.monto.toFixed(2), c.vencimiento, c.fechaPago || '', dias, pago?.metodo || '', previas, dias > 0 || (!c.fechaPago && c.vencimiento < hoy()) ? 1 : 0, c.esSimulado ? 1 : 0]
-  })
-  const csv = '\uFEFF' + [encabezado, ...filas].map(row => row.join(',')).join('\r\n')
-  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'arcomunity_dataset_morosidad_simulado.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000)
-}
-
-async function exportarExcel(datos: ReturnType<typeof useApp>['datos'], alTerminar?: () => void) {
-  try {
-    const ExcelJS = await import('exceljs')
-    const WorkbookClass = ExcelJS.Workbook || (ExcelJS as unknown as { default: { Workbook: typeof ExcelJS.Workbook } }).default?.Workbook
-    const wb = new WorkbookClass()
-    wb.creator = 'Arcomunity S.A.C.'
-    wb.created = new Date()
-
-    // Hoja 1: Dataset
-    const ws = wb.addWorksheet('Dataset', {
-      views: [{ state: 'frozen', xSplit: 0, ySplit: 1 }]
-    })
-
-    ws.columns = [
-      { header: 'Unidad', key: 'unidad', width: 14 },
-      { header: 'Periodo', key: 'periodo', width: 15 },
-      { header: 'Monto (S/)', key: 'monto', width: 16 },
-      { header: 'Fecha de vencimiento', key: 'fecha_vencimiento', width: 24 },
-      { header: 'Fecha de pago', key: 'fecha_pago', width: 18 },
-      { header: 'Días de atraso', key: 'dias_atraso', width: 16 },
-      { header: 'Método de pago', key: 'metodo_pago', width: 18 },
-      { header: 'Atrasos previos (3 meses)', key: 'pagos_atrasados_previos', width: 28 },
-      { header: 'Moroso (1 = sí)', key: 'moroso', width: 18 },
-      { header: 'Simulado', key: 'es_simulado', width: 14 }
-    ]
-
-    const headerRow = ws.getRow(1)
-    headerRow.height = 30
-    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }
-    headerRow.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
-    headerRow.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FF173942' }
-    }
-
-    const cuotasOrdenadas = datos.cuotas.slice().sort((a, b) => a.unidadId.localeCompare(b.unidadId) || a.periodo.localeCompare(b.periodo))
-
-    cuotasOrdenadas.forEach(c => {
-      const pago = datos.pagos.find(p => p.id === c.pagoId)
-      const dias = calcularDiasAtraso(c.fechaPago, c.vencimiento)
-      const previas = datos.cuotas.filter(x => x.unidadId === c.unidadId && x.periodo < c.periodo && x.periodo >= periodoAnterior(c.periodo, 3) && x.fechaPago && x.fechaPago > x.vencimiento).length
-      const esMoroso = dias > 0 || (!c.fechaPago && c.vencimiento < hoy()) ? 1 : 0
-
-      const [vy, vm, vd] = c.vencimiento.split('-').map(Number)
-      const fechaVencDate = new Date(Date.UTC(vy, vm - 1, vd, 12, 0, 0))
-
-      let fechaPagoDate: Date | null = null
-      if (c.fechaPago) {
-        const [py, pm, pd] = c.fechaPago.split('-').map(Number)
-        fechaPagoDate = new Date(Date.UTC(py, pm - 1, pd, 12, 0, 0))
-      }
-
-      const row = ws.addRow({
-        unidad: `U${c.unidadId.replace(/\D/g, '').padStart(3, '0')}`,
-        periodo: c.periodo,
-        monto: Number(c.monto),
-        fecha_vencimiento: fechaVencDate,
-        fecha_pago: fechaPagoDate,
-        dias_atraso: dias,
-        metodo_pago: pago?.metodo || '—',
-        pagos_atrasados_previos: previas,
-        moroso: esMoroso,
-        es_simulado: c.esSimulado ? 1 : 0
-      })
-
-      row.getCell(3).numFmt = '#,##0.00'
-      row.getCell(4).numFmt = 'dd/mm/yyyy'
-      if (fechaPagoDate) row.getCell(5).numFmt = 'dd/mm/yyyy'
-
-      row.getCell(1).alignment = { horizontal: 'center' }
-      row.getCell(2).alignment = { horizontal: 'center' }
-      row.getCell(4).alignment = { horizontal: 'center' }
-      row.getCell(5).alignment = { horizontal: 'center' }
-      row.getCell(6).alignment = { horizontal: 'center' }
-      row.getCell(8).alignment = { horizontal: 'center' }
-      row.getCell(9).alignment = { horizontal: 'center' }
-      row.getCell(10).alignment = { horizontal: 'center' }
-
-      if (esMoroso === 1) {
-        row.eachCell({ includeEmpty: true }, cell => {
-          cell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFFFEBEB' }
-          }
-        })
-      }
-    })
-
-    ws.autoFilter = {
-      from: { row: 1, column: 1 },
-      to: { row: cuotasOrdenadas.length + 1, column: 10 }
-    }
-
-    // Hoja 2: Diccionario de datos
-    const wsDic = wb.addWorksheet('Diccionario de datos', {
-      views: [{ state: 'frozen', xSplit: 0, ySplit: 1 }]
-    })
-
-    wsDic.columns = [
-      { header: 'Campo', key: 'campo', width: 28 },
-      { header: 'Descripción', key: 'descripcion', width: 50 },
-      { header: 'Tipo', key: 'tipo', width: 18 },
-      { header: 'Ejemplo', key: 'ejemplo', width: 28 }
-    ]
-
-    const dicHeader = wsDic.getRow(1)
-    dicHeader.height = 28
-    dicHeader.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }
-    dicHeader.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
-    dicHeader.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FF173942' }
-    }
-
-    const diccionario = [
-      { campo: 'Unidad', descripcion: 'Código anonimizado de la vivienda vecinal', tipo: 'Texto', ejemplo: 'U001' },
-      { campo: 'Periodo', descripcion: 'Primer día del mes facturado (AAAA-MM-01)', tipo: 'Texto', ejemplo: '2026-10-01' },
-      { campo: 'Monto (S/)', descripcion: 'Importe de la cuota mensual en soles', tipo: 'Numérico (2 decimales)', ejemplo: '150.00' },
-      { campo: 'Fecha de vencimiento', descripcion: 'Fecha límite de pago de la cuota', tipo: 'Fecha (dd/mm/aaaa)', ejemplo: '10/10/2026' },
-      { campo: 'Fecha de pago', descripcion: 'Fecha de cancelación efectiva (vacío si no pagó)', tipo: 'Fecha (dd/mm/aaaa)', ejemplo: '08/10/2026' },
-      { campo: 'Días de atraso', descripcion: 'Días transcurridos entre vencimiento y pago', tipo: 'Entero (≥ 0)', ejemplo: '0' },
-      { campo: 'Método de pago', descripcion: 'Canal de pago utilizado', tipo: 'Texto', ejemplo: 'yape_qr, yape_captura, efectivo' },
-      { campo: 'Atrasos previos (3 meses)', descripcion: 'Cuotas pagadas con retraso en los 3 meses anteriores', tipo: 'Entero (≥ 0)', ejemplo: '0' },
-      { campo: 'Moroso (1 = sí)', descripcion: 'Variable objetivo del modelo predictivo (APF3)', tipo: 'Binario (0 o 1)', ejemplo: '1' },
-      { campo: 'Simulado', descripcion: 'Indicador de datos sintéticos de demostración', tipo: 'Binario (0 o 1)', ejemplo: '1' }
-    ]
-
-    diccionario.forEach(d => {
-      const r = wsDic.addRow(d)
-      r.getCell(1).font = { bold: true }
-      r.getCell(3).alignment = { horizontal: 'center' }
-    })
-
-    wsDic.addRow({})
-    const rNota = wsDic.addRow({
-      campo: 'NOTA:',
-      descripcion: 'Los datos son 100 % simulados para fines académicos de demostración. La columna «Moroso (1 = sí)» constituye la variable objetivo para el entrenamiento del modelo de clasificación en APF3.'
-    })
-    rNota.font = { italic: true, color: { argb: 'FF555555' } }
-
-    const buffer = await wb.xlsx.writeBuffer()
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'arcomunity_dataset_morosidad.xlsx'
-    a.click()
-    setTimeout(() => URL.revokeObjectURL(url), 1000)
-  } finally {
-    alTerminar?.()
+  const vigentes = lista.filter(e => !e.anulado)
+  const submit = async (e: FormEvent) => {
+    e.preventDefault()
+    const err = await registrarEgreso({ ...f, monto: Number(f.monto) })
+    if (!err) { setModal(false); setF({ ...f, beneficiario: '', monto: '', comentario: '' }) }
   }
+  return <>
+    <PageHead eyebrow="GASTOS DE LA JUNTA" title="Egresos" description="Pagos al personal de vigilancia y otros gastos. Los vecinos ven los totales en Transparencia." action={<button className="button button-primary" onClick={() => setModal(true)}><Plus size={18} /> Nuevo egreso</button>} />
+    <div className="stats-grid two"><Stat label="Total del mes" value={dinero(vigentes.reduce((n, e) => n + e.monto, 0))} note={mesVisible(periodo)} icon={<Banknote size={20} />} /><Stat label="Movimientos" value={vigentes.length} note={lista.length !== vigentes.length ? `${lista.length - vigentes.length} anulados` : 'Sin anulaciones'} icon={<FileText size={20} />} /></div>
+    <div className="panel"><div className="table-tools"><SelectorMes value={periodo} onChange={setPeriodo} /></div>
+      {lista.length ? <div className="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Beneficiario</th><th>Comentario</th><th>Monto</th><th></th></tr></thead><tbody>{lista.map(e => <tr key={e.id} className={e.anulado ? 'row-muted' : ''}><td><DateText value={e.fecha} /></td><td>{conceptoVisible[e.concepto]}</td><td className="strong">{e.beneficiario}</td><td>{e.anulado ? <span className="text-danger">Anulado: {e.motivoAnulacion}</span> : e.comentario || '—'}</td><td><Money value={e.monto} /></td><td>{!e.anulado && <button className="text-button danger" onClick={() => { setAnular(e.id); setMotivo('') }}>Anular</button>}</td></tr>)}</tbody></table></div>
+        : <Empty title="Sin egresos este mes" text="Registra el pago al personal de vigilancia para que el saldo sea real." />}
+    </div>
+    {modal && <Modal title="Nuevo egreso" onClose={() => setModal(false)}><form onSubmit={e => void submit(e)} className="form-stack">
+      <div className="field-grid"><label className="field"><span>Fecha</span><input type="date" required max={hoy()} value={f.fecha} onChange={e => setF({ ...f, fecha: e.target.value })} /></label><label className="field"><span>Monto (S/)</span><input type="number" required min="0.01" step="0.01" value={f.monto} onChange={e => setF({ ...f, monto: e.target.value })} /></label></div>
+      <label className="field"><span>Concepto</span><select value={f.concepto} onChange={e => setF({ ...f, concepto: e.target.value as ConceptoEgreso })}>{Object.entries(conceptoVisible).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
+      <label className="field"><span>Beneficiario</span><input required minLength={2} maxLength={120} value={f.beneficiario} onChange={e => setF({ ...f, beneficiario: e.target.value })} placeholder="Empresa o referencia" /></label>
+      <label className="field"><span>Comentario (opcional)</span><textarea rows={3} maxLength={500} value={f.comentario} onChange={e => setF({ ...f, comentario: e.target.value })} /></label>
+      <div className="modal-actions"><button type="button" className="button button-secondary" onClick={() => setModal(false)}>Cancelar</button><button className="button button-primary">Guardar egreso</button></div>
+    </form></Modal>}
+    {anular && <Confirmar titulo="Anular egreso" texto="El egreso dejará de contar en el saldo, pero seguirá visible como anulado y en la auditoría." confirmar="Anular" peligro onCancelar={() => setAnular(null)} onConfirmar={async () => { if (!(await anularEgreso(anular, motivo))) setAnular(null) }}>
+      <label className="field"><span>Motivo *</span><textarea rows={2} maxLength={500} value={motivo} onChange={e => setMotivo(e.target.value)} placeholder="Ej.: Monto digitado por error." /></label>
+    </Confirmar>}
+  </>
+}
+
+// ---------------------------------------------------------------------------------------------
+type FilaDataset = { unidad_ref: string; periodo: string; monto: number; fecha_vencimiento: string; fecha_pago: string | null; dias_atraso: number; metodo_pago: string | null; pagos_atrasados_previos: number; moroso: number; es_simulado: number; origen: string }
+const COLUMNAS: (keyof FilaDataset)[] = ['unidad_ref', 'periodo', 'monto', 'fecha_vencimiento', 'fecha_pago', 'dias_atraso', 'metodo_pago', 'pagos_atrasados_previos', 'moroso', 'es_simulado', 'origen']
+
+function descargar(blob: Blob, nombre: string) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = nombre; a.click()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+const csvCelda = (v: unknown) => { const s = v == null ? '' : String(v); return /[",\r\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s }
+
+async function exportarExcel(filas: FilaDataset[]) {
+  const ExcelJS = await import('exceljs')
+  const WorkbookClass = ExcelJS.Workbook || (ExcelJS as unknown as { default: { Workbook: typeof ExcelJS.Workbook } }).default?.Workbook
+  const wb = new WorkbookClass()
+  wb.creator = 'Arcomunity'
+  wb.created = new Date()
+  const encabezado = (ws: import('exceljs').Worksheet) => { const r = ws.getRow(1); r.height = 28; r.font = { bold: true, color: { argb: 'FFFFFFFF' } }; r.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }; r.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF173942' } } }
+  const ws = wb.addWorksheet('Dataset', { views: [{ state: 'frozen', ySplit: 1 }] })
+  ws.columns = [
+    { header: 'Unidad (seudónimo)', key: 'unidad_ref', width: 18 }, { header: 'Periodo', key: 'periodo', width: 13 }, { header: 'Monto (S/)', key: 'monto', width: 12 },
+    { header: 'Vencimiento', key: 'fecha_vencimiento', width: 14 }, { header: 'Fecha de pago', key: 'fecha_pago', width: 14 }, { header: 'Días de atraso', key: 'dias_atraso', width: 14 },
+    { header: 'Método de pago', key: 'metodo_pago', width: 16 }, { header: 'Atrasos previos (3 meses)', key: 'pagos_atrasados_previos', width: 22 }, { header: 'Moroso (1 = sí)', key: 'moroso', width: 14 },
+    { header: 'Simulado', key: 'es_simulado', width: 10 }, { header: 'Origen', key: 'origen', width: 11 },
+  ]
+  encabezado(ws)
+  const fecha = (s: string | null) => (s ? new Date(`${s}T12:00:00Z`) : null)
+  for (const f of filas) {
+    const row = ws.addRow({ ...f, monto: Number(f.monto), fecha_vencimiento: fecha(f.fecha_vencimiento), fecha_pago: fecha(f.fecha_pago), metodo_pago: f.metodo_pago ?? '—' })
+    row.getCell(3).numFmt = '#,##0.00'; row.getCell(4).numFmt = 'dd/mm/yyyy'; row.getCell(5).numFmt = 'dd/mm/yyyy'
+    if (f.moroso === 1) row.eachCell({ includeEmpty: true }, c => { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEBEB' } } })
+  }
+  ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: filas.length + 1, column: COLUMNAS.length } }
+  const dic = wb.addWorksheet('Diccionario de datos')
+  dic.columns = [{ header: 'Campo', key: 'c', width: 26 }, { header: 'Descripción', key: 'd', width: 70 }, { header: 'Tipo', key: 't', width: 18 }]
+  encabezado(dic)
+  ;[
+    ['unidad_ref', 'Seudónimo estable de la unidad (no revela código ni propietario).', 'Texto'],
+    ['periodo', 'Primer día del mes facturado.', 'Fecha'],
+    ['monto', 'Importe de la cuota en soles.', 'Numérico'],
+    ['fecha_vencimiento', 'Fecha límite de pago.', 'Fecha'],
+    ['fecha_pago', 'Fecha de la operación del pago conciliado (vacía si no pagó). No usar como predictor.', 'Fecha'],
+    ['dias_atraso', 'Días entre vencimiento y pago. Define la etiqueta: no usar como predictor.', 'Entero ≥ 0'],
+    ['metodo_pago', 'Medio del pago de esa cuota. No existe antes de pagar: no usar como predictor.', 'Texto'],
+    ['pagos_atrasados_previos', 'Cuotas atrasadas en los 3 meses anteriores, conocidas al inicio del periodo.', 'Entero ≥ 0'],
+    ['moroso', 'Variable objetivo: 1 si se pagó con atraso o sigue impaga tras vencer.', '0 / 1'],
+    ['es_simulado', 'Indicador de dato ficticio.', '0 / 1'],
+    ['origen', 'real o simulado (exigido en APF3).', 'Texto'],
+  ].forEach(([c, d, t]) => dic.addRow({ c, d, t }))
+  dic.addRow({})
+  dic.addRow({ c: 'NOTA', d: 'Solo incluye cuotas con etiqueta definitiva (pagadas o vencidas). Exportado desde la base de datos de Arcomunity.' })
+  const buffer = await wb.xlsx.writeBuffer()
+  descargar(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `arcomunity_dataset_morosidad_${hoy()}.xlsx`)
 }
 
 export function ReportesPage() {
-  const { datos } = useApp(); const [periodo, setPeriodo] = useState(mes()); const [exportandoExcel, setExportandoExcel] = useState(false)
-  const cuotas = datos.cuotas.filter(c => c.periodo === periodo)
-  const ingresos = datos.pagos.filter(p => p.estado.startsWith('conciliado') && cuotas.some(c => c.id === p.cuotaId)).reduce((n, p) => n + p.monto, 0)
-  const egresos = datos.egresos.filter(e => e.fecha.slice(0, 7) === periodo.slice(0, 7)).reduce((n, e) => n + e.monto, 0)
-  return <><PageHead eyebrow="RENDICIÓN DE CUENTAS" title="Reporte mensual" description="Información lista para compartir con la junta." action={<div className="button-group"><button className="button button-secondary" onClick={() => window.print()}><Printer size={17} /> Imprimir / PDF</button><button className="button button-secondary" disabled={exportandoExcel} onClick={() => { setExportandoExcel(true); void exportarExcel(datos, () => setExportandoExcel(false)) }}><FileText size={17} /> {exportandoExcel ? 'Generando Excel...' : 'Exportar Excel (.xlsx)'}</button><button className="button button-primary" onClick={() => exportarCsv(datos)}><ArrowDownToLine size={17} /> Exportar CSV (datos)</button></div>} /><div className="report-page"><div className="report-header"><div><span className="eyebrow">ARCOMUNITY · REPORTE SIMULADO</span><h2>Resumen de {mesVisible(periodo)}</h2><p>Junta Vecinal Arcomunity — Piloto</p></div><SelectorMes value={periodo} onChange={setPeriodo} /></div><div className="stats-grid three"><Stat label="Ingresos conciliados" value={dinero(ingresos)} icon={<TrendingUp size={19} />} tone="lime" /><Stat label="Egresos" value={dinero(egresos)} icon={<Banknote size={19} />} /><Stat label="Saldo" value={dinero(ingresos - egresos)} icon={<CheckCircle2 size={19} />} /></div><div className="panel report-table"><div className="panel-heading"><div><span className="eyebrow">DETALLE</span><h2>Estado por unidad</h2></div><Simulado /></div><div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Monto</th><th>Vencimiento</th><th>Estado</th><th>Fecha de pago</th></tr></thead><tbody>{cuotas.map(c => <tr key={c.id}><td className="strong">{nombreUnidad(datos.unidades, c.unidadId)}</td><td><Money value={c.monto} /></td><td><DateText value={c.vencimiento} /></td><td><Badge estado={estadoVisible(c)} /></td><td><DateText value={c.fechaPago} /></td></tr>)}</tbody></table></div></div><p className="report-foot">Este reporte usa exclusivamente datos simulados para una demostración académica. El dataset incluye las 30 unidades y 12 meses del piloto.</p></div></>
+  const { datos, usuario, rpc, mostrar } = useApp()
+  const [periodo, setPeriodo] = useState(mes())
+  const [exportando, setExportando] = useState<'' | 'csv' | 'xlsx'>('')
+  const m = useRpc<Metricas>('metricas_periodo', usuario ? { p_junta: usuario.juntaId, p_periodo: periodo } : null)
+  const cuotas = useMemo(() => datos.cuotas.filter(c => c.periodo === periodo).sort((a, b) => nombreUnidad(datos.unidades, a.unidadId).localeCompare(nombreUnidad(datos.unidades, b.unidadId), 'es', { numeric: true })), [datos, periodo])
+  const egresos = datos.egresos.filter(e => !e.anulado && e.fecha.slice(0, 7) === periodo.slice(0, 7))
+
+  const exportar = async (tipo: 'csv' | 'xlsx') => {
+    if (!usuario) return
+    setExportando(tipo)
+    try {
+      const r = await rpc<FilaDataset[]>('exportar_dataset_morosidad', { p_junta: usuario.juntaId })
+      if (!r.ok) return mostrar(r.error, 'error')
+      if (!r.data.length) return mostrar('Aún no hay cuotas con etiqueta definitiva para exportar.', 'info')
+      if (tipo === 'csv') {
+        const csv = '﻿' + [COLUMNAS.join(','), ...r.data.map(f => COLUMNAS.map(c => csvCelda(f[c])).join(','))].join('\r\n')
+        descargar(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `arcomunity_dataset_morosidad_${hoy()}.csv`)
+      } else await exportarExcel(r.data)
+      mostrar(`Exportadas ${r.data.length} cuotas desde la base de datos.`)
+    } catch {
+      mostrar('No se pudo generar el archivo.', 'error')
+    } finally {
+      setExportando('')
+    }
+  }
+
+  return <>
+    <PageHead eyebrow="RENDICIÓN DE CUENTAS" title="Reporte mensual" description="Cifras calculadas en el servidor, listas para compartir con la junta." action={<div className="button-group"><button className="button button-secondary" onClick={() => window.print()}><Printer size={17} /> Imprimir / PDF</button><button className="button button-secondary" disabled={!!exportando} onClick={() => void exportar('xlsx')}><FileText size={17} /> {exportando === 'xlsx' ? 'Generando…' : 'Dataset Excel'}</button><button className="button button-primary" disabled={!!exportando} onClick={() => void exportar('csv')}><ArrowDownToLine size={17} /> {exportando === 'csv' ? 'Generando…' : 'Dataset CSV'}</button></div>} />
+    <div className="report-page">
+      <div className="report-header"><div><span className="eyebrow">ARCOMUNITY · REPORTE</span><h2>Resumen de {mesVisible(periodo)}</h2><p>{datos.configuracion.nombre}</p></div><SelectorMes value={periodo} onChange={setPeriodo} /></div>
+      {!m.data ? <Cargando /> : <div className="stats-grid three"><Stat label="Ingresos conciliados" value={dinero(Number(m.data.recaudado))} icon={<TrendingUp size={19} />} tone="lime" /><Stat label="Egresos" value={dinero(Number(m.data.egresos))} icon={<Banknote size={19} />} /><Stat label="Saldo" value={dinero(Number(m.data.saldo))} icon={<CheckCircle2 size={19} />} /></div>}
+      <div className="panel report-table"><div className="panel-heading"><div><span className="eyebrow">DETALLE</span><h2>Estado por unidad</h2></div><Simulado /></div>
+        {cuotas.length ? <div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Monto</th><th>Vencimiento</th><th>Estado</th><th>Fecha de pago</th></tr></thead><tbody>{cuotas.map(c => <tr key={c.id}><td className="strong">{nombreUnidad(datos.unidades, c.unidadId)}</td><td><Money value={c.monto} /></td><td><DateText value={c.vencimiento} /></td><td><Badge estado={estadoVisible(c)} /></td><td><DateText value={c.fechaPago} /></td></tr>)}</tbody></table></div> : <Empty title="Sin cuotas" text="No hay cuotas generadas para este mes." />}
+      </div>
+      {egresos.length > 0 && <div className="panel report-table"><div className="panel-heading"><div><span className="eyebrow">EGRESOS</span><h2>Gastos del mes</h2></div></div><div className="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Beneficiario</th><th>Monto</th></tr></thead><tbody>{egresos.map(e => <tr key={e.id}><td><DateText value={e.fecha} /></td><td>{conceptoVisible[e.concepto]}</td><td>{e.beneficiario}</td><td><Money value={e.monto} /></td></tr>)}</tbody></table></div></div>}
+      <p className="report-foot">Cifras obtenidas de la base de datos de Arcomunity. La junta de demostración usa datos simulados. El dataset exportado usa seudónimos de unidad y solo incluye cuotas con etiqueta definitiva.</p>
+    </div>
+  </>
 }
+
+// ---------------------------------------------------------------------------------------------
 export function AuditoriaPage() {
-  const { datos, reiniciar } = useApp(); return <><PageHead eyebrow="TRAZABILIDAD" title="Bitácora de auditoría" description="Registro de las acciones realizadas en esta demostración." action={<button className="button button-secondary" onClick={() => { if (window.confirm('¿Restablecer todos los datos simulados y cerrar la sesión?')) reiniciar() }}><RefreshCw size={17} /> Restablecer demo</button>} /><div className="panel"><div className="table-wrap"><table><thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead><tbody>{datos.auditoria.map(a => <tr key={a.id}><td>{new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', dateStyle: 'short', timeStyle: 'short' }).format(new Date(a.fecha))}</td><td className="strong">{a.usuario}</td><td><span className="audit-action">{a.accion.replaceAll('_', ' ')}</span></td><td>{a.detalle}</td></tr>)}</tbody></table></div></div></> }
+  const { datos } = useApp()
+  const [buscar, setBuscar] = useState('')
+  const q = buscar.trim().toLowerCase()
+  const lista = datos.auditoria.filter(a => !q || a.accion.includes(q.replaceAll(' ', '_')) || a.usuario.toLowerCase().includes(q) || a.detalle.toLowerCase().includes(q))
+  const formato = new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', dateStyle: 'short', timeStyle: 'short' })
+  return <>
+    <PageHead eyebrow="TRAZABILIDAD" title="Bitácora de auditoría" description="Acciones registradas por el servidor. Nadie puede editarlas ni borrarlas." />
+    <div className="panel"><div className="table-tools"><label className="search-box"><Search size={18} /><input aria-label="Buscar en la bitácora" placeholder="Buscar acción, persona o detalle…" value={buscar} onChange={e => setBuscar(e.target.value)} /></label><span className="count-pill">Últimas {datos.auditoria.length}</span></div>
+      {lista.length ? <div className="table-wrap"><table><thead><tr><th>Fecha y hora</th><th>Persona</th><th>Acción</th><th>Detalle</th></tr></thead><tbody>{lista.map(a => <tr key={a.id}><td>{formato.format(new Date(a.fecha))}</td><td className="strong">{a.usuario}</td><td><span className="audit-action">{a.accion.replaceAll('_', ' ')}</span></td><td className="audit-detail">{a.detalle || '—'}</td></tr>)}</tbody></table></div> : <Empty title="Sin registros" text="No hay acciones que coincidan." />}
+    </div>
+  </>
+}
