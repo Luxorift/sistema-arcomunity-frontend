@@ -322,7 +322,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pagos', filter: `junta_id=eq.${usuario.juntaId}` }, refrescar)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'cuotas', filter: `junta_id=eq.${usuario.juntaId}` }, refrescar)
       .subscribe()
-    return () => { clearTimeout(temporizador); void supabase.removeChannel(canal) }
+    // Si el celular o la pestaña estuvieron en segundo plano, el socket pudo perder eventos: al volver
+    // se recargan cuotas y pagos.
+    const alVolver = () => { if (document.visibilityState === 'visible') refrescar() }
+    document.addEventListener('visibilitychange', alVolver)
+    return () => { clearTimeout(temporizador); document.removeEventListener('visibilitychange', alVolver); void supabase.removeChannel(canal) }
   }, [usuario, cargarCuotasYPagos])
 
   const recargar = useCallback(async () => { if (usuarioRef.current) await cargarTodo(usuarioRef.current) }, [cargarTodo])

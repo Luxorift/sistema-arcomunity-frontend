@@ -89,6 +89,9 @@ async function main() {
   seccion('4. Pago declarado, Realtime y conciliación')
   const adminA = await sesion('admin@arcomunity.demo')
   let eventos = 0
+  // Fijar el token del administrador en el socket antes de suscribirse: si el canal se une como
+  // anónimo, RLS no entrega eventos de pagos (causa de fallos intermitentes).
+  await adminA.realtime.setAuth((await adminA.auth.getSession()).data.session!.access_token)
   const canal = adminA.channel('prueba-rt').on('postgres_changes', { event: '*', schema: 'public', table: 'pagos', filter: `junta_id=eq.${JUNTA}` }, () => { eventos++ })
   await new Promise<void>(res => canal.subscribe(s => { if (s === 'SUBSCRIBED') res() }))
   // El servidor de Realtime tarda un instante en activar la suscripción tras SUBSCRIBED.
