@@ -9,7 +9,8 @@
     "preview": "vite preview --host 0.0.0.0",
     "test": "vitest run",
     "test:db": "vitest run supabase/tests",
-    "seed:demo": "node --env-file=.env.local scripts/seed-demo.ts"
+    "seed:demo": "node --env-file=.env.local scripts/seed-demo.ts",
+    "test:remoto": "node --env-file=.env.local scripts/pruebas-integracion.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
