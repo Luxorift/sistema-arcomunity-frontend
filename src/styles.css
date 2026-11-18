@@ -139,3 +139,115 @@
 .camera-card-foot{padding:12px 20px;background:#fafcf9;border-top:1px solid #edf1ee;font-size:11px;color:#788e89;display:flex;justify-content:space-between;align-items:center}
 @media(max-width:640px){.cameras-grid{grid-template-columns:1fr}}
 .form-error{background:#fbeceb;border:1px solid #e3b4af;color:#8c2f27;border-radius:10px;padding:11px 14px;font-size:12px;font-weight:700;line-height:1.45;margin:4px 0 2px}
+
+/* --- Componentes de la integración con Supabase ------------------------------------------- */
+.loading-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#55776b;font-weight:700;background:#f5f7f5}
+.loading-inline{display:flex;align-items:center;justify-content:center;gap:10px;padding:40px 16px;color:#5f7f74;font-weight:700;font-size:14px}
+.spin{animation:girar 1s linear infinite}
+@keyframes girar{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+.nav-count{margin-left:auto;min-width:22px;height:22px;padding:0 6px;border-radius:99px;background:#efab80;color:#2b1a12;font-size:11px;font-weight:800;display:grid;place-items:center}
+.nav-tag{margin-left:auto;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border:1px solid #4f7377;color:#9fb8b5;border-radius:99px;padding:3px 7px}
+.nav-link.active .nav-tag{border-color:#6f8a5a;color:#3d5a3a}
+.text-link{align-self:center;font-size:13px;font-weight:700;color:#327961}
+.text-link:hover{text-decoration:underline}
+.inline-field{display:flex;gap:8px}
+.inline-field input{flex:1;min-width:0;background:#fff;border:1px solid #dce6e0;border-radius:8px;padding:10px 12px;min-height:46px;color:#2f484d;font-size:14px;letter-spacing:.06em;font-weight:700}
+.ok-hint{display:flex;align-items:center;gap:6px;color:#3f7c58;font-weight:700}
+.form-error{background:#fff0e9;color:#9a4b3f;border:1px solid #f4d3c8;border-radius:9px;padding:11px 13px;font-size:13px;font-weight:700;line-height:1.45}
+.confirm-text{font-size:14px;line-height:1.55;color:#4a6366;margin:0}
+.section-gap{margin-top:22px}
+.section-gap-bottom{margin:0 0 18px}
+.notice-action{border:1px solid #f1c9a8;background:#fff5ec;color:#8a5631;align-items:center;cursor:pointer}
+.notice-action:hover{background:#ffeedf}
+.notice-action>svg:last-child{margin-left:auto;flex:none}
+.notice-action strong{font-size:14px}
+.button-small{min-height:34px;padding:6px 12px;font-size:12px}
+.tag-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.cell-note{display:block;color:#a15b4e;margin-top:4px;white-space:normal;max-width:260px}
+.text-danger{color:#a8483f!important}
+.text-warning{color:#a36a1f!important;font-weight:700}
+.row-muted td{opacity:.6}
+.audit-detail{white-space:normal;min-width:260px;line-height:1.45}
+.receipt-link{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;padding:8px}
+.receipt-link span{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:#327961}
+.badge-riesgo-alto{background:#fceae8;color:#b75c54}
+.badge-riesgo-medio{background:#fff2dd;color:#a87329}
+.badge-riesgo-bajo{background:#e7f4e7;color:#458557}
+.camera-type{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6d8580;background:#eef3ef;border-radius:99px;padding:5px 9px}
+
+/* Estado de cuenta del propietario */
+.status-hero{display:flex;align-items:center;gap:18px;border-radius:16px;padding:22px 24px;margin-bottom:20px;border:1px solid}
+.status-hero-ok{background:#ecf6e4;border-color:#d6ead0;color:#2f5d3f}
+.status-hero-pending{background:#fff6e6;border-color:#f3e0bc;color:#6b4a18}
+.status-hero-alert{background:#fff0eb;border-color:#f6d6cb;color:#7c3a2f}
+.status-hero-icon{width:56px;height:56px;border-radius:15px;background:#ffffffb3;display:grid;place-items:center;flex:none}
+.status-hero-text{flex:1;min-width:0}
+.status-hero-text span{font-size:11px;font-weight:800;letter-spacing:.12em}
+.status-hero-text strong{display:block;font:700 30px/1.15 Outfit,sans-serif;letter-spacing:-.03em;margin:4px 0}
+.status-hero-text p{margin:0;font-size:14px}
+
+/* Pago guiado */
+.stepper{list-style:none;display:flex;gap:8px;padding:0;margin:0 0 18px;max-width:620px}
+.stepper li{flex:1;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid #e3ebe5;color:#86979a;font-size:13px;font-weight:700}
+.stepper li span{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#eef3ef;font-size:12px;flex:none}
+.stepper li.current{border-color:#9cc6a6;color:#21463f;background:#f4faef}
+.stepper li.current span{background:#17383e;color:#fff}
+.stepper li.done{color:#3f7c58}
+.stepper li.done span{background:#dcefd6;color:#3f7c58}
+.payment-card{max-width:620px;display:flex;flex-direction:column;gap:16px}
+.payment-card .step-heading{margin-bottom:0}
+.payment-card .step-heading p{font-size:13px}
+.payment-card .step-heading h2{font-size:20px}
+.payment-card .info-callout{margin-top:0;font-size:12px}
+.payment-card .field>span{font-size:13px}
+.payment-card .field input,.payment-card .field select{font-size:15px;min-height:46px}
+.payment-amount .text-button{align-self:center;margin-top:6px}
+.pay-qr{margin:0 auto}
+.tips{margin:0;padding:12px 14px 12px 32px;background:#f7faf5;border-radius:10px;color:#4f6a63;font-size:13px;line-height:1.6}
+.step-actions{display:flex;justify-content:space-between;gap:10px}
+.step-actions .button{flex:1}
+.dropzone{min-height:170px;padding:18px}
+.dropzone strong{font-size:15px}
+.dropzone span{font-size:12px}
+.dropzone-filled{padding:10px;background:#fff}
+.receipt-preview{max-height:320px;max-width:100%;object-fit:contain;border-radius:8px}
+.receipt-thumb{max-height:150px;max-width:100%;object-fit:contain;border-radius:8px;border:1px solid #e3ebe5;align-self:center}
+.file-line{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:#4f7a62;margin:-6px 0 0}
+.file-line .text-button{cursor:pointer;font-size:12px}
+.payment-result{max-width:560px;margin:30px auto;text-align:center;background:#fff;border:1px solid #e5ede8;border-radius:18px;padding:34px 26px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.payment-result h1{font-size:28px;margin:0}
+.payment-result p{color:#5d7472;font-size:15px;line-height:1.6;margin:0}
+.payment-result .alert-box{text-align:left;width:100%;font-size:13px}
+.payment-result .alert-box ul{margin:6px 0 0;padding-left:18px}
+.result-icon{width:84px;height:84px;border-radius:50%;display:grid;place-items:center}
+.result-ok{background:#e4f3df;color:#3f7c58}
+.result-review{background:#fff2dd;color:#a87329}
+
+/* Transparencia */
+.unit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:0 23px 23px}
+.unit-chip{display:flex;flex-direction:column;gap:8px;align-items:flex-start;border:1px solid #e5ede8;border-radius:11px;padding:12px 14px;background:#fff}
+.unit-chip strong{font-size:14px;color:#244047;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.unit-chip .my-unit{margin-left:0}
+.unit-mine{border-color:#a9cf8f;background:#f4faec;box-shadow:0 0 0 2px #d6ebc3}
+
+/* Funcionalidad pendiente */
+.pending-feature{padding:26px;max-width:860px}
+.pending-feature-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;color:#3d6b66}
+.pending-feature-head h2{margin:0;font-size:22px}
+.pending-feature>p{font-size:14px;line-height:1.65;color:#566d6c}
+.feature-facts{display:grid;gap:10px;margin:18px 0}
+.feature-facts>div{display:flex;gap:10px;align-items:center;background:#f6f9f4;border-radius:10px;padding:12px 14px;font-size:13px;color:#46625c}
+.feature-facts svg{flex:none;color:#6f9a7c}
+
+@media(max-width:639px){
+  .stepper li{flex-direction:column;gap:4px;padding:8px 4px;font-size:11px;text-align:center}
+  .status-hero{flex-direction:column;align-items:flex-start;padding:18px}
+  .status-hero .button{width:100%}
+  .status-hero-text strong{font-size:26px}
+  .payment-card{padding:18px}
+  .step-actions{flex-direction:column-reverse}
+  .unit-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:0 16px 16px}
+  .inline-field{flex-direction:column}
+  .review-grid{grid-template-columns:1fr}
+}
