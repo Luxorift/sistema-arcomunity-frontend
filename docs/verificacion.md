@@ -55,3 +55,31 @@ semilla al terminar (la auditoría generada se conserva por diseño).
 La página oficial `gob.pe/feriados` bloquea el acceso automatizado (HTTP 418), por lo que la
 verificación se hizo con El Peruano (diario oficial) y el texto de las leyes citadas. Los días no
 laborables que decreta cada año el Ejecutivo **no** se incluyen: no son feriados.
+
+## Dataset de morosidad (APF3)
+
+- `npm run dataset:apf3` exporta 359 cuotas simuladas (30 unidades, 2025-12 a 2026-11) con 75 morosas
+  (20,9 %). Las 16 validaciones automáticas pasan; detalle en `ml/dataset_apf3/validacion_dataset.md`.
+- Diferencia con el APF2 (360 / 76): la cuota con pago en revisión se excluye porque su etiqueta no es
+  definitiva; con la regla del APF2 los mismos datos dan 76. Los periodos se desplazan un mes porque la
+  semilla se cargó en noviembre.
+- pandas 3.1.1 carga el CSV; Excel (es-PE) abre el `.xlsx`. El CSV con doble clic en Excel es-PE queda en
+  una columna por el separador regional `;` (importarlo con delimitador coma).
+- Después de `test:remoto` y `test:navegadores` el CSV regenerado es idéntico: las pruebas no alteran la semilla.
+
+## Build de producción e interfaz
+
+- Build solo con variables públicas: sin clave de servicio, contraseña ni JWT `service_role` en `dist/`.
+- Sobre `vite preview`: `test:navegadores` 10/10 y `test:ui` sin problemas en 18 pantallas, escritorio
+  (1366 px) y móvil (375 px).
+- Corregido con la auditoría: en móvil no había `h1` visible en las pantallas de acceso; enlaces de acceso
+  con menos de 24 px; el menú lateral cerrado proyectaba sombra en el borde y dejaba sus enlaces en el
+  orden de tabulación.
+
+## Dependencias (`npm audit`, 17/11/2026)
+
+- Producción: `exceljs` → `uuid` (moderada, comprobación de `buf` en v3/v5/v6). `exceljs` solo llama a
+  `uuidv4()` sin `buf`: no afecta. La «solución» de npm es bajar a `exceljs` 3.4.0; no se aplica.
+- Desarrollo: `picomatch` ≤ 4.0.7 (ReDoS) vía `vite`/`vitest`. No hay versión 4.x corregida publicada y
+  solo procesa patrones del propio proyecto; revisar cuando salga una actualización.
+- Todas las dependencias declaradas se usan.
