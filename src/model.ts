@@ -1,18 +1,19 @@
 export type Rol = 'admin' | 'propietario'
 export type EstadoCuota = 'pendiente' | 'en_revision' | 'pagada'
 export type EstadoPago = 'conciliado_auto' | 'pendiente_revision' | 'conciliado_manual' | 'rechazado'
-export type MetodoPago = 'yape_qr' | 'yape_captura' | 'efectivo' | 'transferencia'
+export type MetodoPago = 'yape_qr' | 'yape_captura' | 'plin_captura' | 'efectivo' | 'transferencia'
 export type ConceptoEgreso = 'pago_vigilante' | 'insumos' | 'otros'
 export type TipoCamara = 'simulada' | 'mjpeg' | 'embed'
 
 export interface Usuario { id: string; nombre: string; correo: string; rol: Rol; unidadId?: string; telefono?: string; claveHash: string; aceptoDatosEn?: string }
-export interface Unidad { id: string; codigo: string; activa: boolean }
+export interface Propietario { id: string; nombre: string; correo: string; telefono?: string }
+export interface Unidad { id: string; codigo: string; activa: boolean; propietario?: Propietario }
 export interface Camara { id: string; nombre: string; ubicacion: string; tipo: TipoCamara; url?: string; activa: boolean }
-export interface Cuota { id: string; unidadId: string; periodo: string; monto: number; vencimiento: string; estado: EstadoCuota; fechaPago?: string; pagoId?: string; esSimulado: boolean }
-export interface Pago { id: string; cuotaId: string; unidadId: string; monto: number; fecha: string; operacion: string; metodo: MetodoPago; estado: EstadoPago; alertas: string[]; comprobante?: string; comprobanteNombre?: string; ocrConfianza?: number; motivoRechazo?: string; subidoEn: string; conciliadoEn?: string; esSimulado: boolean }
-export interface Egreso { id: string; fecha: string; concepto: ConceptoEgreso; beneficiario: string; monto: number; comentario?: string; esSimulado: boolean }
+export interface Cuota { id: string; unidadId: string; periodo: string; monto: number; vencimiento: string; estado: EstadoCuota; fechaPago?: string; pagoId?: string; diasAtraso?: number; esSimulado: boolean }
+export interface Pago { id: string; cuotaId: string; unidadId: string; monto: number; fecha: string; operacion: string; metodo: MetodoPago; estado: EstadoPago; alertas: string[]; comprobante?: string; comprobanteNombre?: string; ocrConfianza?: number; motivoRechazo?: string; notaAdmin?: string; comprobantePath?: string; revisadoEn?: string; subidoEn: string; conciliadoEn?: string; esSimulado: boolean }
+export interface Egreso { id: string; fecha: string; concepto: ConceptoEgreso; beneficiario: string; monto: number; comentario?: string; anulado?: boolean; motivoAnulacion?: string; esSimulado: boolean }
 export interface Auditoria { id: string; fecha: string; usuario: string; accion: string; detalle: string }
-export interface Configuracion { nombre: string; codigoInvitacion: string; cuotaMensual: number; diaVencimiento: number; yapeTitular: string; yapeQr?: string; conciliacionAutomatica: boolean }
+export interface Configuracion { nombre: string; codigoInvitacion: string; cuotaMensual: number; diaVencimiento: number; yapeTitular: string; yapeQr?: string; yapeQrPath?: string; conciliacionAutomatica: boolean; transparenciaDetalle?: boolean }
 export interface Datos { usuarios: Usuario[]; unidades: Unidad[]; camaras: Camara[]; cuotas: Cuota[]; pagos: Pago[]; egresos: Egreso[]; auditoria: Auditoria[]; configuracion: Configuracion }
 
 export const id = () => crypto.randomUUID()
@@ -23,7 +24,7 @@ export const fechaVisible = (fecha?: string) => fecha ? `${fecha.slice(8, 10)}/$
 export const mesVisible = (fecha: string) => new Intl.DateTimeFormat('es-PE', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${fecha.slice(0, 10)}T12:00:00Z`))
 export const dinero = (n: number) => `S/ ${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 export const estadoVisible = (cuota: Cuota) => cuota.estado === 'pendiente' && cuota.vencimiento < hoy() ? 'morosa' : cuota.estado
-export const tituloEstado = (estado: string) => ({ pagada: 'Pagada', pendiente: 'Pendiente', en_revision: 'En revisión', morosa: 'Morosa', conciliado_auto: 'Conciliado auto', conciliado_manual: 'Conciliado manual', pendiente_revision: 'En revisión', rechazado: 'Rechazado' }[estado] || estado)
+export const tituloEstado = (estado: string) => ({ pagada: 'Pagada', pendiente: 'Pendiente', en_revision: 'En revisión', morosa: 'Vencida', conciliado_auto: 'Validado por reglas', conciliado_manual: 'Aprobado', pendiente_revision: 'En revisión', rechazado: 'Rechazado', activa: 'Activa', inactiva: 'Inactiva' }[estado] || estado)
 export const fechaVencimiento = (periodo: string, dia: number) => `${periodo.slice(0, 8)}${String(dia).padStart(2, '0')}`
 export const hash = async (texto: string) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texto)))).map(n => n.toString(16).padStart(2, '0')).join('')
 
