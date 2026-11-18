@@ -172,6 +172,15 @@ describe('Restauración de la demostración', () => {
     expect(await errorDe(db, `update auth.users set encrypted_password = 'x' where id = $1`, [ids.admin])).toMatch(/no pueden cambiar/)
   })
 
+  it('el diagnóstico es solo para el servicio', async () => {
+    await como(db, { tipo: 'usuario', id: ids.admin })
+    expect(await errorDe(db, 'select public.estado_demo($1)', [ids.junta])).toMatch(/permission denied/)
+    await como(db, { tipo: 'servicio' })
+    const [d] = await filas<{ r: Record<string, unknown> }>(db, 'select public.estado_demo($1) as r', [ids.junta])
+    expect(d.r).toMatchObject({ modo_demo: true, cuentas_demo: 2, restauracion_nocturna: null })
+    expect(d.r.foto_del).toBeTruthy()
+  })
+
   it('el servicio puede guardar una nueva foto', async () => {
     await como(db, { tipo: 'servicio' })
     const [g] = await filas<{ r: { cuotas: number; cuentas_demo: number } }>(db, 'select public.guardar_estado_demo($1) as r', [ids.junta])

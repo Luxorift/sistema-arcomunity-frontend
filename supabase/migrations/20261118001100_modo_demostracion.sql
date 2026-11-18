@@ -343,10 +343,33 @@ begin
     'foto_del', (select d.guardado_en from public.demo_estados d where d.junta_id = p_junta));
 end $$;
 
-revoke execute on function public.es_cuenta_demo(uuid), public.restaurando_demo(), public.es_junta_demo(uuid),
+-- Diagnóstico para el equipo técnico: fecha de la foto y tarea nocturna (si pg_cron existe).
+create or replace function public.estado_demo(p_junta uuid)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  v_cron jsonb;
+begin
+  perform public.exigir_servicio_o_sistema();
+  if to_regclass('cron.job') is not null then
+    execute $q$select coalesce(jsonb_agg(jsonb_build_object('nombre', jobname, 'horario', schedule, 'activa', active)), '[]')
+               from cron.job where jobname = 'arcomunity-restaurar-demo'$q$ into v_cron;
+  end if;
+  return jsonb_build_object(
+    'modo_demo', public.es_junta_demo(p_junta),
+    'foto_del', (select d.guardado_en from public.demo_estados d where d.junta_id = p_junta),
+    'cuentas_demo', (select count(*) from auth.users u where u.raw_app_meta_data ->> 'demo' = 'true'),
+    'restauracion_nocturna', v_cron);
+end $$;
+
+revoke execute on function public.es_cuenta_demo(uuid), public.restaurando_demo(), public.es_junta_demo(uuid), public.estado_demo(uuid),
   public.exigir_servicio_o_sistema(), public.guardar_estado_demo(uuid), public.restaurar_estado_demo(uuid)
   from public, anon, authenticated;
-grant execute on function public.guardar_estado_demo(uuid), public.restaurar_estado_demo(uuid) to service_role;
+grant execute on function public.guardar_estado_demo(uuid), public.restaurar_estado_demo(uuid), public.estado_demo(uuid) to service_role;
 grant select on public.demo_estados to service_role;
 
 -- 4) Activar el modo demostración en la junta piloto y sus cuentas, y guardar su estado actual.
