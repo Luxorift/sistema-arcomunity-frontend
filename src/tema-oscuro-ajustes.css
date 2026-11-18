@@ -94,3 +94,10 @@
 :root[data-theme="dark"] .demo-escenarios li.falta,:root[data-theme="dark"] .demo-escenarios li.falta svg{color:#f2cd8a}
 :root[data-theme="dark"] .receipt-thumb,:root[data-theme="dark"] .receipt-preview{background:#fff}
 }
+@media screen {
+:root[data-theme="dark"] .kpi-modelo-valor{color:#eef4f1}
+:root[data-theme="dark"] .kpi-modelo-icono{background:#24402c;color:#b6e0a0}
+:root[data-theme="dark"] .kpi-modelo-medidor{background:#2c3f3d}
+:root[data-theme="dark"] .kpi-modelo-medidor span{background:#a6d47a}
+:root[data-theme="dark"] .ml-seccion+.ml-seccion{border-top-color:#2c3f3d}
+}

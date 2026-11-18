@@ -2,7 +2,7 @@
 // móvil y el equivalente a 200 % de zoom (683×384 px de ventana CSS en una pantalla de 1366×768).
 // Solo lee: abre pantallas, menús y ventanas de confirmación sin confirmar nada. axe no reemplaza la
 // revisión manual (lectores de pantalla, lenguaje, orden lógico): complementa las pruebas a mano.
-// Uso: npm run test:a11y          (APP_URL=… para otro servidor; TEMAS=oscuro; VISTAS=movil)
+// Uso: npm run test:a11y          (APP_URL=… para otro servidor; TEMAS=oscuro; VISTAS=movil; ESCENAS=prediccion)
 import { chromium, type Page } from 'playwright-core'
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
@@ -66,7 +66,7 @@ try {
     await entrar(paginas.propietario, 'casa12@arcomunity.demo')
     await entrar(paginas.admin, 'admin@arcomunity.demo')
     let antes = fallos
-    for (const e of ESCENAS) {
+    for (const e of ESCENAS.filter(x => !process.env.ESCENAS || process.env.ESCENAS.split(',').includes(x.nombre))) {
       const p = paginas[e.rol]
       const etiqueta = `[${tema} ${v.nombre}] ${e.rol} ${e.nombre}`
       try {
