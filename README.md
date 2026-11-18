@@ -83,17 +83,66 @@ scripts/pruebas-integracion.ts  Pruebas contra el proyecto Supabase real
 
 ## Cuentas de demostración
 
-Contraseña de todas: **`Demo2026!`** (cuentas ficticias de la junta simulada).
+**Acceso:** <https://sistema-arcomunity-frontend.vercel.app/login>
 
-| Rol | Correo | Escenario |
-| --- | --- | --- |
-| Administración | `admin@arcomunity.demo` | Panel completo |
-| Propietaria · Casa 12 | `casa12@arcomunity.demo` | Cuota del mes pendiente |
-| Propietario · Casa 08 | `casa08@arcomunity.demo` | Pago en revisión |
-| Propietaria · Dpto 301 | `dpto301@arcomunity.demo` | Propietaria al día |
+Son cuentas reales de Supabase Auth creadas solo para la exposición, las pruebas y la revisión docente.
+Pertenecen a una junta **ficticia** («Junta Vecinal Arcomunity — Piloto», 30 unidades, 12 meses de
+historial simulado). No hay datos personales reales.
 
-Código de invitación para registrar nuevos propietarios: **`ARCO2026`** (editable en Configuración).
-El rol de administrador nunca se obtiene por registro: se asigna en la base de datos.
+Contraseña de las cuatro cuentas: **`Demo2026!`** (pública y exclusiva de esta demostración).
+
+| Rol | Correo | Contraseña | Qué permite probar |
+| --- | --- | --- | --- |
+| Administración | `admin@arcomunity.demo` | `Demo2026!` | Resumen con métricas, cuotas, conciliación de pagos (aprobar o rechazar con el comprobante), pagos y reversión, egresos, reportes con exportación CSV/Excel, unidades y vecinos, auditoría, transparencia, videovigilancia simulada y configuración. |
+| Propietaria · Casa 12 | `casa12@arcomunity.demo` | `Demo2026!` | Cuota de noviembre vencida: pago guiado en 3 pasos con el comprobante de ejemplo, lectura OCR y seguimiento del estado. Si se usa a la vez que la administración, el pago aparece en Conciliación sin recargar. |
+| Propietario · Casa 08 | `casa08@arcomunity.demo` | `Demo2026!` | Pago enviado que espera revisión: cómo ve el vecino un pago pendiente y el motivo. |
+| Propietaria · Dpto 301 | `dpto301@arcomunity.demo` | `Demo2026!` | Vecina al día: historial completo de pagos, mensaje de agradecimiento y diferencias frente a un perfil con deuda. |
+
+### Cómo ingresar
+
+1. Abre <https://sistema-arcomunity-frontend.vercel.app/login> en la computadora o el celular.
+2. Pulsa un perfil en **Cuentas de demostración** (completa el correo) o escríbelo.
+3. Escribe la contraseña `Demo2026!` y pulsa **Ingresar**.
+4. Para comparar perfiles al mismo tiempo, usa otra ventana privada u otro navegador: cada sesión es
+   independiente.
+
+Los propietarios solo ven su unidad: si intentan abrir `/admin`, la aplicación los devuelve a *Mi cuenta*
+y la base de datos (RLS) rechaza la consulta.
+
+Para probar el registro de un vecino nuevo usa el código de invitación **`ARCO2026`** y un correo ficticio
+(no requiere confirmación). El rol de administrador nunca se obtiene por registro: se asigna en la base de
+datos. Las cuentas creadas así se desvinculan de la junta demo en la restauración nocturna.
+
+### Protecciones del modo demostración
+
+Como la contraseña es pública, la base de datos (no solo la interfaz) aplica estas reglas a la junta demo
+(migración `20261118001100_modo_demostracion.sql`):
+
+- Las cuentas demo no pueden cambiar su contraseña, correo, teléfono ni nombre.
+- No se pueden cambiar el nombre de la junta, el código de invitación (`ARCO2026`), el titular ni el QR de
+  Yape, ni desvincular a las cuentas demo o desactivar sus unidades.
+- Solo se admiten cámaras simuladas (sin enlaces externos).
+- La administración demo no tiene acceso a Supabase, a claves ni a otras juntas: todo pasa por RLS y
+  funciones del servidor con auditoría.
+- Ninguna clave de servicio, contraseña de PostgreSQL ni credencial administrativa real está en el
+  repositorio.
+
+Todo lo demás se puede probar (pagar, aprobar, rechazar, revertir, registrar egresos, cambiar la cuota…).
+
+### Restaurar la demostración
+
+Cada noche (03:00, hora de Lima) la base vuelve al estado guardado: cuotas, pagos, egresos, cámaras,
+configuración, unidades, vínculos y cuentas demo. Los registros hechos con el código de invitación se
+desvinculan de la junta demo. La auditoría se conserva y anota la restauración.
+
+El equipo técnico también puede restaurarla en cualquier momento (requiere la clave de servicio en
+`.env.local`, que no se publica):
+
+```bash
+npm run demo:restaurar
+```
+
+Para guardar el estado actual como nuevo punto de restauración: `npm run demo:restaurar -- --guardar`.
 
 ## Pruebas
 
