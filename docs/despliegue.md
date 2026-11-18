@@ -16,8 +16,9 @@ Publicar en producción = integrar `dev` en `main` (Pull Request). Requiere auto
 
 ## Antes de integrar `dev` en `main`
 
-1. **Migración 0900 aplicada** en Supabase (`supabase db push`). Sin ella el límite de intentos del
-   código de invitación no existe en el servidor y el botón «Generar código seguro» falla.
+1. **Migraciones 0900 (aplicada el 17/11/2026) y 1000** en Supabase (`supabase db push`). La 1000 hace
+   que el límite de intentos del código de invitación use una IP que el cliente no puede falsificar.
+   Después: `npm run test:remoto` y `npm run test:limite`.
 2. **Variables en Vercel** → *Settings → Environment Variables*: `VITE_SUPABASE_URL` y
    `VITE_SUPABASE_ANON_KEY` para *Production* (y *Preview* si se quieren probar las vistas previas).
    Nunca `SUPABASE_SERVICE_ROLE_KEY` ni otra clave secreta.

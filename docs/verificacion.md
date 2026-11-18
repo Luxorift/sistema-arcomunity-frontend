@@ -39,6 +39,18 @@ semilla al terminar (la auditoría generada se conserva por diseño).
   hash y purgada a las 24 h; códigos de al menos 8 caracteres con letras y números; botón para
   generar códigos aleatorios `ARCO-XXXX-XXXX`.
 - Recomendación: fuera de la demostración, reemplazar `ARCO2026` por un código generado.
+- 0900 aplicada en Supabase (17/11/2026). `test:remoto` la verifica sobre una junta temporal: genera y
+  guarda códigos `ARCO-XXXX-XXXX`, rechaza códigos débiles, solo el administrador de la junta puede
+  generarlos y nadie lee los intentos desde la API (78/78).
+- **Hallazgo tras aplicarla:** el límite por IP tomaba el primer valor de `X-Forwarded-For`, que escribe
+  el cliente. Contra Supabase real, 10 fallos con una IP falsa bloquearon esa IP falsa pero no otra ni la
+  real: el límite se saltaba y se podía bloquear la IP de otra persona.
+- Corrección en la migración 1000: usar `CF-Connecting-IP` (Cloudflare está delante de Supabase y la fija)
+  o, si falta, el último valor público de `X-Forwarded-For`. Las pruebas en PGlite fallan sin la 1000 y
+  pasan con ella. `npm run test:limite` lo comprueba contra el servidor real una vez aplicada.
+- Riesgo que se mantiene por diseño: el tope global de 200 fallos cada 15 minutos permite que alguien
+  bloquee el registro de todos durante 15 minutos. Con códigos aleatorios de 8 caracteres adivinar es
+  inviable; si ese bloqueo llega a ocurrir, conviene subir el tope o moverlo a un límite del proxy.
 
 ## Calendario peruano
 

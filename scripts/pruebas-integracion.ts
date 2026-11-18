@@ -104,7 +104,7 @@ async function main() {
   if (pago1?.pago_id) limpieza.pagos.push(pago1.pago_id)
   check('monto distinto pasa a revisión con alerta R1', pago1?.estado === 'pendiente_revision' && pago1.alertas.includes('monto_no_coincide'), p1.error?.message)
   check('no permite enviar otro pago mientras está en revisión', /revisión/.test((await prop.rpc('enviar_pago', { p_cuota_id: cuota.id, p_metodo: 'yape_captura', p_monto: 150, p_fecha_operacion: hoyLima, p_numero_operacion: 'OTRA1234', p_comprobante_path: path1 })).error?.message ?? ''))
-  await new Promise(res => setTimeout(res, 4000))
+  for (let t = 0; t < 30 && eventos === 0; t++) await new Promise(res => setTimeout(res, 500))
   check('el administrador recibe el cambio en tiempo real', eventos > 0, `${eventos} eventos`)
   await adminA.removeChannel(canal)
 
@@ -174,6 +174,18 @@ async function main() {
   check('admin B no genera cuotas en la junta A', !!(await adminB.rpc('generar_cuotas', { p_junta: JUNTA })).error)
   check('admin B no abre comprobantes de la junta A', !!(await adminB.storage.from('comprobantes').createSignedUrl(path1, 60)).error)
   check('admin A no ve la junta B', ((await adminA.from('juntas').select('id').eq('id', juntaB)).data ?? []).length === 0)
+
+  seccion('6b. Código de invitación (migración 0900)')
+  const genB = await adminB.rpc('generar_codigo_invitacion', { p_junta: juntaB })
+  const codigoB = String(genB.data ?? '')
+  check('el administrador genera un código ARCO-XXXX-XXXX con letras y números', /^ARCO-[A-HJKMNP-Z2-9]{4}-[A-HJKMNP-Z2-9]{4}$/.test(codigoB) && /\d/.test(codigoB.slice(5)) && /[A-Z]/.test(codigoB.slice(5)), genB.error?.message ?? codigoB)
+  check('el código generado queda guardado en su junta', (await admin.from('juntas_invitacion').select('codigo').eq('junta_id', juntaB).single()).data?.codigo === codigoB)
+  check('el código generado funciona en el registro', !(await nuevo().rpc('unidades_disponibles', { p_codigo: codigoB.toLowerCase() })).error)
+  check('otro administrador no cambia el código de la junta B', !!(await adminA.rpc('generar_codigo_invitacion', { p_junta: juntaB })).error)
+  check('un visitante no genera códigos', (await nuevo().rpc('generar_codigo_invitacion', { p_junta: juntaB })).error?.code === '42501')
+  check('rechaza códigos débiles (solo letras o muy cortos)', !!(await admin.from('juntas_invitacion').update({ codigo: 'SOLOLETRAS' }).eq('junta_id', juntaB)).error && !!(await admin.from('juntas_invitacion').update({ codigo: 'AB12' }).eq('junta_id', juntaB)).error)
+  check('nadie lee los intentos fallidos desde la API', !!(await nuevo().from('intentos_invitacion').select('id').limit(1)).error)
+  check('el código de la demostración sigue intacto', (await admin.from('juntas_invitacion').select('codigo').eq('junta_id', JUNTA).single()).data?.codigo === 'ARCO2026')
 
   seccion('7. QR de Yape en Storage privado')
   const qrPath = `${JUNTA}/qr-prueba-${crypto.randomUUID()}.jpg`
