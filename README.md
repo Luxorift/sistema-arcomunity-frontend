@@ -135,7 +135,21 @@ Cada noche (03:00, hora de Lima) la base vuelve al estado guardado: cuotas, pago
 configuración, unidades, vínculos y cuentas demo. Los registros hechos con el código de invitación se
 desvinculan de la junta demo. La auditoría se conserva y anota la restauración.
 
-El equipo técnico también puede restaurarla en cualquier momento (requiere la clave de servicio en
+**Desde la web (administración):** *Auditoría → Herramientas de demostración* (migración
+`20261118001300_herramientas_demostracion.sql`):
+
+- **Preparar demostración**: genera las cuotas del mes siguiente que falten (sin duplicar), calcula el
+  riesgo de morosidad con el modelo v1 dentro de PostgreSQL y comprueba los escenarios de las cuentas demo
+  (Casa 12 con cuota por pagar, Casa 08 con pago en revisión, Dpto 301 al día). No inventa pagos: si un
+  escenario se perdió en un ensayo, lo avisa y sugiere reiniciar. Se puede pulsar varias veces.
+- **Reiniciar demostración**: vuelve a la foto guardada (misma lógica que la restauración nocturna), quita
+  las predicciones y borra los comprobantes subidos en el ensayo. Pide doble confirmación.
+
+El servidor comprueba que quien llama sea la administración de la junta **en modo demostración**
+(propietarios, visitantes y otras juntas reciben «No tienes permiso»), impide dos ejecuciones a la vez y
+registra cada operación en la auditoría, que nunca se borra.
+
+El equipo técnico también puede restaurarla desde la terminal (requiere la clave de servicio en
 `.env.local`, que no se publica):
 
 ```bash
@@ -155,6 +169,9 @@ npm run test:ui      # auditoría de solo lectura de todas las pantallas (consol
 npm run test:responsive  # 8 tamaños (320 px a escritorio y horizontal) en Chrome y Edge: desbordes, recortes, menú y modales
 npm run test:demo    # cuentas demo contra Supabase: roles, permisos, abusos rechazados y restauración
 npm run test:acceso  # los 4 perfiles en la web pública con Chrome y Edge, escritorio y celular (como el docente)
+npm run test:a11y    # WCAG 2.2 AA con axe-core: modo claro y oscuro, escritorio, celular y zoom 200 %
+TEMA=oscuro npm run test:responsive  # la prueba responsive en modo oscuro (incluye 683×384 = zoom 200 %)
+npm run verificar:red  # desde la red donde se expone: ¿responden la web, Supabase y el tiempo real?
 ```
 
 `test:navegadores` y `test:ui` usan el frontend en `http://localhost:5173` (`npm run dev`). Para probar el
@@ -183,7 +200,19 @@ una partición temporal de referencia y `validacion_dataset.md`. Ver ese informe
 
 Lista de comprobación previa a producción: [docs/despliegue.md](docs/despliegue.md).
 
+## Accesibilidad y temas
+
+- Pensada también para personas mayores: letra mínima de 12–13 px (16 px en el cuerpo), contraste AA,
+  botones y campos de 44 px, ayudas breves desplegables («¿Qué significa «En revisión»?»), errores junto a
+  cada campo y confirmaciones solo antes de acciones importantes (`ConfirmDialog` en `src/ui.tsx`).
+- **Modo claro y oscuro** con el botón sol/luna de la barra superior (y de las pantallas de acceso). La
+  primera vez sigue la preferencia del sistema; la elección se guarda solo como «claro» u «oscuro». El modo
+  oscuro se genera desde la paleta con `npm run tema:oscuro` (ver `scripts/generar-tema-oscuro.ts`); los
+  retoques manuales están en `src/tema-oscuro-ajustes.css`.
+
 ## Recorrido sugerido para la demostración
+
+Guion completo (8–10 min y 3–5 min), plan B y lista previa: [docs/DEMO_APF3_COMPLETA.md](docs/DEMO_APF3_COMPLETA.md).
 
 1. Entra como administración: el saludo y el resumen muestran recaudación, cuotas vencidas y pagos por revisar.
 2. En otra ventana (o en el celular) entra como `casa12@arcomunity.demo` y paga en 3 pasos

@@ -1,0 +1,9 @@
+# Despliegue alternativo en Netlify (plan gratuito). Mismo código y mismo Supabase que Vercel.
+# Variables (Site configuration → Environment variables): VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.
+# Nunca una clave de servicio. Las rutas internas usan public/_redirects (/* → /index.html).
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
