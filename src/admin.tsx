@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { AlertCircle, ArrowDownToLine, ArrowRight, Banknote, CalendarDays, Check, CheckCircle2, Clock3, ExternalLink, FileText, Filter, ImagePlus, Plus, Printer, Search, ShieldCheck, Trash2, TrendingUp, UserMinus, UsersRound, XCircle } from 'lucide-react'
+import { AlertCircle, ArrowDownToLine, ArrowRight, Banknote, CalendarDays, Check, CheckCircle2, Clock3, ExternalLink, FileText, Filter, ImagePlus, Plus, Printer, RefreshCw, Search, ShieldCheck, Trash2, TrendingUp, UserMinus, UsersRound, XCircle } from 'lucide-react'
 import { dinero, estadoVisible, hoy, mes, mesVisible, periodoAnterior, type Camara, type ConceptoEgreso, type Configuracion, type Pago, type TipoCamara, type Unidad } from './model'
 import { useApp, type CamaraEdicion } from './store'
 import { useRpc } from './lib/usarRpc'
@@ -83,6 +83,18 @@ function ConfiguracionFormulario({ inicial }: { inicial: Configuracion }) {
   const [form, setForm] = useState<Configuracion>(inicial)
   const [guardando, setGuardando] = useState(false)
   const [subiendoQr, setSubiendoQr] = useState(false)
+  const [generando, setGenerando] = useState(false)
+  const { rpc, usuario, recargar } = useApp()
+  const generarCodigo = async () => {
+    if (!usuario) return
+    setGenerando(true)
+    const r = await rpc<string>('generar_codigo_invitacion', { p_junta: usuario.juntaId })
+    setGenerando(false)
+    if (!r.ok) return mostrar(r.error, 'error')
+    setForm(f => ({ ...f, codigoInvitacion: r.data }))
+    mostrar(`Nuevo código: ${r.data}. El anterior ya no funciona.`)
+    await recargar()
+  }
   const [modalCamara, setModalCamara] = useState<CamaraEdicion | null>(null)
   const [borrar, setBorrar] = useState<Camara | null>(null)
 
@@ -113,7 +125,7 @@ function ConfiguracionFormulario({ inicial }: { inicial: Configuracion }) {
           <label className="field full"><span>Nombre de la junta</span><input required value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} /></label>
           <label className="field"><span>Cuota mensual (S/)</span><input required type="number" min="0.01" step="0.01" value={form.cuotaMensual} onChange={e => setForm({ ...form, cuotaMensual: Number(e.target.value) })} /><small>Se aplica a las cuotas que generes desde ahora.</small></label>
           <label className="field"><span>Día de vencimiento</span><input required type="number" min="1" max="28" value={form.diaVencimiento} onChange={e => setForm({ ...form, diaVencimiento: Number(e.target.value) })} /></label>
-          <label className="field full"><span>Código de invitación</span><input required minLength={6} maxLength={32} value={form.codigoInvitacion} onChange={e => setForm({ ...form, codigoInvitacion: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '') })} /><small>Compártelo solo con propietarios de la junta. Cámbialo si se filtró.</small></label>
+          <div className="field full"><label htmlFor="codigo-invitacion"><span className="field-label">Código de invitación</span></label><div className="inline-field"><input id="codigo-invitacion" required minLength={8} maxLength={32} value={form.codigoInvitacion} onChange={e => setForm({ ...form, codigoInvitacion: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '') })} /><button type="button" className="button button-secondary" disabled={generando} onClick={() => void generarCodigo()}><RefreshCw size={16} /> {generando ? 'Generando…' : 'Generar código seguro'}</button></div><small>Mínimo 8 caracteres con letras y números. Compártelo solo con propietarios; si se filtró, genera uno nuevo (el anterior deja de funcionar).</small></div>
         </div>
         <label className="toggle-row"><div><strong>Validación automática por reglas</strong><small>Los comprobantes sin alertas marcan la cuota como pagada. No equivale a confirmación bancaria: puedes revertirlos en Pagos.</small></div><input type="checkbox" checked={form.conciliacionAutomatica} onChange={e => setForm({ ...form, conciliacionAutomatica: e.target.checked })} /><span className="switch" /></label>
         <label className="toggle-row"><div><strong>Mostrar estado por unidad en Transparencia</strong><small>Si lo desactivas, los vecinos solo ven totales de la comunidad.</small></div><input type="checkbox" checked={form.transparenciaDetalle ?? true} onChange={e => setForm({ ...form, transparenciaDetalle: e.target.checked })} /><span className="switch" /></label>

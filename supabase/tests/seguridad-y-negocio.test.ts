@@ -437,3 +437,49 @@ describe('Preparación ML sin fuga de información', () => {
     expect(feats.length).toBeGreaterThan(0)
   })
 })
+
+describe('Seguridad del código de invitación', () => {
+  const consultar = async (codigo: string, ip: string) => {
+    await como(db, { tipo: 'anon' })
+    await db.query(`select set_config('request.headers', $1, false)`, [JSON.stringify({ 'x-forwarded-for': `${ip}, 10.0.0.1` })])
+    return errorDe(db, 'select * from public.unidades_disponibles($1)', [codigo])
+  }
+
+  it('bloquea una IP tras 10 códigos incorrectos en 15 minutos, sin afectar a otras', async () => {
+    for (let i = 0; i < 10; i++) expect(await consultar(`MAL${i}CODIGO`, '203.0.113.7')).toBeNull()
+    expect(await consultar('OTROMAL1', '203.0.113.7')).toMatch(/Demasiados intentos/)
+    expect(await consultar('ARCO2026', '203.0.113.7')).toMatch(/Demasiados intentos/)
+    expect(await consultar('ARCO2026', '198.51.100.20')).toBeNull()
+  })
+
+  it('guarda la IP solo como hash', async () => {
+    await como(db, { tipo: 'postgres' })
+    const r = await filas<{ ip_hash: string }>(db, 'select ip_hash from public.intentos_invitacion limit 1')
+    expect(r[0].ip_hash).toMatch(/^[0-9a-f]{64}$/)
+    expect(JSON.stringify(await filas(db, 'select * from public.intentos_invitacion'))).not.toMatch(/203\.0\.113/)
+  })
+
+  it('nadie lee los intentos desde la API', async () => {
+    await como(db, { tipo: 'usuario', id: ids.adminA })
+    expect(await errorDe(db, 'select * from public.intentos_invitacion')).toMatch(/permission denied/)
+  })
+
+  it('exige códigos de al menos 8 caracteres con letras y números', async () => {
+    await como(db, { tipo: 'usuario', id: ids.adminA })
+    const guardar = (c: string) => errorDe(db, `select public.actualizar_configuracion($1, 'Junta A (simulada)', 150, 28, null, true, true, $2)`, [ids.juntaA, c])
+    expect(await guardar('ABCDEFGH')).toMatch(/letras y números/)
+    expect(await guardar('1234-5678')).toMatch(/letras y números/)
+    expect(await guardar('ARC0-1')).toMatch(/entre 6 y 32|al menos 8/)
+    expect(await guardar('ARCO2026')).toBeNull()
+  })
+
+  it('el administrador genera un código aleatorio; el propietario no puede', async () => {
+    await como(db, { tipo: 'usuario', id: ids.adminA })
+    const [r] = await filas<{ c: string }>(db, 'select public.generar_codigo_invitacion($1) as c', [ids.juntaA])
+    expect(r.c).toMatch(/^ARCO-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/)
+    const [r2] = await filas<{ c: string }>(db, 'select public.generar_codigo_invitacion($1) as c', [ids.juntaA])
+    expect(r2.c).not.toBe(r.c)
+    await como(db, { tipo: 'usuario', id: ids.propA1 })
+    expect(await errorDe(db, 'select public.generar_codigo_invitacion($1)', [ids.juntaA])).toMatch(/No tienes permiso/)
+  })
+})
