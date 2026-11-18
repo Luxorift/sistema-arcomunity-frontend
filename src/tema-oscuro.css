@@ -826,4 +826,16 @@
 :root[data-theme="dark"] .segmented button.selected {
     color: #d3e3e7
 }
+:root[data-theme="dark"] .quota-calendar {
+    color: #aad4b0
+}
+:root[data-theme="dark"] .demo-avatar {
+    color: #aad4b0
+}
+:root[data-theme="dark"] .stepper li {
+    color: #b3c3c1
+}
+:root[data-theme="dark"] .payment-amount span,:root[data-theme="dark"] .payment-amount small {
+    color: #aad4b0
+}
 }

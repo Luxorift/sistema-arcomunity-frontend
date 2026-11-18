@@ -570,3 +570,7 @@ table{font-size:14.5px}
 .table-wrap:focus-visible{outline-offset:-3px}
 .segmented{border:1px solid #dbe4dd}
 .segmented button.selected{box-shadow:0 0 0 2px #17383e inset,0 2px 5px #132d3517;color:#17383e}
+.quota-calendar{color:#3f6545}
+.demo-avatar{color:#3f6545}
+.stepper li{color:#5b6e6c}
+.payment-amount span,.payment-amount small{color:#3f6545}

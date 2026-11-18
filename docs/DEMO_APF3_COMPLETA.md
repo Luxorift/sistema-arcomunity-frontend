@@ -34,7 +34,7 @@ Todo es una junta **ficticia** con datos simulados («Junta Vecinal Arcomunity �
 | 10 | Revisión manual (opcional, recomendado) | Configuración → desactivar «Validación automática por reglas» → Guardar → confirmar | El pago de Casa 12 irá a Conciliación | Si se deja activada, el pago se valida solo (también se puede mostrar) |
 | 11 | Tema | Botón sol/luna arriba a la derecha | Cambia todo a modo claro u oscuro | Usar el modo claro (más probado en proyector) |
 | 12 | Notebook | Abrir `ml/modelo_morosidad/APF3_TD_Grupo6_ML_Innovacion.ipynb` (salidas guardadas) | Gráficos visibles sin ejecutar | Mostrar `comparacion/RESULTADOS.md` |
-| 13 | Capturas | Carpeta `ml/modelo_morosidad/evidencias/` y `docs/capturas-demo/` | Imágenes reales | — |
+| 13 | Capturas y video | `ml/modelo_morosidad/evidencias/` y la carpeta `Demo_APF3_plan_B` (junto al repositorio: capturas claro/oscuro y video) | Imágenes y video reales | — |
 | 14 | Plan B listo | Terminal en `sistema-arcomunity-frontend` con `npm run dev` probado | <http://localhost:5173> abre | — |
 
 Proyector: zoom del navegador al **125 %** si el aula es grande (la app funciona bien hasta 200 %).
@@ -79,7 +79,7 @@ Al terminar, si habrá otra exposición: **Preparar demostración** otra vez.
 | La universidad bloquea `vercel.app` | Abrir la web alternativa (Cloudflare Pages o Netlify), si ya está publicada. |
 | Ninguna web abre, pero Supabase responde (`npm run verificar:red`) | **App local:** en `sistema-arcomunity-frontend`, `npm run dev` → <http://localhost:5173>. Misma base y mismas cuentas. |
 | Supabase no responde | Compartir datos del celular a la laptop (hotspot) y repetir. Si tampoco: plan sin internet. |
-| Sin internet | 1) **Capturas reales:** `docs/capturas-demo/` (claro y oscuro, escritorio y celular) y `ml/modelo_morosidad/evidencias/` (flujo del modelo). 2) **Notebook ejecutado:** `ml/modelo_morosidad/APF3_TD_Grupo6_ML_Innovacion.ipynb` con salidas guardadas. 3) **Inferencia offline en Python:** `cd ml/modelo_morosidad` y `python inferencia.py ejemplo_entrada.json` (probabilidad, riesgo y factores de 3 cuotas). 4) **Evidencias:** `resultados/evidencia_integracion.json` (Python = PostgreSQL 30/30) y `evidencias/tabla_prediccion_mostrada.json` (pantalla = base 30/30). 5) **Video breve** del flujo, si se grabó (`docs/video-demo/`). |
+| Sin internet | 1) **Capturas reales:** carpeta `Demo_APF3_plan_B/capturas` junto al repositorio (claro y oscuro, escritorio y celular) y `ml/modelo_morosidad/evidencias/` (flujo del modelo). 2) **Notebook ejecutado:** `ml/modelo_morosidad/APF3_TD_Grupo6_ML_Innovacion.ipynb` con salidas guardadas. 3) **Inferencia offline en Python:** `cd ml/modelo_morosidad` y `python inferencia.py ejemplo_entrada.json` (probabilidad, riesgo y factores de 3 cuotas). 4) **Evidencias:** `resultados/evidencia_integracion.json` (Python = PostgreSQL 30/30) y `evidencias/tabla_prediccion_mostrada.json` (pantalla = base 30/30). 5) **Video breve** del flujo: `Demo_APF3_plan_B/video` (administración en Chrome y propietaria en celular). Se regenera con `VIDEO=carpeta npm run grabar:demo`. |
 | El escenario quedó desordenado | Auditoría → Reiniciar demostración → Preparar demostración. Sin acceso web: `npm run demo:restaurar`. |
 | El tiempo real no llega | Recargar la página (F5): los datos se leen de la base; al volver a la pestaña también se recargan. |
 
