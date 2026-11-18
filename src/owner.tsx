@@ -6,7 +6,8 @@ import { useApp, type OcrExtraido, type PagoEntrada, type ResultadoPago } from '
 import { useRpc } from './lib/usarRpc'
 import { dataUrlABlob, optimizarImagen } from './image'
 import { extraerDatosComprobante } from './lib/ocr'
-import { Badge, Cargando, Empty, PageHead, Simulado, Stat } from './ui'
+import { Ayuda, Badge, Cargando, Empty, PageHead, Simulado, Stat } from './ui'
+import { useAvisoCambios } from './lib/cambios'
 import { Saludo } from './saludo'
 
 const periodos = Array.from({ length: 12 }, (_, i) => periodoAnterior(mes(), i))
@@ -97,21 +98,36 @@ export function MiCuenta() {
   const rechazos = datos.pagos.filter(p => p.estado === 'rechazado' && porPagar.some(c => c.id === p.cuotaId))
   const ultimoRechazo = rechazos.sort((a, b) => (b.revisadoEn ?? '').localeCompare(a.revisadoEn ?? ''))[0]
   const proxima = [...porPagar].sort((a, b) => a.vencimiento.localeCompare(b.vencimiento))[0]
-  const deuda = porPagar.reduce((n, c) => n + c.monto, 0)
+  // Lo vencido y lo que aún no vence se muestran por separado: la cuota del mes siguiente no es deuda vencida.
+  const montoVencido = vencidas.reduce((n, c) => n + c.monto, 0)
+  const porVencer = porPagar.filter(c => estadoVisible(c) !== 'morosa').sort((a, b) => a.vencimiento.localeCompare(b.vencimiento))
+  const siguiente = porVencer[0]
+  const textoSiguiente = siguiente ? `Tu próxima cuota (${dinero(siguiente.monto)}) vence el ${fechaVisible(siguiente.vencimiento)}.` : ''
+  const ultimaVencida = [...vencidas].sort((a, b) => b.vencimiento.localeCompare(a.vencimiento))[0]
+  const hero = vencidas.length
+    ? { tono: 'alert', icono: <AlertCircle size={28} />, titulo: vencidas.length === 1 ? 'Tienes una cuota vencida' : `Tienes ${vencidas.length} cuotas vencidas`, monto: dinero(montoVencido),
+      texto: `${vencidas.length === 1 ? `Venció el ${fechaVisible(ultimaVencida.vencimiento)}` : `La más reciente venció el ${fechaVisible(ultimaVencida.vencimiento)}`}. Págala cuanto antes. ${textoSiguiente}` }
+    : enRevision.length
+      ? { tono: 'pending', icono: <Clock3 size={28} />, titulo: 'Tu pago está en revisión',
+        monto: `Pagaste ${dinero(datos.pagos.filter(p => p.estado === 'pendiente_revision').reduce((n, p) => n + p.monto, 0))}`,
+        texto: `La junta está verificando tu comprobante de la cuota de ${mesVisible(enRevision[0].periodo)} (${dinero(enRevision[0].monto)}). No necesitas enviarlo otra vez. ${textoSiguiente}` }
+      : siguiente
+        ? { tono: 'ok', icono: <CheckCircle2 size={28} />, titulo: 'No tienes cuotas vencidas', monto: `Próxima cuota: ${dinero(siguiente.monto)}`, texto: `Vence el ${fechaVisible(siguiente.vencimiento)}. Puedes pagarla desde ahora.` }
+        : { tono: 'ok', icono: <CheckCircle2 size={28} />, titulo: 'Estás al día', monto: '¡Gracias por contribuir!', texto: 'No tienes cuotas pendientes.' }
 
   if (!datosListos) return <Cargando texto="Cargando tu estado de cuenta…" />
   return <>
     <Saludo subtitulo={`${usuario?.unidadCodigo ?? 'Sin unidad'} · ${datos.configuracion.nombre}`} />
     {ultimoRechazo && <div className="notice notice-danger" role="alert"><XCircle size={20} /><div><strong>La junta observó tu pago</strong><p>{ultimoRechazo.motivoRechazo}. Puedes volver a enviarlo desde la cuota.</p></div></div>}
 
-    <div className={`status-hero ${vencidas.length ? 'status-hero-alert' : porPagar.length ? 'status-hero-pending' : 'status-hero-ok'}`}>
-      <div className="status-hero-icon">{vencidas.length ? <AlertCircle size={28} /> : porPagar.length ? <Clock3 size={28} /> : <CheckCircle2 size={28} />}</div>
+    <div className={`status-hero status-hero-${hero.tono}`}>
+      <div className="status-hero-icon" aria-hidden="true">{hero.icono}</div>
       <div className="status-hero-text">
-        <span>{vencidas.length ? (vencidas.length === 1 ? 'Tienes una cuota vencida' : `Tienes ${vencidas.length} cuotas vencidas`) : porPagar.length ? 'Cuota por pagar' : 'Estás al día'}</span>
-        <strong>{porPagar.length ? dinero(deuda) : '¡Gracias por contribuir!'}</strong>
-        <p>{proxima ? (proxima.vencimiento < hoy() ? `Venció el ${fechaVisible(proxima.vencimiento)}. Págala cuanto antes.` : `${porPagar.length === 1 ? 'Vence' : 'La próxima vence'} el ${fechaVisible(proxima.vencimiento)}.`) : enRevision.length ? 'Tu último pago está en revisión.' : 'No tienes cuotas pendientes.'}</p>
+        <span>{hero.titulo}</span>
+        <strong>{hero.monto}</strong>
+        <p>{hero.texto.trim()}</p>
       </div>
-      {proxima && <Link className="button button-primary" to={`/pagar/${proxima.id}`}>Pagar ahora <ArrowRight size={17} /></Link>}
+      {proxima && <Link className="button button-primary" to={`/pagar/${proxima.id}`}>{vencidas.length ? 'Pagar ahora' : 'Pagar cuota'} <ArrowRight size={17} aria-hidden="true" /></Link>}
     </div>
 
     <div className="stats-grid three">
@@ -120,17 +136,24 @@ export function MiCuenta() {
       <Stat label="Pagadas" value={cuotas.filter(c => c.estado === 'pagada').length} note="Últimos 12 meses" icon={<CheckCircle2 size={20} />} />
     </div>
 
+    <div className="ayudas">
+      <Ayuda pregunta="¿Qué es una cuota pendiente?">Es la cuota de vigilancia del mes que aún no pagas. Si pasa la fecha de vencimiento sin pagarse, aparece como <strong>Vencida</strong>. Puedes pagarla con el botón «Pagar».</Ayuda>
+      <Ayuda pregunta="¿Cómo registro un pago?">Pulsa «Pagar» en la cuota. Son tres pasos: 1) paga con Yape o Plin, 2) sube la captura de tu pago y 3) revisa los datos y envía. Puedes volver atrás en cualquier paso sin perder lo que escribiste.</Ayuda>
+      <Ayuda pregunta="¿Qué significa «En revisión»?">Que la junta recibió tu comprobante y lo está verificando en su app. No necesitas enviarlo otra vez. Cuando lo apruebe, la cuota pasará a <strong>Pagada</strong>; si encuentra un problema, verás aquí el motivo.</Ayuda>
+      <Ayuda pregunta="¿Dónde veo mi historial?">Más abajo, en «Mis pagos enviados», está cada comprobante que enviaste con su estado. En «Estado de cuenta» ves todas tus cuotas de los últimos meses.</Ayuda>
+    </div>
+
     <div className="panel"><div className="panel-heading"><div><span className="eyebrow">Tus cuotas</span><h2>Estado de cuenta</h2></div><Simulado /></div>
       {cuotas.length ? <div className="owner-quotas">{cuotas.map(c => <div className="owner-quota" key={c.id}>
         <div className="quota-calendar"><span>{mesVisible(c.periodo).split(' ')[0].slice(0, 3)}</span><small>{c.periodo.slice(0, 4)}</small></div>
         <div className="quota-main"><strong>Vigilancia · {mesVisible(c.periodo)}</strong><span>Vence: {fechaVisible(c.vencimiento)}{c.fechaPago ? ` · Pagada: ${fechaVisible(c.fechaPago)}` : ''}</span></div>
         <div className="quota-amount"><strong>{dinero(c.monto)}</strong><Badge estado={estadoVisible(c)} /></div>
-        {c.estado === 'pendiente' && <Link className="button button-primary" to={`/pagar/${c.id}`}>Pagar <ArrowRight size={17} /></Link>}
+        {c.estado === 'pendiente' && <Link className="button button-primary" to={`/pagar/${c.id}`} aria-label={`Pagar la cuota de ${mesVisible(c.periodo)}`}>Pagar <ArrowRight size={17} aria-hidden="true" /></Link>}
       </div>)}</div> : <Empty title="Sin cuotas todavía" text="La administración aún no generó tus cuotas." />}
     </div>
 
     <div className="panel"><div className="panel-heading"><div><span className="eyebrow">Historial</span><h2>Mis pagos enviados</h2></div><ReceiptText size={22} /></div>
-      {datos.pagos.length ? <div className="table-wrap"><table><thead><tr><th>Cuota</th><th>Fecha</th><th>Medio</th><th>Monto</th><th>Estado</th></tr></thead><tbody>{datos.pagos.map(p => { const c = datos.cuotas.find(x => x.id === p.cuotaId); return <tr key={p.id}><td className="strong">{c ? mesVisible(c.periodo) : '—'}</td><td>{fechaVisible(p.fecha)}</td><td>{metodoVisible[p.metodo] ?? p.metodo}</td><td>{dinero(p.monto)}</td><td><Badge estado={p.estado} />{p.motivoRechazo && <small className="cell-note">{p.motivoRechazo}</small>}</td></tr> })}</tbody></table></div>
+      {datos.pagos.length ? <div className="table-wrap" tabIndex={0} role="region" aria-label="Tabla con desplazamiento horizontal"><table><thead><tr><th>Cuota</th><th>Fecha</th><th>Medio</th><th>Monto</th><th>Estado</th></tr></thead><tbody>{datos.pagos.map(p => { const c = datos.cuotas.find(x => x.id === p.cuotaId); return <tr key={p.id}><td className="strong">{c ? mesVisible(c.periodo) : '—'}</td><td>{fechaVisible(p.fecha)}</td><td>{metodoVisible[p.metodo] ?? p.metodo}</td><td>{dinero(p.monto)}</td><td><Badge estado={p.estado} />{p.motivoRechazo && <small className="cell-note">{p.motivoRechazo}</small>}</td></tr> })}</tbody></table></div>
         : <Empty title="Aún no enviaste pagos" text="Cuando pagues una cuota, verás aquí su estado." />}
     </div>
   </>
@@ -172,9 +195,17 @@ export function PagarPage() {
   const [avisoOcr, setAvisoOcr] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState('')
+  const [errores, setErrores] = useState<{ monto?: string; fecha?: string; operacion?: string }>({})
   const [resultado, setResultado] = useState<ResultadoPago | null>(null)
   const topRef = useRef<HTMLDivElement>(null)
-  useEffect(() => { topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, [paso, resultado])
+  // Al cambiar de paso: subir al inicio y llevar el foco al título del paso (lectores de pantalla).
+  useEffect(() => {
+    const reducir = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    topRef.current?.scrollIntoView({ behavior: reducir ? 'auto' : 'smooth', block: 'start' })
+    topRef.current?.querySelector<HTMLElement>('.payment-card h2, .payment-result h1')?.focus({ preventScroll: true })
+  }, [paso, resultado])
+  // Mientras haya datos ingresados y no se haya enviado, se avisa antes de salir.
+  useAvisoCambios(!resultado && !enviando && Boolean(imagen || form.operacion), 'Tu pago aún no se envió. Si sales, tendrás que volver a subir la captura.')
 
   if (!cuota) return !datosListos ? <Cargando /> : <Empty title="Cuota no encontrada" text="Esta cuota no existe o no pertenece a tu unidad." action={<Link className="button button-primary" to="/mi-cuenta">Volver a mi cuenta</Link>} />
 
@@ -182,8 +213,8 @@ export function PagarPage() {
     const ok = resultado.estado === 'conciliado_auto'
     return <div ref={topRef} className="payment-result">
       <div className={`result-icon ${ok ? 'result-ok' : 'result-review'}`}>{ok ? <CheckCircle2 size={44} /> : <Clock3 size={44} />}</div>
-      <h1>{ok ? '¡Gracias! Tu pago quedó registrado' : 'Recibimos tu comprobante'}</h1>
-      <p>{ok ? `Tu cuota de ${mesVisible(cuota.periodo)} figura como pagada. Los datos coinciden con las reglas de la junta; la administración puede verificarlo en su app.` : 'La administración lo revisará pronto. Te avisaremos aquí si necesita algo más.'}</p>
+      <h1 tabIndex={-1}>{ok ? '¡Gracias! Tu pago quedó registrado' : 'Tu comprobante fue enviado correctamente'}</h1>
+      <p>{ok ? `Tu cuota de ${mesVisible(cuota.periodo)} figura como pagada. Los datos coinciden con las reglas de la junta; la administración puede verificarlo en su app.` : 'La junta lo revisará pronto. Mientras tanto, tu cuota aparecerá como «En revisión». Si necesita algo más, verás el motivo en tu cuenta.'}</p>
       {!ok && resultado.alertas.length > 0 && <div className="alert-box"><AlertCircle size={17} /><div><strong>Por qué pasa a revisión</strong><ul>{resultado.alertas.map(a => <li key={a}>{textoAlertaVecino[a] ?? a}</li>)}</ul></div></div>}
       <Link className="button button-primary" to="/mi-cuenta">Volver a mi cuenta</Link>
     </div>
@@ -223,10 +254,15 @@ export function PagarPage() {
   const submit = async (e: FormEvent) => {
     e.preventDefault(); setError('')
     if (!imagen) { setPaso(2); return setError('Adjunta la captura de tu pago.') }
-    if (!/^\d+(\.\d{1,2})?$/.test(form.monto) || Number(form.monto) <= 0) return setError('Ingresa el monto pagado (por ejemplo 150 o 150.00).')
-    if (!form.fecha) return setError('Indica la fecha de la operación.')
-    if (form.fecha > hoy()) return setError('La fecha no puede ser futura.')
-    if (!/^[A-Za-z0-9-]{4,30}$/.test(form.operacion.trim())) return setError('Escribe el número de operación tal como aparece en la captura (4 a 30 letras o números).')
+    // Errores junto a cada campo; lo que la persona escribió se conserva.
+    const err: typeof errores = {}
+    if (!/^\d+(\.\d{1,2})?$/.test(form.monto) || Number(form.monto) <= 0) err.monto = 'Escribe el monto que pagaste, por ejemplo 150 o 150.00.'
+    if (!form.fecha) err.fecha = 'Indica la fecha en que hiciste el pago.'
+    else if (form.fecha > hoy()) err.fecha = 'La fecha no puede ser posterior a hoy.'
+    if (!/^[A-Za-z0-9-]{4,30}$/.test(form.operacion.trim())) err.operacion = 'Escribe el número de operación tal como aparece en tu captura (de 4 a 30 letras o números).'
+    setErrores(err)
+    const primero = (['monto', 'fecha', 'operacion'] as const).find(k => err[k])
+    if (primero) { document.getElementById(`pago-${primero}`)?.focus(); return }
     setEnviando(true)
     try {
       const r = await enviarPago({ cuotaId: cuota.id, metodo: form.metodo, monto: Number(form.monto), fecha: form.fecha, operacion: form.operacion.trim(), archivo: await dataUrlABlob(imagen), ocrConfianza: confianza, ocrExtraido })
@@ -241,7 +277,7 @@ export function PagarPage() {
     <Pasos actual={paso} />
 
     {paso === 1 && <div className="panel payment-card">
-      <div className="step-heading"><span>1</span><div><h2>Paga desde tu app</h2><p>Abre Yape o Plin, escanea el QR y paga el monto exacto.</p></div></div>
+      <div className="step-heading"><span>1</span><div><h2 tabIndex={-1}>Paso 1 de 3: paga desde tu app</h2><p>Abre Yape o Plin, escanea el QR y paga el monto exacto.</p></div></div>
       <div className="payment-amount"><span>Monto a pagar</span><strong>{dinero(cuota.monto)}</strong>
         <button type="button" className="text-button" onClick={() => { void navigator.clipboard?.writeText(cuota.monto.toFixed(2)); mostrar('Monto copiado.', 'info') }}><Copy size={15} /> Copiar monto</button></div>
       <div className="pay-qr">{datos.configuracion.yapeQr ? <img src={datos.configuracion.yapeQr} alt="Código QR de Yape de la junta" /> : <div className="qr-placeholder"><Camera size={30} /><span>La junta aún no cargó su QR. Pide el número a la administración.</span></div>}</div>
@@ -251,7 +287,8 @@ export function PagarPage() {
     </div>}
 
     {paso === 2 && <div className="panel payment-card">
-      <div className="step-heading"><span>2</span><div><h2>Sube la captura de tu pago</h2><p>Puedes tomar una foto o elegirla de tu galería.</p></div></div>
+      <div className="step-heading"><span>2</span><div><h2 tabIndex={-1}>Paso 2 de 3: sube la captura de tu pago</h2><p>Puedes tomar una foto o elegirla de tu galería.</p></div></div>
+      <Ayuda pregunta="¿Cómo adjunto mi comprobante?">Al terminar de pagar en Yape o Plin, toma una captura de pantalla (en la mayoría de celulares: botón de encendido y bajar volumen a la vez). Luego toca el recuadro de abajo y elige esa imagen de tu galería. Debe verse el monto, la fecha y el número de operación.</Ayuda>
       <label className={`dropzone ${imagen ? 'dropzone-filled' : ''}`}>
         {imagen ? <img src={imagen} alt="Vista previa del comprobante" className="receipt-preview" /> : <><UploadCloud size={34} /><strong>Toca aquí para elegir la captura</strong><span>JPG, PNG o WEBP · hasta 5 MB</span></>}
         <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => void cargarArchivo(e.target.files?.[0])} hidden />
@@ -260,22 +297,24 @@ export function PagarPage() {
       {leyendo && <div className="ocr-progress" role="status"><div><ScanText size={18} /> Leyendo tu captura… <strong>{progreso}%</strong></div><div className="progress-line"><span style={{ width: `${progreso}%` }} /></div></div>}
       {avisoOcr && !leyendo && <div className="info-callout"><ScanText size={18} /><span>{avisoOcr}</span></div>}
       {error && <div role="alert" className="form-error">{error}</div>}
-      <div className="step-actions"><button type="button" className="button button-secondary" onClick={() => setPaso(1)}><ArrowLeft size={17} /> Atrás</button><button type="button" className="button button-primary" disabled={!imagen || leyendo} onClick={() => { setError(''); setPaso(3) }}>Continuar <ArrowRight size={18} /></button></div>
+      {!imagen && !error && <p className="form-hint">Para continuar, falta adjuntar la captura de tu pago.</p>}
+      <div className="step-actions"><button type="button" className="button button-secondary" onClick={() => setPaso(1)}><ArrowLeft size={17} aria-hidden="true" /> Anterior</button><button type="button" className="button button-primary" disabled={!imagen || leyendo} onClick={() => { setError(''); setPaso(3) }}>Continuar <ArrowRight size={18} aria-hidden="true" /></button></div>
       <button type="button" className="text-button sample-link" onClick={usarEjemplo}><Sparkles size={16} /> Probar con un comprobante de ejemplo (demostración)</button>
     </div>}
 
     {paso === 3 && <form className="panel payment-card" onSubmit={e => void submit(e)}>
-      <div className="step-heading"><span>3</span><div><h2>Confirma los datos</h2><p>Compáralos con tu captura y corrige si hace falta.</p></div></div>
+      <div className="step-heading"><span>3</span><div><h2 tabIndex={-1}>Paso 3 de 3: confirma los datos</h2><p>Compáralos con tu captura y corrige si hace falta.</p></div></div>
       {imagen && <img src={imagen} alt="Tu comprobante" className="receipt-thumb" />}
       <label className="field"><span>¿Con qué pagaste?</span><select value={form.metodo} onChange={e => setForm({ ...form, metodo: e.target.value as PagoEntrada['metodo'] })}><option value="yape_captura">Yape</option><option value="plin_captura">Plin</option><option value="transferencia">Transferencia bancaria</option></select></label>
       <div className="field-grid">
-        <label className="field"><span>Monto pagado (S/)</span><input inputMode="decimal" required value={form.monto} onChange={e => setForm({ ...form, monto: e.target.value.replace(',', '.') })} placeholder={cuota.monto.toFixed(2)} />{montoDistinto && <small className="text-warning">Es distinto a tu cuota ({dinero(cuota.monto)}). Se enviará a revisión.</small>}</label>
-        <label className="field"><span>Fecha de la operación</span><input type="date" required max={hoy()} value={form.fecha} onChange={e => setForm({ ...form, fecha: e.target.value })} /></label>
+        <label className="field"><span>Monto pagado (S/)</span><input id="pago-monto" inputMode="decimal" required value={form.monto} aria-invalid={!!errores.monto} aria-describedby="pago-monto-nota" onChange={e => { setForm({ ...form, monto: e.target.value.replace(',', '.') }); setErrores(x => ({ ...x, monto: undefined })) }} placeholder={cuota.monto.toFixed(2)} />{errores.monto ? <small id="pago-monto-nota" className="field-error">{errores.monto}</small> : montoDistinto ? <small id="pago-monto-nota" className="text-warning">Es distinto a tu cuota ({dinero(cuota.monto)}). Se enviará a revisión.</small> : <small id="pago-monto-nota">Tu cuota es de {dinero(cuota.monto)}.</small>}</label>
+        <label className="field"><span>Fecha de la operación</span><input id="pago-fecha" type="date" required max={hoy()} value={form.fecha} aria-invalid={!!errores.fecha} aria-describedby={errores.fecha ? 'pago-fecha-nota' : undefined} onChange={e => { setForm({ ...form, fecha: e.target.value }); setErrores(x => ({ ...x, fecha: undefined })) }} />{errores.fecha && <small id="pago-fecha-nota" className="field-error">{errores.fecha}</small>}</label>
       </div>
-      <label className="field"><span>Número de operación</span><input required autoComplete="off" value={form.operacion} onChange={e => setForm({ ...form, operacion: e.target.value.replace(/\s/g, '') })} placeholder="Aparece en tu captura, p. ej. 12345678" /><small>En Yape figura como «N.º de operación».</small></label>
+      <label className="field"><span>Número de operación</span><input id="pago-operacion" required autoComplete="off" value={form.operacion} aria-invalid={!!errores.operacion} aria-describedby="pago-operacion-nota" onChange={e => { setForm({ ...form, operacion: e.target.value.replace(/\s/g, '') }); setErrores(x => ({ ...x, operacion: undefined })) }} placeholder="Aparece en tu captura, p. ej. 12345678" />{errores.operacion ? <small id="pago-operacion-nota" className="field-error">{errores.operacion}</small> : <small id="pago-operacion-nota">En Yape figura como «N.º de operación».</small>}</label>
       <div className="info-callout"><LockKeyhole size={18} /><span>Tu captura se guarda de forma privada. Solo tú y la administración pueden verla.</span></div>
       {error && <div role="alert" className="form-error">{error}</div>}
-      <div className="step-actions"><button type="button" className="button button-secondary" onClick={() => setPaso(2)}><ArrowLeft size={17} /> Atrás</button><button className="button button-primary" disabled={enviando}><ImageUp size={18} /> {enviando ? 'Enviando…' : 'Enviar comprobante'}</button></div>
+      <p className="form-hint">Al pulsar «Enviar comprobante», la junta recibirá tu captura y estos datos. Si todo coincide, la cuota se marcará como pagada; si no, quedará en revisión.</p>
+      <div className="step-actions"><button type="button" className="button button-secondary" disabled={enviando} onClick={() => setPaso(2)}><ArrowLeft size={17} aria-hidden="true" /> Anterior</button><button className="button button-primary" disabled={enviando} aria-busy={enviando}><ImageUp size={18} aria-hidden="true" /> {enviando ? 'Enviando… espera un momento' : 'Enviar comprobante'}</button></div>
     </form>}
   </div>
 }

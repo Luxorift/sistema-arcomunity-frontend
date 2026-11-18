@@ -47,6 +47,49 @@ Build hecho solo con las dos variables públicas y servido con `vite preview`:
 | `npm run test:remoto` (RLS, Storage, Realtime, RPC contra Supabase) | 70/70 |
 | Rutas profundas (`/admin/reportes`) servidas como SPA | 200 |
 
+## Despliegue alternativo (si la universidad bloquea Vercel)
+
+En el APF2 la red de la universidad bloqueó `*.vercel.app`. La alternativa es publicar **el mismo código**
+(rama `main`) en un segundo servicio gratuito, conectado al **mismo Supabase**. Vercel sigue siendo la
+dirección principal.
+
+| Opción | Dirección | Costo | Rutas internas | Recomendación |
+| --- | --- | --- | --- | --- |
+| **Cloudflare Workers** (ya conectado al repositorio: check «Workers Builds») | `https://sistema-arcomunity-frontend.luxorift.workers.dev` | Gratis | `wrangler.jsonc` → `not_found_handling: single-page-application` | Primera opción: red de Cloudflare, rara vez bloqueada |
+| **Netlify** | `https://<nombre>.netlify.app` | Gratis (300 min de build/mes) | `netlify.toml` (`/* → /index.html 200`) | Segunda opción |
+| Dominio propio | `https://arcomunity.pe`, etc. | **De pago** | — | No se contrata (regla del proyecto) |
+
+El repositorio ya trae lo necesario: `wrangler.jsonc` (Cloudflare: `npm run build`, publica `dist`, rutas
+internas a `index.html`) y `netlify.toml` (lo mismo para Netlify). Vercel ignora ambos archivos.
+Comprobado con `npx wrangler deploy --dry-run` (no publica).
+
+### Pasos (requieren la cuenta del responsable; no se publicó nada todavía)
+
+1. **Cloudflare Workers:** el Worker `sistema-arcomunity-frontend` ya está conectado a GitHub. En *Settings →
+   Build*: rama de producción `main`, comando de despliegue `npx wrangler deploy` (el build lo hace
+   `wrangler.jsonc`). **Netlify** (alternativa): *Add new site → Import an existing project* → mismo
+   repositorio (lee `netlify.toml`).
+2. Variables **de build** (Cloudflare: *Settings → Build → Variables and secrets*; Netlify: *Environment
+   variables*): `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` (la clave pública, la misma de Vercel). Sin
+   ellas la web abre «Falta conectar Supabase». **Nunca** `SUPABASE_SERVICE_ROLE_KEY`.
+3. Supabase → *Authentication → URL Configuration → Redirect URLs*: agregar
+   `https://sistema-arcomunity-frontend.luxorift.workers.dev/**` (o `.netlify.app/**`). Sin esto, los enlaces de recuperación de
+   contraseña y de confirmación de correo pedidos desde la dirección alternativa vuelven a Vercel.
+   *Site URL* sigue siendo Vercel.
+4. Comprobar: `ALTERNATIVAS=https://sistema-arcomunity-frontend.luxorift.workers.dev npm run verificar:red` (sitio, ruta interna
+   `/admin/prediccion`, código de la app, Supabase Auth/API/Storage y Realtime), y luego entrar con las
+   cuentas demo, registrar un pago, conciliarlo y abrir Predicción de morosidad en escritorio y celular.
+5. **En la universidad**, antes de exponer: volver a correr `npm run verificar:red` con la dirección
+   alternativa. Que funcione en casa no garantiza que la red de la universidad la permita.
+
+### Conectividad necesaria hacia Supabase
+
+La app (en cualquier dirección) necesita llegar a `https://<ref>.supabase.co` por HTTPS (inicio de sesión,
+datos, comprobantes) y por WebSocket seguro (`wss://`, tiempo real). Si la red bloquea `supabase.co`,
+**ninguna** dirección alternativa funciona: usar los datos del celular o el plan sin internet de
+[DEMO_APF3_COMPLETA.md](DEMO_APF3_COMPLETA.md#plan-b). Si solo falla el WebSocket, la app sigue
+funcionando y los cambios aparecen al recargar.
+
 ## Volver atrás
 
 En Vercel → *Deployments*, elegir el despliegue de producción anterior → *Instant Rollback*. En Git,

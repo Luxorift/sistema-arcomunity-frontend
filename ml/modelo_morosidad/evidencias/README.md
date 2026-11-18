@@ -1,6 +1,6 @@
 # Evidencias para el informe APF3 (secciones 3, 4.1, 4.2, 5 y Anexo C)
 
-Generadas el 18/11/2026 con la base Supabase del MVP (junta de demostración, datos simulados).
+Capturas definitivas tomadas el 18/11/2026 en la versión publicada (https://sistema-arcomunity-frontend.vercel.app, `main` 024b4d7) con la base Supabase del MVP (junta de demostración, datos simulados). Pantalla = PostgreSQL en 30/30 filas; PostgreSQL = Python en 30/30 cuotas.
 Regenerar capturas: `npm run evidencias:ml` (luego `npm run demo:restaurar`).
 
 **Distinción obligatoria:** las métricas de **validación** (meses 1–10) y las de **prueba** (meses 11–12, una sola

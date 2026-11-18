@@ -48,6 +48,9 @@ export type PagoEntrada = {
 }
 export type ResultadoPago = { estado: Pago['estado']; alertas: string[] }
 export type Resultado<T = null> = { ok: true; data: T } | { ok: false; error: string }
+export type EscenarioDemo = { cuenta: string; unidad: string | null; espera: 'cuota_por_pagar' | 'pago_en_revision' | 'al_dia'; ok: boolean; vencidas: number; por_vencer: number; en_revision: number }
+export type PreparacionDemo = { periodo: string; cuotas_creadas: number; cuotas_existentes: number; modelo: string; fecha_corte: string; predicciones: number; alto: number; medio: number; bajo: number; escenarios: EscenarioDemo[]; avisos: string[] }
+export type ReinicioDemo = { pagosQuitados: number; prediccionesQuitadas: number; desvinculados: number; archivosBorrados: number; archivosPendientes: number }
 
 const configuracionVacia: Configuracion = {
   nombre: '', codigoInvitacion: '', cuotaMensual: 0, diaVencimiento: 10, yapeTitular: '', conciliacionAutomatica: true, transparenciaDetalle: true,
@@ -145,6 +148,7 @@ type Contexto = {
   datosListos: boolean
   aviso: Aviso
   mostrar: (texto: string, tipo?: 'ok' | 'error' | 'info') => void
+  cerrarAviso: () => void
   recargar: () => Promise<void>
   entrar: (correo: string, clave: string) => Promise<string | null>
   salir: () => Promise<void>
@@ -168,6 +172,8 @@ type Contexto = {
   anularEgreso: (egresoId: string, motivo: string) => Promise<string | null>
   urlComprobante: (path: string) => Promise<string | null>
   rpc: <T>(fn: string, args?: Record<string, unknown>) => Promise<Resultado<T>>
+  prepararDemo: () => Promise<Resultado<PreparacionDemo>>
+  reiniciarDemo: () => Promise<Resultado<ReinicioDemo>>
 }
 
 const Ctx = createContext<Contexto | null>(null)
@@ -189,9 +195,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   usuarioRef.current = usuario
 
   const mostrar = useCallback((texto: string, tipo: 'ok' | 'error' | 'info' = 'ok') => setAviso({ texto, tipo }), [])
+  const cerrarAviso = useCallback(() => setAviso(null), [])
+  // Tiempo suficiente para leer con calma; los errores duran más y se pueden cerrar con la X.
   useEffect(() => {
     if (!aviso) return
-    const t = setTimeout(() => setAviso(null), aviso.tipo === 'error' ? 9000 : 6000)
+    const t = setTimeout(() => setAviso(null), aviso.tipo === 'error' ? 15000 : 8000)
     return () => clearTimeout(t)
   }, [aviso])
 
@@ -350,7 +358,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const valor = useMemo<Contexto>(() => {
     const junta = () => usuarioRef.current?.juntaId ?? ''
     return {
-      estado, usuario, datos, cargandoDatos, datosListos, aviso, mostrar, recargar, rpc,
+      estado, usuario, datos, cargandoDatos, datosListos, aviso, mostrar, cerrarAviso, recargar, rpc,
 
       entrar: async (correo, clave) => {
         const { error } = await supabase.auth.signInWithPassword({ email: correo.trim().toLowerCase(), password: clave })
@@ -441,13 +449,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
         p_junta: junta(), p_fecha: e.fecha, p_concepto: e.concepto, p_beneficiario: e.beneficiario, p_monto: e.monto, p_comentario: e.comentario || null,
       }, 'Egreso registrado.'),
       anularEgreso: (egresoId, motivo) => accion('anular_egreso', { p_egreso_id: egresoId, p_motivo: motivo }, 'Egreso anulado.'),
+      // Herramientas de demostración (Auditoría). El servidor valida que sea la administración de la
+      // junta en modo demostración; aquí solo se borran los archivos que el servidor declaró sobrantes.
+      prepararDemo: async () => {
+        const r = await rpc<PreparacionDemo>('preparar_demostracion', { p_junta: junta() })
+        if (r.ok) await recargar()
+        return r
+      },
+      reiniciarDemo: async () => {
+        const r = await rpc<{ pagos_quitados: number; predicciones_quitadas: number; registros_desvinculados: number; archivos: { bucket: string; nombre: string }[] }>('reiniciar_demostracion', { p_junta: junta() })
+        if (!r.ok) return r
+        let borrados = 0, pendientes = 0
+        for (const bucket of [BUCKET_COMPROBANTES, BUCKET_JUNTA]) {
+          const nombres = r.data.archivos.filter(a => a.bucket === bucket).map(a => a.nombre)
+          if (!nombres.length) continue
+          const { data, error } = await supabase.storage.from(bucket).remove(nombres)
+          const n = error ? 0 : (data ?? []).length
+          borrados += n; pendientes += nombres.length - n
+        }
+        await recargar()
+        return { ok: true, data: { pagosQuitados: r.data.pagos_quitados, prediccionesQuitadas: r.data.predicciones_quitadas, desvinculados: r.data.registros_desvinculados, archivosBorrados: borrados, archivosPendientes: pendientes } }
+      },
       urlComprobante: async path => {
         const { data, error } = await supabase.storage.from(BUCKET_COMPROBANTES).createSignedUrl(path, 300)
         if (error) { mostrar(mensajeError(error, 'archivo'), 'error'); return null }
         return data.signedUrl
       },
     }
-  }, [estado, usuario, datos, cargandoDatos, datosListos, aviso, mostrar, recargar, rpc, accion])
+  }, [estado, usuario, datos, cargandoDatos, datosListos, aviso, mostrar, cerrarAviso, recargar, rpc, accion])
 
   return <Ctx.Provider value={valor}>{children}</Ctx.Provider>
 }

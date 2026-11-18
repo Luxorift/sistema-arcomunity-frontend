@@ -1,0 +1,96 @@
+/* Modo oscuro: retoques hechos a mano sobre src/tema-oscuro.css (generado).
+   Criterios: contraste AA, la identidad (petróleo + lima + coral) y que nada dependa solo del color. */
+@media screen {
+:root[data-theme="dark"]{--sombra:0 2px 14px #00000040}
+
+/* Botón principal: en oscuro pasa a lima con texto petróleo (se distingue sin perder la marca). */
+:root[data-theme="dark"] .button-primary{background:#cde58f;color:#11292f;box-shadow:0 3px 10px #00000040}
+:root[data-theme="dark"] .button-primary:hover{background:#dcefa8}
+:root[data-theme="dark"] .button-danger{background:#e07a6e;color:#2a0f0b}
+:root[data-theme="dark"] .button-danger:hover{background:#ea8f84}
+:root[data-theme="dark"] .button-danger-outline{background:transparent;color:#f3a198;border-color:#a85a52}
+:root[data-theme="dark"] .button-danger-outline:hover{background:#3a201d}
+:root[data-theme="dark"] .button-secondary{border-color:#47605d}
+:root[data-theme="dark"] .skip-link{background:#cde58f;color:#11292f}
+
+/* Superficies elevadas */
+:root[data-theme="dark"] .modal{background:#1c272a;border-color:#33464a;box-shadow:0 24px 80px #000000a0}
+:root[data-theme="dark"] .modal-backdrop{background:#030a0cd0}
+:root[data-theme="dark"] .modal-actions{background:#1c272a}
+:root[data-theme="dark"] .toast{border:1px solid #3d5b5f}
+:root[data-theme="dark"] .toast-error{background:#7d2f28;border-color:#a8483f}
+:root[data-theme="dark"] .toast-info{background:#25475a}
+:root[data-theme="dark"] .sidebar{background:#0f262c;border-right:1px solid #21393e}
+:root[data-theme="dark"] .hero-card,:root[data-theme="dark"] .owner-welcome{background:#16343b;border:1px solid #2a4b52}
+
+/* Campos: fondo hundido y borde visible (≥ 3:1) */
+:root[data-theme="dark"] .field input,:root[data-theme="dark"] .field select,:root[data-theme="dark"] .field textarea,
+:root[data-theme="dark"] .inline-field input,:root[data-theme="dark"] .search-box,:root[data-theme="dark"] .select-wrap{background:#11201f;border-color:#5f7976;color:#e4eeeb}
+:root[data-theme="dark"] .search-box input,:root[data-theme="dark"] .select-wrap select{color:#e4eeeb}
+:root[data-theme="dark"] select option{background:#11201f;color:#e4eeeb}
+:root[data-theme="dark"] input::placeholder,:root[data-theme="dark"] textarea::placeholder{color:#8ea3a0}
+:root[data-theme="dark"] .field input:disabled,:root[data-theme="dark"] .field select:disabled,:root[data-theme="dark"] .inline-field input:disabled{background:#182624;color:#a8bab7;border-color:#46605c}
+:root[data-theme="dark"] input:focus,:root[data-theme="dark"] select:focus,:root[data-theme="dark"] textarea:focus{border-color:#b9dc7a!important;box-shadow:0 0 0 4px #b9dc7a33}
+:root[data-theme="dark"] .input-icon>svg,:root[data-theme="dark"] .input-icon button{color:#a5b9b5}
+:root[data-theme="dark"] .field input[aria-invalid="true"],:root[data-theme="dark"] .field textarea[aria-invalid="true"]{border-color:#f08a7e!important;box-shadow:0 0 0 3px #f08a7e33}
+:root[data-theme="dark"] .field-error{color:#f7a99f!important}
+:root[data-theme="dark"] .field-error::before{background:#e07a6e;color:#2a0f0b}
+:root[data-theme="dark"] .consent input,:root[data-theme="dark"] .confirm-check input{accent-color:#b9dc7a}
+
+/* Foco visible sobre fondos oscuros */
+:root[data-theme="dark"] :focus-visible{outline-color:#c4e384}
+
+/* Control segmentado (Aprobar / Rechazar): la opción elegida se nota por fondo, borde y peso */
+:root[data-theme="dark"] .segmented{background:#11201f;border:1px solid #3d5250}
+:root[data-theme="dark"] .segmented button{color:#b3c5c2}
+:root[data-theme="dark"] .segmented button.selected{background:#cde58f;color:#11292f;box-shadow:none}
+
+/* Interruptores */
+:root[data-theme="dark"] .switch{background:#41524f}
+:root[data-theme="dark"] .switch:before{background:#e8efec}
+:root[data-theme="dark"] .toggle-row input:checked+.switch{background:#7fb487}
+
+/* QR: siempre sobre blanco para que se pueda escanear */
+:root[data-theme="dark"] .qr-preview:has(img),:root[data-theme="dark"] .pay-qr:has(img){background:#ffffff;border-color:#3d5250}
+:root[data-theme="dark"] .qr-preview,:root[data-theme="dark"] .pay-qr{border-color:#3d5250}
+
+/* Bola sol/luna */
+:root[data-theme="dark"] .tema-bola{background:#1d2b2e;border-color:#486260;color:#e0ebc0;box-shadow:0 1px 6px #00000055}
+:root[data-theme="dark"] .tema-bola:hover{background:#25373a}
+:root[data-theme="dark"] .tema-luna{color:#d8eb9a}
+
+/* Estados (siempre con texto además del color) */
+:root[data-theme="dark"] .badge-pagada,:root[data-theme="dark"] .badge-conciliado_auto,:root[data-theme="dark"] .badge-conciliado_manual,:root[data-theme="dark"] .badge-activa,:root[data-theme="dark"] .badge-riesgo-bajo{background:#1f3a29;color:#a9dcb5}
+:root[data-theme="dark"] .badge-pendiente,:root[data-theme="dark"] .badge-pendiente_revision,:root[data-theme="dark"] .badge-en_revision,:root[data-theme="dark"] .badge-riesgo-medio{background:#3d2f14;color:#f2cd8a}
+:root[data-theme="dark"] .badge-morosa,:root[data-theme="dark"] .badge-rechazado,:root[data-theme="dark"] .badge-inactiva,:root[data-theme="dark"] .badge-riesgo-alto{background:#45221f;color:#f7aea5}
+:root[data-theme="dark"] .alert-tag{background:#3d2a17;color:#f2c08d}
+:root[data-theme="dark"] .aviso-experimental{background:#352812;color:#f2d29a;border-color:#6d5426}
+:root[data-theme="dark"] .alert-box{background:#33281a;color:#f2c896}
+:root[data-theme="dark"] .notice-danger,:root[data-theme="dark"] .form-error{background:#3a1f1c;color:#f7b3aa;border-color:#7d3a33}
+:root[data-theme="dark"] .notice-action{background:#33281c;border-color:#7a5631;color:#f2c896}
+
+/* Tablas */
+:root[data-theme="dark"] th{background:#162124;color:#b3c5c2}
+:root[data-theme="dark"] td{border-top-color:#28373a}
+:root[data-theme="dark"] tr:hover td{background:#1f2b2e}
+:root[data-theme="dark"] .own-row td{background:#1f2e1c!important}
+
+/* Gráfico: leyenda con los colores del modo oscuro */
+:root[data-theme="dark"] .leyenda-ingresos::before{background:#a6d47a}
+:root[data-theme="dark"] .leyenda-egresos::before{background:#f0a882}
+
+/* Cuentas demo y textos sobre superficies claras de acento */
+:root[data-theme="dark"] .nav-link.active{background:#cde58f;color:#11292f}
+:root[data-theme="dark"] .brand-mark{background:#cde58f;color:#11292f}
+:root[data-theme="dark"] .stepper li.current span{background:#cde58f;color:#11292f}
+:root[data-theme="dark"] .result-ok{background:#1f3a29;color:#a9dcb5}
+:root[data-theme="dark"] .result-review{background:#3d2f14;color:#f2cd8a}
+:root[data-theme="dark"] .status-hero-icon{background:#ffffff14}
+:root[data-theme="dark"] .modal-icono{background:#24402c;color:#b6e0a0}
+:root[data-theme="dark"] .modal-icono-peligro{background:#45221f;color:#f7aea5}
+:root[data-theme="dark"] .modal-icono-aviso{background:#3d2f14;color:#f2cd8a}
+:root[data-theme="dark"] .confirm-check{background:#2e1c19;border-color:#7d3a33;color:#f7c2ba}
+:root[data-theme="dark"] .demo-escenarios li.ok svg,:root[data-theme="dark"] .ayuda svg{color:#a9dcb5}
+:root[data-theme="dark"] .demo-escenarios li.falta,:root[data-theme="dark"] .demo-escenarios li.falta svg{color:#f2cd8a}
+:root[data-theme="dark"] .receipt-thumb,:root[data-theme="dark"] .receipt-preview{background:#fff}
+}

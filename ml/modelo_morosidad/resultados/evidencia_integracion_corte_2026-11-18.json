@@ -1,10 +1,10 @@
 {
-  "generado_en": "2026-11-18T17:13:41+00:00",
+  "generado_en": "2026-11-18T17:58:31+00:00",
   "fuente": "Supabase · rpc ml_caracteristicas_cuotas (junta de demostración, datos simulados)",
   "fecha_corte": "2026-11-18",
   "cuotas": 30,
   "ejemplo_entrada": {
-    "cuota_id": "8aa3aec8-33a6-44db-954b-c3268e56d930",
+    "cuota_id": "2cb753ac-d6f6-442f-ab1e-4673ef2ecc49",
     "unidad_ref": "U-00d5979618",
     "periodo": "2026-12-01",
     "mes": 12,
@@ -25,7 +25,7 @@
     "umbral": 0.2258,
     "predicciones": [
       {
-        "cuota_id": "8aa3aec8-33a6-44db-954b-c3268e56d930",
+        "cuota_id": "2cb753ac-d6f6-442f-ab1e-4673ef2ecc49",
         "modelo_version": "v1",
         "probabilidad": 0.0651,
         "prediccion": 0,
@@ -35,7 +35,7 @@
         "unidad_ref": "U-00d5979618"
       },
       {
-        "cuota_id": "f27ec1e0-cf44-48e8-b093-56e2fe229280",
+        "cuota_id": "b4bd3527-5b7c-4c5e-b70d-409f7bf31674",
         "modelo_version": "v1",
         "probabilidad": 0.0651,
         "prediccion": 0,
@@ -45,7 +45,7 @@
         "unidad_ref": "U-06e6c69fde"
       },
       {
-        "cuota_id": "7a2f74b4-7b59-4ef4-968e-3cd606e0bb66",
+        "cuota_id": "42a86b7c-d39c-478b-8d71-f3f3f9e45733",
         "modelo_version": "v1",
         "probabilidad": 0.0651,
         "prediccion": 0,
@@ -55,7 +55,7 @@
         "unidad_ref": "U-0ae44c9092"
       },
       {
-        "cuota_id": "ac136dfc-6ff9-468a-8f32-d223c7dabb06",
+        "cuota_id": "8988126d-a398-4935-9168-b05f2bee5069",
         "modelo_version": "v1",
         "probabilidad": 0.0651,
         "prediccion": 0,
@@ -65,7 +65,7 @@
         "unidad_ref": "U-1a732f4d8a"
       },
       {
-        "cuota_id": "2604d439-f54b-44a8-9343-4a9a16e831a3",
+        "cuota_id": "b28a5f20-00d9-4c48-8912-9a27078e8762",
         "modelo_version": "v1",
         "probabilidad": 0.0651,
         "prediccion": 0,
@@ -75,7 +75,7 @@
         "unidad_ref": "U-2ce0bcbd1f"
       },
       {
-        "cuota_id": "cb5325b9-1317-4c14-9d18-8d8f1f8058cd",
+        "cuota_id": "e6e75335-02d1-4407-b94d-1b4ff86e9a2e",
         "modelo_version": "v1",
         "probabilidad": 0.4582,
         "prediccion": 1,
@@ -90,7 +90,7 @@
         "unidad_ref": "U-35618e2596"
       },
       {
-        "cuota_id": "a303213d-934c-4695-8fdf-1acc81b617bd",
+        "cuota_id": "2fe2865b-9bc4-43c2-b703-e60626fd06ce",
         "modelo_version": "v1",
         "probabilidad": 0.0314,
         "prediccion": 0,
@@ -105,7 +105,7 @@
         "unidad_ref": "U-372edf85fb"
       },
       {
-        "cuota_id": "7364b6c9-8e91-4339-a74a-c4fcf8c43fa2",
+        "cuota_id": "9505524f-585e-43bc-9a2d-a7e4cb3f7fe9",
         "modelo_version": "v1",
         "probabilidad": 0.4524,
         "prediccion": 1,
@@ -120,7 +120,7 @@
         "unidad_ref": "U-37433a60b2"
       },
       {
-        "cuota_id": "bd9cce07-78f1-41da-9139-6be84c733154",
+        "cuota_id": "ed81773e-7e0b-4435-b7f3-119fbda514c9",
         "modelo_version": "v1",
         "probabilidad": 0.2663,
         "prediccion": 1,
@@ -139,7 +139,7 @@
         "unidad_ref": "U-467eff7f57"
       },
       {
-        "cuota_id": "4200437d-6b64-45d2-892f-d814dd01b133",
+        "cuota_id": "a5b8011e-fb63-4364-b569-8ae1e7a4efb5",
         "modelo_version": "v1",
         "probabilidad": 0.0651,
         "prediccion": 0,
@@ -149,7 +149,7 @@
         "unidad_ref": "U-5c6f40152c"
       },
       {
-        "cuota_id": "d1cd01f9-b217-47fe-9972-20e1a6afd3ce",
+        "cuota_id": "2bb90dac-f54b-4c4f-84a4-e3f16495307f",
         "modelo_version": "v1",
         "probabilidad": 0.2732,
         "prediccion": 1,
@@ -168,7 +168,7 @@
         "unidad_ref": "U-5d73d3162c"
       },
       {
-        "cuota_id": "23824b6f-3dd8-406b-a20a-f5f093024f01",
+        "cuota_id": "f653b8f5-33cd-4295-9741-050eb1f8a189",
         "modelo_version": "v1",
         "probabilidad": 0.0651,
         "prediccion": 0,
@@ -178,7 +178,7 @@
         "unidad_ref": "U-5e3c5f0e42"
       },
       {
-        "cuota_id": "69d630c0-5c7a-432b-857d-168d5e516b34",
+        "cuota_id": "fb700b7d-9124-4bba-9b13-711dbf63ad00",
         "modelo_version": "v1",
         "probabilidad": 0.101,
         "prediccion": 0,
@@ -193,7 +193,7 @@
         "unidad_ref": "U-6310315797"
       },
       {
-        "cuota_id": "d1baec23-b036-40c4-b476-b398ba4620a5",
+        "cuota_id": "36bfd0df-22ad-4e6e-a7ce-f8cfa5754495",
         "modelo_version": "v1",
         "probabilidad": 0.9999,
         "prediccion": 1,
@@ -216,7 +216,7 @@
         "unidad_ref": "U-6623e5f5d4"
       },
       {
-        "cuota_id": "b826e038-7732-4a7e-a172-b8a068bea849",
+        "cuota_id": "92276eee-9b69-4e10-92c1-aa4e43ba9b75",
         "modelo_version": "v1",
         "probabilidad": 0.2823,
         "prediccion": 1,
@@ -235,7 +235,7 @@
         "unidad_ref": "U-736572b855"
       },
       {
-        "cuota_id": "9affd159-45aa-425d-b023-a251c47259d3",
+        "cuota_id": "0205aacf-0796-4151-9581-411859d7dcf2",
         "modelo_version": "v1",
         "probabilidad": 0.0651,
         "prediccion": 0,
@@ -245,7 +245,7 @@
         "unidad_ref": "U-79ae575e9d"
       },
       {
-        "cuota_id": "35c0fffd-be57-4e0b-b19e-f82fbdb3a682",
+        "cuota_id": "b6fd7630-63c3-407e-acd6-e59c36a15fe7",
         "modelo_version": "v1",
         "probabilidad": 0.9991,
         "prediccion": 1,
@@ -268,7 +268,7 @@
         "unidad_ref": "U-80268e245e"
       },
       {
-        "cuota_id": "561f660e-138d-4787-8551-db0bed75c6f1",
+        "cuota_id": "f40ee1e0-7112-4eaa-acdd-56da79cd63ec",
         "modelo_version": "v1",
         "probabilidad": 0.0651,
         "prediccion": 0,
@@ -278,7 +278,7 @@
         "unidad_ref": "U-83e8f58dbb"
       },
       {
-        "cuota_id": "7f2f8d27-dca1-4d23-a1cf-def17ef41f41",
+        "cuota_id": "d2652f62-32e5-4009-9a82-233f0bb06da5",
         "modelo_version": "v1",
         "probabilidad": 0.2754,
         "prediccion": 1,
@@ -297,7 +297,7 @@
         "unidad_ref": "U-8b38539bc6"
       },
       {
-        "cuota_id": "c5a13061-e0c8-4915-88f6-68d7bf6600d6",
+        "cuota_id": "a475e14c-5945-4c7f-bdd8-40061ad36b5e",
         "modelo_version": "v1",
         "probabilidad": 0.0651,
         "prediccion": 0,
@@ -307,7 +307,7 @@
         "unidad_ref": "U-8eeee4406d"
       },
       {
-        "cuota_id": "2e5d7728-7acf-45d6-a11b-afdad0e2f6fd",
+        "cuota_id": "b82b4f29-e44c-40ec-94e2-bcb8cf135bd0",
         "modelo_version": "v1",
         "probabilidad": 0.0651,
         "prediccion": 0,
@@ -317,7 +317,7 @@
         "unidad_ref": "U-9480e802c3"
       },
       {
-        "cuota_id": "b79f0680-c7d0-4767-b558-225aae8403bb",
+        "cuota_id": "6ceba68a-8b03-4cc1-84bd-ab95881bdca1",
         "modelo_version": "v1",
         "probabilidad": 0.0651,
         "prediccion": 0,
@@ -327,7 +327,7 @@
         "unidad_ref": "U-9f2d128335"
       },
       {
-        "cuota_id": "c82bbd6d-563c-4282-9105-5ae3ed2f5b1b",
+        "cuota_id": "4ae0faa3-5621-4c4f-b95e-a6a1f4496f54",
         "modelo_version": "v1",
         "probabilidad": 0.0651,
         "prediccion": 0,
@@ -337,7 +337,7 @@
         "unidad_ref": "U-acd9651c56"
       },
       {
-        "cuota_id": "06956b09-cc9e-419b-a512-9c06e8ad6ee0",
+        "cuota_id": "85793150-93e5-482e-bc95-b0cc829a5bcb",
         "modelo_version": "v1",
         "probabilidad": 0.0651,
         "prediccion": 0,
@@ -347,7 +347,7 @@
         "unidad_ref": "U-aeed4a6317"
       },
       {
-        "cuota_id": "c8a81c2a-54c0-4423-918d-7a5bcac06fd9",
+        "cuota_id": "f6632502-bb6b-4eaf-95c0-eb1a1ee0a532",
         "modelo_version": "v1",
         "probabilidad": 0.9999,
         "prediccion": 1,
@@ -370,7 +370,7 @@
         "unidad_ref": "U-c5a734313d"
       },
       {
-        "cuota_id": "1fc45439-11ac-4901-93f4-a1d09dab2e9b",
+        "cuota_id": "42bfe75e-6b65-4b81-a026-9ede28f6a6a3",
         "modelo_version": "v1",
         "probabilidad": 0.9991,
         "prediccion": 1,
@@ -393,7 +393,7 @@
         "unidad_ref": "U-cb22960dae"
       },
       {
-        "cuota_id": "431701b1-638e-4827-b9a7-b29c8d3af072",
+        "cuota_id": "dcc935e3-0606-43ec-86d7-9f1f64a957b0",
         "modelo_version": "v1",
         "probabilidad": 0.4524,
         "prediccion": 1,
@@ -408,7 +408,7 @@
         "unidad_ref": "U-cfda0bbca3"
       },
       {
-        "cuota_id": "85a9c63e-8329-49de-9634-5639d5b7f3e4",
+        "cuota_id": "3a143864-05d1-4712-8d76-c13f7dfa1646",
         "modelo_version": "v1",
         "probabilidad": 0.0651,
         "prediccion": 0,
@@ -418,7 +418,7 @@
         "unidad_ref": "U-dba4a2e97f"
       },
       {
-        "cuota_id": "8116053c-72f3-4537-8371-d70f9bb6e365",
+        "cuota_id": "d917118e-080f-456f-a908-74113906706b",
         "modelo_version": "v1",
         "probabilidad": 0.0314,
         "prediccion": 0,
@@ -433,7 +433,7 @@
         "unidad_ref": "U-e7898ec111"
       },
       {
-        "cuota_id": "6dfe8575-ea40-4747-9b67-4463dcaaa09f",
+        "cuota_id": "683c671f-f9c4-41ff-b04c-91a096a08650",
         "modelo_version": "v1",
         "probabilidad": 0.9999,
         "prediccion": 1,
