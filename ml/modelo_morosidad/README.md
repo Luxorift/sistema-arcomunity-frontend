@@ -16,7 +16,7 @@ python evidencia_integracion.py                  # llamada real con datos de Sup
 ```
 
 En Google Colab: abrir el notebook desde GitHub y *Ejecutar todas*; la primera celda clona el repositorio
-(rama indicada en `RAMA`) e instala `requirements.txt`. Semilla fija: 42.
+(rama `dev`) e instala `requirements.txt`. Semilla fija: 42.
 
 ## Archivos
 

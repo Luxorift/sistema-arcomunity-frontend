@@ -103,7 +103,7 @@ def main() -> None:
         "calculo_en_postgresql": comparacion_sql,
         "escritura_en_base": "predicciones con fecha de corte histórica" if args.comparar_sql else "ninguna (solo lectura)",
     }
-    destino = AQUI / "resultados" / "evidencia_integracion.json"
+    destino = AQUI / "resultados" / ("evidencia_integracion.json" if args.corte == "2026-11-01" else f"evidencia_integracion_corte_{args.corte}.json")
     destino.write_text(json.dumps(evidencia, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Evidencia guardada en {destino.relative_to(AQUI)}")
 

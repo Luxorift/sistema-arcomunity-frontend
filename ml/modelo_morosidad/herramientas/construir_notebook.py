@@ -28,7 +28,7 @@ import os, sys, subprocess
 from pathlib import Path
 
 REPO = 'https://github.com/Luxorift/sistema-arcomunity-frontend.git'
-RAMA = 'feat/modelo-prediccion-morosidad'   # cambiar a 'dev' cuando la rama esté integrada
+RAMA = 'dev'   # rama de referencia del repositorio (contiene el modelo y el dataset)
 if 'google.colab' in sys.modules and not Path('caracteristicas.py').exists():
     if not Path('sistema-arcomunity-frontend').exists():
         subprocess.run(['git', 'clone', '--depth', '1', '--branch', RAMA, REPO], check=True)

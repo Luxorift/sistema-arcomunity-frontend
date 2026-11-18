@@ -21,6 +21,8 @@ const FACTOR: Record<string, string> = {
 }
 const ACCION = { alto: 'Priorizar recordatorio', medio: 'Hacer seguimiento', bajo: '—' }
 const pct = (n?: number) => (n === undefined ? '—' : `${Math.round(n * 100)} %`)
+// Probabilidad para mostrar: el modelo puede dar 0,9999; no se presenta como certeza del 100 %.
+const probabilidad = (n: number) => (n >= 0.995 ? '> 99 %' : n < 0.005 ? '< 1 %' : `${Math.round(n * 100)} %`)
 
 export function PrediccionPage() {
   const { usuario, datos, rpc, mostrar } = useApp()
@@ -80,9 +82,9 @@ export function PrediccionPage() {
     <div className="panel">
       <div className="panel-heading"><div><span className="eyebrow">Cuotas por vencer</span><h2>Riesgo de pago con atraso</h2></div><span className="count-pill">Modelo {modelo.version}</span></div>
       {lista.length ? <div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Vence</th><th>Probabilidad de atraso</th><th>Riesgo</th><th>Por qué</th><th>Acción sugerida</th></tr></thead><tbody>
-        {lista.map(x => <tr key={x.cuota_id}><td className="strong">{x.unidad_codigo}</td><td>{fechaVisible(x.fecha_vencimiento)}</td><td>{Math.round(Number(x.probabilidad) * 100)} %</td>
+        {lista.map(x => <tr key={x.cuota_id}><td className="strong">{x.unidad_codigo}</td><td>{fechaVisible(x.fecha_vencimiento)}</td><td>{probabilidad(Number(x.probabilidad))}</td>
           <td><span className={`badge badge-riesgo-${x.nivel_riesgo}`}>{x.nivel_riesgo}</span></td>
-          <td>{x.factores.length ? x.factores.map(f => FACTOR[f.variable] ?? f.variable).join(' · ') : 'Sin atrasos relevantes'}</td><td>{ACCION[x.nivel_riesgo]}</td></tr>)}
+          <td className="celda-factores">{x.factores.length ? x.factores.map(f => FACTOR[f.variable] ?? f.variable).join(' · ') : 'Sin atrasos relevantes'}</td><td>{ACCION[x.nivel_riesgo]}</td></tr>)}
       </tbody></table></div>
         : proximas === 0
           ? <Empty title="No hay cuotas por vencer" text={`Las cuotas de este mes ya vencieron. Genera las de ${mesVisible(siguiente)} en Cuotas y luego calcula el riesgo.`} action={<Link className="button button-secondary" to="/admin/cuotas">Ir a Cuotas</Link>} />
