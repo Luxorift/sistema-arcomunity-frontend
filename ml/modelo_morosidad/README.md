@@ -104,8 +104,8 @@ evitada. **Ninguna reducción de morosidad está demostrada**: requiere un pilot
 | Entrada: `ml_caracteristicas_cuotas` (Supabase) | Existe en producción. Coincide con el entrenamiento: 29 cuotas comparadas, 0 diferencias. |
 | Modelo exportado + inferencia sobre registro nuevo | Hecho (`inferencia.py`, `ejemplo_entrada.json`). |
 | Llamada real con datos del MVP | Hecho, solo lectura (`resultados/evidencia_integracion.json`: 30 cuotas, 9 en riesgo alto al 01/11/2026). |
-| Guardar predicciones (`predicciones_morosidad`) y registrar el modelo (`modelos_ml`) | Pendiente. Requiere autorización: escribe en producción. |
-| Pantalla «Predicción de morosidad» | Existe y lee `predicciones_vigentes`; mostrará resultados reales cuando haya un modelo activo y predicciones. |
+| Registrar el modelo (`modelos_ml`) y calcular/guardar predicciones en PostgreSQL | Migración `20261118001200_modelo_morosidad_v1.sql` + pruebas PGlite (paridad 115 casos < 1e-9, permisos). **Falta aplicarla en Supabase** (requiere autorización). |
+| Pantalla «Predicción de morosidad» | Conectada: botón «Calcular riesgo de hoy», tabla con probabilidad, nivel, factores y acción sugerida. Sin modelo activo muestra «Pendiente de conectar». |
 
 Ruta recomendada (sin infraestructura nueva): como el modelo es una regresión logística, la predicción es una
 fórmula. `modelo/parametros_sql_v1.json` reproduce scikit-learn con diferencia máxima de 3,3e-16 en las

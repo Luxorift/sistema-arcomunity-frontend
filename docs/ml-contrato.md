@@ -1,7 +1,7 @@
 # Contrato técnico de integración ML — riesgo de morosidad
 
-Estado: **preparado, sin modelo**. No hay predicciones en la base hasta que exista un modelo
-entrenado con el dataset del equipo y registrado en `modelos_ml`.
+Estado: **modelo v1 entrenado** (regresión logística, `ml/modelo_morosidad`). Se activa en la base con la
+migración `20261118001200_modelo_morosidad_v1.sql`: hasta aplicarla no hay predicciones ni modelo activo.
 
 Pregunta: *¿existe riesgo de que esta cuota se pague con atraso?* Unidad de observación: una cuota.
 Momento de predicción: fecha de corte anterior al vencimiento (por defecto, hoy en America/Lima).
@@ -69,15 +69,20 @@ se guarda en `modelos_ml.caracteristicas`.
 puede ajustar al entrenar). Se guarda en `predicciones_morosidad` junto con `entrada` (copia de las
 características usadas) para trazabilidad.
 
-## Flujo previsto
+## Flujo implementado (v1)
 
-1. El administrador abre **Predicción de morosidad** (oculta mientras no haya modelo activo).
-2. Una Edge Function `predecir-morosidad` verifica que el usuario sea admin de la junta, obtiene las
-   características con `ml_caracteristicas_cuotas` y llama al servicio FastAPI con un secreto
-   compartido (cabecera), nunca expuesto al navegador.
-3. FastAPI carga el pipeline exportado con `joblib` (preprocesamiento + modelo) y responde.
-4. La Edge Function guarda los resultados con la clave de servicio en `predicciones_morosidad`.
-5. La pantalla lee `predicciones_vigentes(junta)` y sugiere a quién recordar antes del vencimiento.
+1. La administración abre **Predicción de morosidad** y pulsa «Calcular riesgo de hoy».
+2. `calcular_riesgo_morosidad(junta)` (PostgreSQL, `security definer`) verifica que sea administración de la
+   junta, toma las variables de `ml_caracteristicas_cuotas` con corte = hoy (solo información pasada), aplica la
+   fórmula de la regresión logística con los parámetros guardados en `modelos_ml.parametros` y guarda cada
+   resultado en `predicciones_morosidad` (con la entrada usada) y en la auditoría.
+3. La pantalla lee `predicciones_vigentes(junta)`: cuotas aún no vencidas, ordenadas por probabilidad, con los
+   factores que elevan el riesgo y la acción sugerida (priorizar recordatorio).
+4. Los propietarios nunca ven su riesgo (RLS y funciones solo para administración).
+
+La paridad SQL ↔ scikit-learn se prueba con 115 casos (diferencia < 1e-9). Desde Python, `inferencia.py` sigue
+disponible para el notebook y para comparar. Un servicio externo (Edge Function o FastAPI) solo sería necesario
+si en el futuro se elige un modelo no lineal; la reevaluación (`ml/modelo_morosidad/comparacion`) no lo justificó.
 
 ## Datos de entrenamiento
 
