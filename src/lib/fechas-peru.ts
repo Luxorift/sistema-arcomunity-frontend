@@ -1,7 +1,10 @@
 // Fechas especiales del Perú para los saludos de Arcomunity.
 // Configuración centralizada: para agregar o cambiar una fecha basta editar FECHAS_FIJAS o las
-// reglas móviles. Feriados nacionales según el D. Leg. N.º 713 y sus modificatorias (16 en 2026);
-// las conmemoraciones no son feriados y se marcan como tales.
+// reglas móviles. Las conmemoraciones no son feriados y se marcan como tales.
+// Feriados nacionales (16 en 2026): D. Leg. N.º 713 (12), Ley N.º 31788 (7 de junio),
+// Ley N.º 31822 (23 de julio), 6 de agosto y 9 de diciembre (aprobados por el Congreso en 2022 y
+// 2021). Fuentes y fecha de verificación en docs/verificacion.md. Los días no laborables que decreta
+// el Ejecutivo cada año no son feriados y no se incluyen.
 
 export type TipoFecha = 'feriado' | 'conmemoracion'
 export type FechaEspecial = { id: string; nombre: string; tipo: TipoFecha; mensaje: string; emoji?: string }
