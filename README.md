@@ -153,6 +153,8 @@ npm run build        # compilación de producción
 npm run test:navegadores  # Edge (móvil) + Chrome (escritorio): pago, revisión en tiempo real y aprobación
 npm run test:ui      # auditoría de solo lectura de todas las pantallas (consola, desborde, accesibilidad)
 npm run test:responsive  # 8 tamaños (320 px a escritorio y horizontal) en Chrome y Edge: desbordes, recortes, menú y modales
+npm run test:demo    # cuentas demo contra Supabase: roles, permisos, abusos rechazados y restauración
+npm run test:acceso  # los 4 perfiles en la web pública con Chrome y Edge, escritorio y celular (como el docente)
 ```
 
 `test:navegadores` y `test:ui` usan el frontend en `http://localhost:5173` (`npm run dev`). Para probar el

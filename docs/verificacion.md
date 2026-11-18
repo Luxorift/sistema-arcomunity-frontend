@@ -134,3 +134,17 @@ laborables que decreta cada año el Ejecutivo **no** se incluyen: no son feriado
   desplazamiento propio, «Volver a mi cuenta» de 44 px y etiquetas de al menos 10 px.
 - `npm run test:responsive`: 33 escenas × 8 tamaños en Chrome y 3 en Edge (352 vistas) sin problemas.
   Contra producción (CSS anterior) marca los dos fallos, lo que confirma que la prueba los detecta.
+
+## Cuentas de demostración (18/11/2026)
+
+- Supabase Auth: 4 usuarios, todos `@arcomunity.demo`, con rol, junta y unidad correctos; una sola junta
+  (simulada). Sin datos personales reales.
+- Antes de la migración 1100 la contraseña publicada permitía cambiar la contraseña de las cuentas demo,
+  el código de invitación o desvincular a los propietarios demo. La migración lo impide con triggers.
+- `npm run test:demo` contra Supabase: 32/32 (modo demo activo, estado guardado, restauración nocturna
+  programada con pg_cron a las 08:00 UTC, roles y alcance de cada perfil, abusos rechazados, restauración).
+- `test:remoto` 80/80: la prueba del QR pasó a la junta temporal (en la demo el QR está bloqueado).
+- Aislamiento: una junta temporal no demo quedó idéntica tras `npm run demo:restaurar` (y sí admite cámaras
+  con enlace, porque las restricciones solo aplican a la demo). El dataset APF3 regenerado es idéntico.
+- `npm run test:acceso` en la web pública: los 4 perfiles con Chrome y Edge, escritorio y celular,
+  escribiendo solo el correo y la contraseña del README: 68/68.
