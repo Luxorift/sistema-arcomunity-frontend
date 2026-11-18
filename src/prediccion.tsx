@@ -1,9 +1,9 @@
 // Predicción de morosidad. Muestra solo resultados reales guardados en la base (predicciones_vigentes) por el
 // modelo activo de modelos_ml (v1: regresión logística calculada en PostgreSQL, migración 1200). Si no hay
 // modelo activo, la pantalla lo dice: nunca inventa probabilidades. Solo la administración la ve.
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { AlertCircle, BrainCircuit, CalendarClock, Database, RefreshCw, ShieldCheck } from 'lucide-react'
+import { AlertCircle, BellRing, BrainCircuit, CalendarClock, CheckCircle2, Database, RefreshCw, Scale, ShieldCheck, Target } from 'lucide-react'
 import { fechaVisible, mesVisible, mes, periodoAnterior } from './model'
 import { supabase } from './lib/supabase'
 import { useApp } from './store'
@@ -11,7 +11,11 @@ import { useRpc } from './lib/usarRpc'
 import { Ayuda, Cargando, ConfirmDialog, Empty, PageHead, Stat } from './ui'
 
 type Prediccion = { cuota_id: string; unidad_codigo: string; fecha_vencimiento: string; probabilidad: number; nivel_riesgo: 'bajo' | 'medio' | 'alto'; factores: { variable: string; aporte: number }[]; modelo_version: string; generado_en: string }
-type Modelo = { version: string; algoritmo: string; umbral: number; entrenado_en: string; metricas: { prueba_meses_11_12?: Record<string, number>; validacion_anidada_meses_5_10?: Record<string, number> } }
+// Métricas de la evaluación única con el conjunto de prueba (meses 11–12 del dataset simulado), tal como están
+// versionadas en modelos_ml.metricas (migraciones 1200 y 1400). La pantalla no escribe cifras a mano.
+type Matriz = { verdaderos_positivos: number; falsos_negativos: number; falsos_positivos: number; verdaderos_negativos: number; cuotas: number }
+type MetricasPrueba = { accuracy: number; precision: number; recall: number; f1: number; matriz?: Matriz }
+type Modelo = { version: string; algoritmo: string; umbral: number; entrenado_en: string; metricas: { prueba_meses_11_12?: MetricasPrueba } }
 
 const FACTOR: Record<string, string> = {
   atrasos_previos_total: 'Atrasos anteriores',
@@ -20,7 +24,56 @@ const FACTOR: Record<string, string> = {
   pagos_atrasados_previos: 'Atrasos recientes (3 meses)',
 }
 const ACCION = { alto: 'Priorizar recordatorio', medio: 'Hacer seguimiento', bajo: '—' }
-const pct = (n?: number) => (n === undefined ? '—' : `${Math.round(n * 100)} %`)
+// Mismo estilo que el resto de la app: «84.6 %» (punto decimal de es-PE y espacio antes del signo).
+const unDecimal = new Intl.NumberFormat('es-PE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+const porcentaje = { format: (x: number) => `${unDecimal.format(x * 100)} %` }
+const tresDecimales = new Intl.NumberFormat('es-PE', { minimumFractionDigits: 3, maximumFractionDigits: 3 })
+// 24 horas («18/11/2026, 17:59»): evita «p. m.» seguido del punto final de la frase.
+const fechaHora = new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+
+/** Tarjeta de una métrica del modelo: valor, conteo que la explica y una frase sencilla. */
+function KpiModelo({ titulo, valor, proporcion, detalle, explicacion, icono }: { titulo: string; valor: string; proporcion: number; detalle?: string; explicacion: string; icono: ReactNode }) {
+  return <article className="kpi-modelo">
+    <div className="kpi-modelo-top"><h3>{titulo}</h3><span className="kpi-modelo-icono" aria-hidden="true">{icono}</span></div>
+    <strong className="kpi-modelo-valor">{valor}</strong>
+    <div className="kpi-modelo-medidor" aria-hidden="true"><span style={{ width: `${Math.max(0, Math.min(1, proporcion)) * 100}%` }} /></div>
+    {detalle && <p className="kpi-modelo-detalle">{detalle}</p>}
+    <p className="kpi-modelo-explicacion">{explicacion}</p>
+  </article>
+}
+
+function DesempenoModelo({ modelo }: { modelo: Modelo }) {
+  const m = modelo.metricas.prueba_meses_11_12
+  if (!m) return null
+  const x = m.matriz
+  const alertas = x ? x.verdaderos_positivos + x.falsos_positivos : undefined
+  const morosas = x ? x.verdaderos_positivos + x.falsos_negativos : undefined
+  const aTiempo = x ? x.falsos_positivos + x.verdaderos_negativos : undefined
+  return <section className="ml-seccion" aria-labelledby="ml-desempeno">
+    <div className="ml-seccion-head">
+      <div><span className="eyebrow">1 · Evaluación del modelo</span><h2 id="ml-desempeno">Desempeño del modelo</h2>
+        <p>Resultado de su evaluación final, medida una sola vez con el conjunto de prueba{x ? `: ${x.cuotas} cuotas simuladas` : ''} de los meses 11 y 12 que el modelo no vio al entrenarse. No corresponde a las predicciones de esta pantalla ni a pagos de vecinos reales.</p></div>
+      <span className="count-pill">Modelo {modelo.version} · prueba</span>
+    </div>
+    <div className="kpi-modelo-grid">
+      <KpiModelo titulo="Recall" icono={<Target size={20} />} valor={porcentaje.format(m.recall)} proporcion={m.recall}
+        detalle={x && morosas !== undefined ? `Detectó ${x.verdaderos_positivos} de ${morosas} cuotas morosas.` : undefined}
+        explicacion="Capacidad para identificar cuotas que se pagarán con atraso." />
+      <KpiModelo titulo="Precisión" icono={<BellRing size={20} />} valor={porcentaje.format(m.precision)} proporcion={m.precision}
+        detalle={x && alertas !== undefined ? `De ${alertas} alertas, ${x.verdaderos_positivos} correspondieron a morosidad.` : undefined}
+        explicacion="Proporción de alertas que identificaron correctamente un atraso." />
+      <KpiModelo titulo="F1-score" icono={<Scale size={20} />} valor={tresDecimales.format(m.f1)} proporcion={m.f1}
+        detalle="Equilibrio entre precisión y recall (de 0 a 1)."
+        explicacion="Medida que combina la detección de morosidad con la calidad de las alertas." />
+    </div>
+    <Ayuda pregunta="¿Qué significan recall, precisión y F1-score?">
+      <p><strong>Recall:</strong> de todas las cuotas que realmente se pagaron tarde, cuántas avisó el modelo. Es la prioridad de la junta, porque un atraso sin aviso es el error que más cuesta. La meta era al menos 80 %.</p>
+      <p><strong>Precisión:</strong> de todos los avisos del modelo, cuántos eran atrasos reales. Un aviso de más solo significa un recordatorio que no hacía falta.</p>
+      <p><strong>F1-score:</strong> un solo número entre 0 y 1 que junta las dos anteriores; cuanto más cerca de 1, mejor.</p>
+      {x && aTiempo !== undefined && <p>No usamos la exactitud como medida principal: en la prueba {aTiempo} de {x.cuotas} cuotas se pagaron a tiempo, así que un sistema que nunca avisa acertaría {porcentaje.format(aTiempo / x.cuotas)} sin detectar ningún atraso. El modelo acertó {porcentaje.format(m.accuracy)}.</p>}
+    </Ayuda>
+  </section>
+}
 // Probabilidad para mostrar: el modelo puede dar 0,9999; no se presenta como certeza del 100 %.
 const probabilidad = (n: number) => (n >= 0.995 ? '> 99 %' : n < 0.005 ? '< 1 %' : `${Math.round(n * 100)} %`)
 
@@ -74,19 +127,28 @@ export function PrediccionPage() {
     </div>
   </>
 
-  const prueba = modelo.metricas.prueba_meses_11_12
+  const bajo = lista.filter(x => x.nivel_riesgo === 'bajo').length
+  const calculadoEn = lista.reduce((u, x) => (x.generado_en > u ? x.generado_en : u), '')
   return <>
     <PageHead eyebrow="Apoyo a la cobranza" title="Predicción de morosidad" description="Prioriza recordatorios antes del vencimiento según el riesgo de pago con atraso."
       action={<button className="button button-primary" disabled={calculando} aria-busy={calculando} onClick={pedirCalculo}><RefreshCw size={17} aria-hidden="true" /> {calculando ? 'Calculando…' : 'Calcular riesgo de hoy'}</button>} />
     <div className="info-callout aviso-experimental" role="note"><AlertCircle size={18} /><span>
       <strong>Modelo experimental (APF3).</strong> Se entrenó con datos simulados de la junta de demostración; sus probabilidades no están validadas con vecinos reales. Úsalo solo como apoyo para priorizar recordatorios, nunca para sancionar ni para decidir sobre un vecino.
     </span></div>
-    <Ayuda pregunta="¿Qué significa el riesgo de morosidad?">Es la probabilidad, estimada por el modelo, de que una cuota que aún no vence se pague tarde. Se calcula solo con el historial de pagos anteriores de cada unidad. <strong>Riesgo alto</strong> significa que conviene enviar un recordatorio antes del vencimiento; <strong>bajo</strong>, que la unidad suele pagar a tiempo. Es una ayuda para priorizar, no una acusación: nunca se usa para sancionar.</Ayuda>
-    <div className="stats-grid three">
-      <Stat label="Cuotas evaluadas" value={lista.length} note="por vencer en los próximos 31 días" icon={<CalendarClock size={20} />} />
-      <Stat label="Riesgo alto" value={alto} note="recordatorios sugeridos" icon={<AlertCircle size={20} />} tone="coral" />
-      <Stat label="Riesgo medio" value={medio} note="seguimiento" icon={<BrainCircuit size={20} />} />
-    </div>
+    <DesempenoModelo modelo={modelo} />
+
+    <section className="ml-seccion" aria-labelledby="ml-actuales">
+      <div className="ml-seccion-head">
+        <div><span className="eyebrow">2 · Inferencia actual</span><h2 id="ml-actuales">Predicciones actuales</h2>
+          <p>Riesgo estimado por el modelo para las cuotas que vencen en los próximos 31 días{calculadoEn ? `, calculado el ${fechaHora.format(new Date(calculadoEn))}` : ''}. Son probabilidades, no certezas: sirven para decidir a quién recordar primero.</p></div>
+      </div>
+      <Ayuda pregunta="¿Qué significa el riesgo de morosidad?">Es la probabilidad, estimada por el modelo, de que una cuota que aún no vence se pague tarde. Se calcula solo con el historial de pagos anteriores de cada unidad. <strong>Riesgo alto</strong> significa que conviene enviar un recordatorio antes del vencimiento; <strong>medio</strong>, hacer seguimiento; <strong>bajo</strong>, que la unidad suele pagar a tiempo. Es una ayuda para priorizar, no una acusación: nunca se usa para sancionar.</Ayuda>
+      {lista.length > 0 && <div className="stats-grid four">
+        <Stat label="Cuotas evaluadas" value={lista.length} note="vencen en los próximos 31 días" icon={<CalendarClock size={20} aria-hidden="true" />} />
+        <Stat label="Riesgo alto" value={alto} note="priorizar recordatorio" icon={<AlertCircle size={20} aria-hidden="true" />} tone="coral" />
+        <Stat label="Riesgo medio" value={medio} note="hacer seguimiento" icon={<BrainCircuit size={20} aria-hidden="true" />} />
+        <Stat label="Riesgo bajo" value={bajo} note="suelen pagar a tiempo" icon={<CheckCircle2 size={20} aria-hidden="true" />} tone="lime" />
+      </div>}
     <div className="panel">
       <div className="panel-heading"><div><span className="eyebrow">Cuotas por vencer</span><h2>Riesgo de pago con atraso</h2></div><span className="count-pill">Modelo {modelo.version}</span></div>
       {lista.length ? <div className="table-wrap" tabIndex={0} role="region" aria-label="Tabla con desplazamiento horizontal"><table><thead><tr><th>Unidad</th><th>Vence</th><th>Probabilidad de atraso</th><th>Riesgo</th><th>Por qué</th><th>Acción sugerida</th></tr></thead><tbody>
@@ -96,10 +158,11 @@ export function PrediccionPage() {
       </tbody></table></div>
         : proximas === 0
           ? <Empty title="No hay cuotas por vencer" text={`Las cuotas de este mes ya vencieron. Genera las de ${mesVisible(siguiente)} en Cuotas y luego calcula el riesgo.`} action={<Link className="button button-secondary" to="/admin/cuotas">Ir a Cuotas</Link>} />
-          : <Empty title="Aún no se calculó el riesgo de hoy" text="Pulsa «Calcular riesgo de hoy» para evaluar las cuotas por vencer." />}
+          : <Empty title="Aún no se calculó el riesgo de hoy" text="Pulsa «Calcular riesgo de hoy» para evaluar las cuotas por vencer. Mientras tanto no se muestran indicadores para no presentar cifras vacías como resultados." />}
     </div>
-    <div className="info-callout model-note"><ShieldCheck size={18} /><span>
-      <strong>{modelo.algoritmo}</strong>, versión {modelo.version}, umbral {modelo.umbral}. En su evaluación final con datos simulados detectó {pct(prueba?.recall)} de las cuotas morosas (precision {pct(prueba?.precision)}); estas cifras no garantizan el mismo desempeño con pagos reales.
+    </section>
+    <div className="info-callout model-note"><ShieldCheck size={18} aria-hidden="true" /><span>
+      <strong>{modelo.algoritmo}</strong>, versión {modelo.version}, umbral {modelo.umbral}. Las probabilidades se calculan en la base de datos con los mismos coeficientes del modelo entrenado en Python.
       Solo la administración ve estas predicciones: los propietarios no ven su riesgo.
     </span></div>
     {p.error && <Empty title="No se pudo consultar" text={p.error} />}

@@ -60,6 +60,22 @@ describe('Modelo v1 registrado en la base', () => {
     expect(m[0].p.umbral).toBeCloseTo(0.2258, 4)
   })
 
+  it('las métricas de prueba coinciden con los resultados del notebook y con su matriz de confusión', async () => {
+    const resumen = JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'ml', 'modelo_morosidad', 'resultados', 'resumen.json'), 'utf8')) as { prueba: Record<string, number> }
+    await como(db, { tipo: 'postgres' })
+    const [{ m }] = await filas<{ m: { prueba_meses_11_12: Record<string, number> & { matriz: Record<string, number> } } }>(db, `select metricas as m from public.modelos_ml where version = 'v1'`)
+    const p = m.prueba_meses_11_12
+    for (const k of ['accuracy', 'precision', 'recall', 'f1']) expect(p[k]).toBe(resumen.prueba[k])
+    const { verdaderos_positivos: vp, falsos_negativos: fn, falsos_positivos: fp, verdaderos_negativos: vn, cuotas } = p.matriz
+    expect([vp, fn, fp, vn, cuotas]).toEqual([11, 2, 7, 39, 59])
+    expect(vp + fn + fp + vn).toBe(cuotas)
+    const r3 = (x: number) => Math.round(x * 1000) / 1000
+    expect(r3(vp / (vp + fn))).toBe(p.recall)
+    expect(r3(vp / (vp + fp))).toBe(p.precision)
+    expect(r3((vp + vn) / cuotas)).toBe(p.accuracy)
+    expect(r3((2 * vp) / (2 * vp + fp + fn))).toBe(p.f1)
+  })
+
   it('reproduce las probabilidades de scikit-learn en los 115 casos del dataset', async () => {
     await como(db, { tipo: 'postgres' })
     const r = await filas<{ i: number; p: number; umbral: number }>(db, `
