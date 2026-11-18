@@ -1,0 +1,12 @@
+﻿campo,descripcion,tipo,valores,admite_vacios,uso_en_modelo,cambio_respecto_apf2
+unidad_ref,"Seudónimo estable de la unidad: ""U-"" + 10 primeros hex del SHA-256 de su id interno. No revela el código de la casa ni al propietario.",texto,U-xxxxxxxxxx,no,identificador (agrupar; no usar como predictor),APF2 mostraba U001 como ejemplo; el sistema usa el seudónimo SHA-256
+periodo,Primer día del mes facturado (AAAA-MM-01).,fecha ISO,2025-12-01 a 2026-11-01,no,predictor (mes) y eje de la partición temporal,sin cambio
+monto,"Importe de la cuota en soles, 2 decimales.",decimal,150.00,no,predictor,sin cambio
+fecha_vencimiento,Fecha límite de pago (día configurado por la junta).,fecha ISO,AAAA-MM-10,no,contexto (conocida antes de vencer),sin cambio
+fecha_pago,Fecha de la operación del pago conciliado. Vacía si la cuota sigue impaga.,fecha ISO,AAAA-MM-DD o vacío,sí (solo impagas),NO predictor: define la etiqueta (solo auditoría),sin cambio
+dias_atraso,"max(0, fecha_pago − fecha_vencimiento). 0 si pagó a tiempo o si sigue impaga.",entero ≥ 0,0–15,no,NO predictor: define la etiqueta (solo auditoría),sin cambio
+metodo_pago,"Medio del pago de esa cuota: yape_qr, yape_captura, plin_captura, efectivo o transferencia. Vacío si impaga.",categoría,yape_qr / yape_captura / efectivo,sí (solo impagas),NO predictor de la cuota actual (no existe antes de pagar). Usar el método de cuotas previas,sin cambio
+pagos_atrasados_previos,Cuotas de la misma unidad de los 3 meses anteriores que estaban atrasadas el primer día del periodo (pagadas tarde o impagas tras vencer). Solo usa información pasada.,entero 0–3,0–3,no,predictor,sin cambio; los 3 primeros meses tienen menos historial (0–2 cuotas previas)
+moroso,Variable objetivo. 1 si se pagó después del vencimiento o sigue impaga tras vencer; 0 si se pagó a tiempo.,binario,0 / 1,no,ETIQUETA,sin cambio en la definición; ver exclusión de cuotas en revisión
+es_simulado,Indicador de dato ficticio de la semilla (1) o real (0).,binario,1,no,metadato (no predictor),sin cambio
+origen,"Procedencia del registro: simulado o real. Redundante con es_simulado, más legible.",categoría,simulado,no,metadato (no predictor),columna agregada para APF3
