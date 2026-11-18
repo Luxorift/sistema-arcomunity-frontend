@@ -101,12 +101,26 @@ El rol de administrador nunca se obtiene por registro: se asigna en la base de d
 npm test             # reglas de negocio, fechas, mensajes y base de datos (PGlite)
 npm run test:remoto  # integración contra el proyecto Supabase real (requiere la semilla)
 npm run build        # compilación de producción
+npm run test:navegadores  # Edge (móvil) + Chrome (escritorio): pago, revisión en tiempo real y aprobación
+npm run test:ui      # auditoría de solo lectura de todas las pantallas (consola, desborde, accesibilidad)
 ```
+
+`test:navegadores` y `test:ui` usan el frontend en `http://localhost:5173` (`npm run dev`). Para probar el
+build de producción: `npm run build`, `npx vite preview --port 4173` y antepone `APP_URL=http://localhost:4173`.
 
 - `npm test` aplica todas las migraciones en PGlite (Postgres en WebAssembly) y prueba RLS, Storage y
   funciones con identidades distintas (anónimo, propietarios, administradores de dos juntas, servicio).
 - `npm run test:remoto` usa Auth, PostgREST, Storage y Realtime reales; crea usuarios y una junta
   temporales y los elimina al terminar.
+
+## Dataset de morosidad (APF3)
+
+```bash
+npm run dataset:apf3   # exporta y valida el dataset desde Supabase (solo lectura)
+```
+
+Genera en `ml/dataset_apf3/` el CSV del contrato de datos, una copia `.xlsx`, el diccionario de datos,
+una partición temporal de referencia y `validacion_dataset.md`. Ver ese informe antes de usar el dataset.
 
 ## Despliegue (Vercel)
 
@@ -114,6 +128,8 @@ npm run build        # compilación de producción
 2. Variables de entorno: **solo** `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
 3. Agrega la URL de Vercel en Supabase → Authentication → URL Configuration.
 4. Los proyectos gratuitos de Supabase se pausan tras días sin uso: ábrelo el día anterior a la demo.
+
+Lista de comprobación previa a producción: [docs/despliegue.md](docs/despliegue.md).
 
 ## Recorrido sugerido para la demostración
 
