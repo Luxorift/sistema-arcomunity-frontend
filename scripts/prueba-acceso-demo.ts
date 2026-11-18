@@ -20,7 +20,9 @@ const PERFILES: Perfil[] = [
   { correo: 'admin@arcomunity.demo', destino: '/admin', texto: /Recaudado/, propietario: false },
   { correo: 'casa12@arcomunity.demo', destino: '/mi-cuenta', texto: /vencida/i, propietario: true },
   { correo: 'casa08@arcomunity.demo', destino: '/mi-cuenta', texto: /revisión/i, propietario: true },
-  { correo: 'dpto301@arcomunity.demo', destino: '/mi-cuenta', texto: /al día/i, propietario: true },
+  // Sin cuotas vencidas: «Estás al día» (demo reiniciada) o «No tienes cuotas vencidas» (demo preparada,
+  // con la cuota del mes siguiente por vencer).
+  { correo: 'dpto301@arcomunity.demo', destino: '/mi-cuenta', texto: /al día|no tienes cuotas vencidas/i, propietario: true },
 ]
 
 let ok = 0, fallos = 0
