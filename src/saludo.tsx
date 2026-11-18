@@ -11,8 +11,8 @@ export type ResumenVecino = { vencidas: number; pendientes: number; enRevision: 
 
 export function mensajeVecino(r: ResumenVecino): string {
   if (r.vencidas > 0) return r.vencidas === 1 ? 'Tienes una cuota vencida. Puedes pagarla ahora en tres pasos.' : `Tienes ${r.vencidas} cuotas vencidas. Puedes pagarlas en tres pasos.`
-  if (r.pendientes > 0) return `Recuerda revisar tu próxima cuota${r.proximoVencimiento ? `: vence el ${fechaVisible(r.proximoVencimiento)}` : ''}.`
   if (r.enRevision > 0) return 'Recibimos tu comprobante. La administración lo está revisando.'
+  if (r.pendientes > 0) return `Recuerda revisar tu próxima cuota${r.proximoVencimiento ? `: vence el ${fechaVisible(r.proximoVencimiento)}` : ''}.`
   return 'Estás al día. ¡Gracias por contribuir con tu comunidad!'
 }
 

@@ -3,7 +3,7 @@ import { Link, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { ArrowRight, CheckCircle2, Eye, EyeOff, KeyRound, LockKeyhole, Mail, ShieldCheck, Sparkles, UsersRound } from 'lucide-react'
 import { AppProvider, useApp } from './store'
 import { configuracionFaltante } from './lib/supabase'
-import { AppLayout, Brand, Cargando, Simulado } from './ui'
+import { AppLayout, BotonTema, Brand, Cargando, Simulado } from './ui'
 
 const Admin = {
   Dashboard: lazy(() => import('./admin').then(m => ({ default: m.Dashboard }))),
@@ -26,9 +26,9 @@ const Owner = {
 
 const CUENTAS_DEMO = [
   { correo: 'admin@arcomunity.demo', titulo: 'Administración', nota: 'Panel completo', inicial: 'A' },
-  { correo: 'casa12@arcomunity.demo', titulo: 'Propietaria · Casa 12', nota: 'Cuota vencida: registra un pago', inicial: '12' },
-  { correo: 'casa08@arcomunity.demo', titulo: 'Propietario · Casa 08', nota: 'Pago en revisión', inicial: '08' },
-  { correo: 'dpto301@arcomunity.demo', titulo: 'Propietaria · Dpto 301', nota: 'Al día: historial completo', inicial: '301' },
+  { correo: 'casa12@arcomunity.demo', titulo: 'Propietaria · Casa 12', nota: 'Una cuota vencida: registra un pago', inicial: '12' },
+  { correo: 'casa08@arcomunity.demo', titulo: 'Propietario · Casa 08', nota: 'Pago en revisión: monto distinto a la cuota', inicial: '08' },
+  { correo: 'dpto301@arcomunity.demo', titulo: 'Propietaria · Dpto 301', nota: 'Sin cuotas vencidas: historial de pagos completo', inicial: '301' },
 ]
 
 function AuthShell({ children, pie }: { children: ReactNode; pie?: ReactNode }) {
@@ -47,7 +47,7 @@ function AuthShell({ children, pie }: { children: ReactNode; pie?: ReactNode }) 
       <div className="auth-aside-foot">Arcomunity · Proyecto universitario UTP · Datos de demostración simulados</div>
     </div></div>
     <div className="auth-main"><div className="auth-mobile-brand"><Brand /></div>
-      <div className="auth-form-wrap"><div className="auth-top"><Simulado />{pie}</div>{children}</div>
+      <div className="auth-form-wrap"><div className="auth-top"><Simulado /><div className="auth-top-acciones">{pie}<BotonTema /></div></div>{children}</div>
     </div>
   </div>
 }
@@ -62,6 +62,7 @@ function CampoClave({ value, onChange, placeholder, autoComplete, minLength }: {
 
 function Login() {
   const { entrar } = useApp()
+  useEffect(() => { document.title = 'Iniciar sesión · Arcomunity' }, [])
   const [correo, setCorreo] = useState('')
   const [clave, setClave] = useState('')
   const [cargando, setCargando] = useState(false)
@@ -100,6 +101,7 @@ function Registro() {
   const [error, setError] = useState('')
   const [confirmar, setConfirmar] = useState(false)
   const set = (k: keyof typeof f) => (v: string) => setF(x => ({ ...x, [k]: v }))
+  useEffect(() => { document.title = 'Crear cuenta · Arcomunity' }, [])
 
   const validarCodigo = async () => {
     setError(''); setUnidades(null); set('unidadId')('')
@@ -150,7 +152,7 @@ function Registro() {
           <label className="field"><span>Correo electrónico</span><input type="email" required autoComplete="email" value={f.correo} onChange={e => set('correo')(e.target.value)} placeholder="tu@correo.com" /></label>
           <label className="field"><span>Contraseña</span><CampoClave value={f.clave} onChange={set('clave')} placeholder="Mínimo 8 caracteres" autoComplete="new-password" minLength={8} /></label>
         </div>
-        <label className="consent"><input type="checkbox" checked={consentimiento} onChange={e => setConsentimiento(e.target.checked)} /><span>Acepto que la junta trate mis datos (nombre, correo, teléfono y pagos) solo para gestionar cuotas, conciliar pagos y rendir cuentas a la comunidad, según la Ley N.º 29733. Mi nombre no se muestra a otros vecinos.</span></label>
+        <label className="consent"><input type="checkbox" required checked={consentimiento} onChange={e => setConsentimiento(e.target.checked)} /><span>Acepto que la junta trate mis datos (nombre, correo, teléfono y pagos) solo para gestionar cuotas, conciliar pagos y rendir cuentas a la comunidad, según la Ley N.º 29733. Mi nombre no se muestra a otros vecinos.</span></label>
       </>}
       {error && <div role="alert" className="form-error">{error}</div>}
       {unidades && <button className="button button-primary auth-submit" disabled={cargando}>{cargando ? 'Creando cuenta…' : 'Crear cuenta'} <ArrowRight size={19} /></button>}
@@ -160,6 +162,7 @@ function Registro() {
 
 function Recuperar() {
   const { recuperarClave } = useApp()
+  useEffect(() => { document.title = 'Recuperar contraseña · Arcomunity' }, [])
   const [correo, setCorreo] = useState('')
   const [enviado, setEnviado] = useState(false)
   const [cargando, setCargando] = useState(false)

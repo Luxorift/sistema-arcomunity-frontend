@@ -4,6 +4,7 @@
 // se mide cada elemento contra el ancho visible y contra los contenedores que lo recortan.
 // Uso: npm run test:responsive            (APP_URL=… para otro servidor; CAPTURAS=carpeta guarda capturas)
 //      TAMANOS=360x800,768x1024 npm run test:responsive   → solo esos tamaños
+//      TEMA=oscuro npm run test:responsive                  → modo oscuro (por defecto, claro)
 import { chromium, type Browser, type Page } from 'playwright-core'
 import { mkdirSync } from 'node:fs'
 
@@ -25,7 +26,10 @@ const TODOS: Tamano[] = [
   { nombre: 'escritorio', w: 1366, h: 768, movil: false },
   { nombre: 'a55-horizontal', w: 800, h: 360, movil: true },
   { nombre: 'compacto-horizontal', w: 568, h: 320, movil: true },
+  // 1366×768 con el navegador al 200 %: la ventana útil equivale a 683×384 px CSS.
+  { nombre: 'zoom-200', w: 683, h: 384, movil: false },
 ]
+const ESQUEMA = process.env.TEMA === 'oscuro' ? 'dark' as const : 'light' as const
 const filtro = process.env.TAMANOS?.split(',')
 const TAMANOS = filtro ? TODOS.filter(t => filtro.includes(`${t.w}x${t.h}`)) : TODOS
 // Chrome en todos los tamaños; Edge en móvil, tablet y horizontal.
@@ -70,6 +74,9 @@ const ESCENAS: Escena[] = [
   { rol: 'admin', nombre: 'transparencia', ruta: '/transparencia' },
   { rol: 'admin', nombre: 'videovigilancia', ruta: '/videovigilancia' },
   { rol: 'admin', nombre: 'camara-modal', ruta: '/admin/configuracion', accion: clic(/Nueva cámara/) },
+  { rol: 'admin', nombre: 'auditoria-preparar', ruta: '/admin/auditoria', accion: clic('Preparar demostración') },
+  { rol: 'admin', nombre: 'auditoria-reiniciar', ruta: '/admin/auditoria', accion: clic('Reiniciar demostración') },
+  { rol: 'propietario', nombre: 'ayuda-abierta', ruta: '/mi-cuenta', accion: p => p.getByText('¿Cómo registro un pago?').click() },
 ]
 
 // Se ejecuta dentro de la página. Devuelve problemas (fallan la prueba) y avisos.
@@ -186,11 +193,11 @@ async function entrar(p: Page, correo: string) {
 }
 
 async function revisar(nav: Browser, navNombre: string, t: Tamano) {
-  const contexto = await nav.newContext({ viewport: { width: t.w, height: t.h }, isMobile: t.movil, hasTouch: t.movil, locale: 'es-PE', deviceScaleFactor: 1 })
+  const contexto = await nav.newContext({ viewport: { width: t.w, height: t.h }, isMobile: t.movil, hasTouch: t.movil, locale: 'es-PE', deviceScaleFactor: 1, colorScheme: ESQUEMA })
   const paginas: Record<Escena['rol'], Page> = {
     anonimo: await contexto.newPage(),
-    propietario: await (await nav.newContext({ viewport: { width: t.w, height: t.h }, isMobile: t.movil, hasTouch: t.movil, locale: 'es-PE', deviceScaleFactor: 1 })).newPage(),
-    admin: await (await nav.newContext({ viewport: { width: t.w, height: t.h }, isMobile: t.movil, hasTouch: t.movil, locale: 'es-PE', deviceScaleFactor: 1 })).newPage(),
+    propietario: await (await nav.newContext({ viewport: { width: t.w, height: t.h }, isMobile: t.movil, hasTouch: t.movil, locale: 'es-PE', deviceScaleFactor: 1, colorScheme: ESQUEMA })).newPage(),
+    admin: await (await nav.newContext({ viewport: { width: t.w, height: t.h }, isMobile: t.movil, hasTouch: t.movil, locale: 'es-PE', deviceScaleFactor: 1, colorScheme: ESQUEMA })).newPage(),
   }
   await entrar(paginas.propietario, 'casa12@arcomunity.demo')
   await entrar(paginas.admin, 'admin@arcomunity.demo')

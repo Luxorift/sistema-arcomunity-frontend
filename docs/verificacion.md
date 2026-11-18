@@ -148,3 +148,27 @@ laborables que decreta cada año el Ejecutivo **no** se incluyen: no son feriado
   con enlace, porque las restricciones solo aplican a la demo). El dataset APF3 regenerado es idéntico.
 - `npm run test:acceso` en la web pública: los 4 perfiles con Chrome y Edge, escritorio y celular,
   escribiendo solo el correo y la contraseña del README: 68/68.
+
+## Preparación final APF3: demostración, accesibilidad y temas (18/11/2026)
+
+Migración `20261118001300_herramientas_demostracion.sql` aplicada por el responsable. Pruebas en este orden
+(nunca en paralelo las que modifican la junta demo):
+
+| Prueba | Resultado |
+| --- | --- |
+| `npm test` (PGlite; 11 nuevas de herramientas de demostración) | 113/113 |
+| `npm run test:herramientas` (Supabase real: permisos, preparar ×2, ensayo, reiniciar, Storage, auditoría, pg_cron) | 29/29 |
+| Preparar con corte 18/11/2026 | 30 cuotas de diciembre, 30 predicciones: **12 alto, 0 medio, 18 bajo** (igual que la evidencia del APF3, sin forzar); repetir no duplica y da las mismas probabilidades |
+| Reiniciar | Quita el pago, el egreso, las 30 cuotas y las 30 predicciones del ensayo y borra el comprobante; la auditoría solo crece (267 → 277) |
+| `test:remoto` · `test:demo` · `test:prediccion` | 80/80 · 32/32 · 20/20 |
+| `test:navegadores` (Edge paga, Chrome concilia en tiempo real) | 10/10 (el script buscaba un texto anterior; se actualizó) |
+| `test:ui` (18 pantallas × 2 vistas) | 0 problemas |
+| `test:responsive` claro y oscuro (36 escenas × 9 tamaños Chrome + 3 Edge, incluye 683×384 = zoom 200 %) | 396 vistas por tema; solo fallaban las escenas de Auditoría antes de aplicar la migración |
+| `test:a11y` (axe-core, WCAG 2.2 A/AA) claro y oscuro × escritorio, celular y zoom 200 % | 144 vistas; corregidos contrastes, tablas desplazables sin teclado y textos de 10–11 px → **0 incumplimientos** |
+| Teclado en modales (manual) | Foco entra al diálogo, Tab queda dentro, Escape cierra, el foco vuelve al botón y el fondo queda inerte |
+| `npm run verificar:red` (desde casa) | Vercel, ruta interna, Supabase Auth/API/Storage y Realtime responden |
+
+Limitaciones: axe-core no revisa lenguaje ni lectores de pantalla reales (no se probó con NVDA/TalkBack);
+el flujo grabado es una secuencia de capturas porque el video requiere instalar el ffmpeg de Playwright;
+la dirección alternativa a Vercel no está publicada (requiere la cuenta del responsable) y no se pudo
+comprobar desde la red de la universidad.
