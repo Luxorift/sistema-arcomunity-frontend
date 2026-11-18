@@ -70,7 +70,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
     { to: '/admin/egresos', label: 'Egresos', icon: Banknote },
     { to: '/admin/reportes', label: 'Reportes', icon: FileBarChart2 },
     { to: '/admin/unidades', label: 'Unidades y vecinos', icon: Home },
-    { to: '/admin/prediccion', label: 'Predicción de morosidad', icon: BrainCircuit, etiqueta: 'Pronto' },
+    { to: '/admin/prediccion', label: 'Predicción de morosidad', icon: BrainCircuit },
     { to: '/transparencia', label: 'Transparencia', icon: UsersRound },
     { to: '/videovigilancia', label: 'Videovigilancia', icon: Video },
     { to: '/admin/auditoria', label: 'Auditoría', icon: Activity },
