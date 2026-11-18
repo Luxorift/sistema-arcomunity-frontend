@@ -55,26 +55,28 @@ dirección principal.
 
 | Opción | Dirección | Costo | Rutas internas | Recomendación |
 | --- | --- | --- | --- | --- |
-| **Cloudflare Pages** | `https://<nombre>.pages.dev` | Gratis (500 builds/mes) | Automático para SPA; además `public/_redirects` | Primera opción: red de Cloudflare, rara vez bloqueada |
-| **Netlify** | `https://<nombre>.netlify.app` | Gratis (300 min de build/mes) | `public/_redirects` + `netlify.toml` | Segunda opción |
+| **Cloudflare Workers** (ya conectado al repositorio: check «Workers Builds») | `https://sistema-arcomunity-frontend.<subdominio>.workers.dev` | Gratis | `wrangler.jsonc` → `not_found_handling: single-page-application` | Primera opción: red de Cloudflare, rara vez bloqueada |
+| **Netlify** | `https://<nombre>.netlify.app` | Gratis (300 min de build/mes) | `netlify.toml` (`/* → /index.html 200`) | Segunda opción |
 | Dominio propio | `https://arcomunity.pe`, etc. | **De pago** | — | No se contrata (regla del proyecto) |
 
-El repositorio ya trae lo necesario: `public/_redirects` (`/* /index.html 200`) y `netlify.toml`
-(`npm run build`, carpeta `dist`, Node 22). Vercel ignora ambos archivos.
+El repositorio ya trae lo necesario: `wrangler.jsonc` (Cloudflare: `npm run build`, publica `dist`, rutas
+internas a `index.html`) y `netlify.toml` (lo mismo para Netlify). Vercel ignora ambos archivos.
+Comprobado con `npx wrangler deploy --dry-run` (no publica).
 
 ### Pasos (requieren la cuenta del responsable; no se publicó nada todavía)
 
-1. **Cloudflare Pages:** *Workers & Pages → Create → Pages → Connect to Git* → repositorio
-   `sistema-arcomunity-frontend` → rama de producción `main` → *Framework preset* «Vite» (build
-   `npm run build`, salida `dist`). **Netlify:** *Add new site → Import an existing project* → mismo repositorio
-   (lee `netlify.toml`).
-2. Variables de entorno (*Production*): `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` (la clave pública,
-   la misma de Vercel) y `NODE_VERSION=22`. **Nunca** `SUPABASE_SERVICE_ROLE_KEY`.
+1. **Cloudflare Workers:** el Worker `sistema-arcomunity-frontend` ya está conectado a GitHub. En *Settings →
+   Build*: rama de producción `main`, comando de despliegue `npx wrangler deploy` (el build lo hace
+   `wrangler.jsonc`). **Netlify** (alternativa): *Add new site → Import an existing project* → mismo
+   repositorio (lee `netlify.toml`).
+2. Variables **de build** (Cloudflare: *Settings → Build → Variables and secrets*; Netlify: *Environment
+   variables*): `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` (la clave pública, la misma de Vercel). Sin
+   ellas la web abre «Falta conectar Supabase». **Nunca** `SUPABASE_SERVICE_ROLE_KEY`.
 3. Supabase → *Authentication → URL Configuration → Redirect URLs*: agregar
-   `https://<nombre>.pages.dev/**` (o `.netlify.app/**`). Sin esto, los enlaces de recuperación de
+   `https://sistema-arcomunity-frontend.<subdominio>.workers.dev/**` (o `.netlify.app/**`). Sin esto, los enlaces de recuperación de
    contraseña y de confirmación de correo pedidos desde la dirección alternativa vuelven a Vercel.
    *Site URL* sigue siendo Vercel.
-4. Comprobar: `ALTERNATIVAS=https://<nombre>.pages.dev npm run verificar:red` (sitio, ruta interna
+4. Comprobar: `ALTERNATIVAS=https://sistema-arcomunity-frontend.<subdominio>.workers.dev npm run verificar:red` (sitio, ruta interna
    `/admin/prediccion`, código de la app, Supabase Auth/API/Storage y Realtime), y luego entrar con las
    cuentas demo, registrar un pago, conciliarlo y abrir Predicción de morosidad en escritorio y celular.
 5. **En la universidad**, antes de exponer: volver a correr `npm run verificar:red` con la dirección

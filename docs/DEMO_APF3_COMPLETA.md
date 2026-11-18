@@ -76,7 +76,7 @@ Al terminar, si habrá otra exposición: **Preparar demostración** otra vez.
 
 | Situación | Qué hacer |
 | --- | --- |
-| La universidad bloquea `vercel.app` | Abrir la web alternativa (Cloudflare Pages o Netlify), si ya está publicada. |
+| La universidad bloquea `vercel.app` | Abrir la web alternativa en Cloudflare (`…workers.dev`), si ya está publicada con sus variables. |
 | Ninguna web abre, pero Supabase responde (`npm run verificar:red`) | **App local:** en `sistema-arcomunity-frontend`, `npm run dev` → <http://localhost:5173>. Misma base y mismas cuentas. |
 | Supabase no responde | Compartir datos del celular a la laptop (hotspot) y repetir. Si tampoco: plan sin internet. |
 | Sin internet | 1) **Capturas reales:** carpeta `Demo_APF3_plan_B/capturas` junto al repositorio (claro y oscuro, escritorio y celular) y `ml/modelo_morosidad/evidencias/` (flujo del modelo). 2) **Notebook ejecutado:** `ml/modelo_morosidad/APF3_TD_Grupo6_ML_Innovacion.ipynb` con salidas guardadas. 3) **Inferencia offline en Python:** `cd ml/modelo_morosidad` y `python inferencia.py ejemplo_entrada.json` (probabilidad, riesgo y factores de 3 cuotas). 4) **Evidencias:** `resultados/evidencia_integracion.json` (Python = PostgreSQL 30/30) y `evidencias/tabla_prediccion_mostrada.json` (pantalla = base 30/30). 5) **Video breve** del flujo: `Demo_APF3_plan_B/video` (administración en Chrome y propietaria en celular). Se regenera con `VIDEO=carpeta npm run grabar:demo`. |
