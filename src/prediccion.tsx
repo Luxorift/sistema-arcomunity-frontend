@@ -15,12 +15,12 @@ export function PrediccionPage() {
   const proximas = datos.cuotas.filter(c => c.estado === 'pendiente' && c.vencimiento >= new Date().toISOString().slice(0, 10)).length
 
   return <>
-    <PageHead eyebrow="APOYO A LA COBRANZA" title="Predicción de morosidad" description="Prioriza recordatorios antes del vencimiento según el riesgo de pago con atraso." />
+    <PageHead eyebrow="Apoyo a la cobranza" title="Predicción de morosidad" description="Prioriza recordatorios antes del vencimiento según el riesgo de pago con atraso." />
     {p.cargando ? <Cargando /> : p.data && p.data.length > 0 ? <div className="panel"><div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Vence</th><th>Probabilidad de atraso</th><th>Riesgo</th><th>Modelo</th></tr></thead><tbody>
       {p.data.map(x => <tr key={x.cuota_id}><td className="strong">{x.unidad_codigo}</td><td>{fechaVisible(x.fecha_vencimiento)}</td><td>{Math.round(Number(x.probabilidad) * 100)} %</td><td><span className={`badge badge-riesgo-${x.nivel_riesgo}`}>{x.nivel_riesgo}</span></td><td>{x.modelo_version}</td></tr>)}
     </tbody></table></div></div>
       : <div className="panel pending-feature">
-        <div className="pending-feature-head"><BrainCircuit size={28} /><div><span className="eyebrow">PENDIENTE DE CONECTAR</span><h2>El modelo aún no está disponible</h2></div></div>
+        <div className="pending-feature-head"><BrainCircuit size={28} /><div><span className="eyebrow">Pendiente de conectar</span><h2>El modelo aún no está disponible</h2></div></div>
         <p>Esta función mostrará la probabilidad de que cada cuota próxima a vencer se pague con atraso. Se activará cuando el equipo entrene y registre el modelo con el dataset del proyecto. Hasta entonces no se muestran resultados para no presentar datos inventados.</p>
         <div className="feature-facts">
           <div><CalendarClock size={20} /><span><strong>{proximas}</strong> cuotas pendientes aún no vencidas que se podrían evaluar</span></div>

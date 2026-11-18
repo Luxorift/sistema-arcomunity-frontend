@@ -24,7 +24,7 @@ export const fechaVisible = (fecha?: string) => fecha ? `${fecha.slice(8, 10)}/$
 export const mesVisible = (fecha: string) => new Intl.DateTimeFormat('es-PE', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${fecha.slice(0, 10)}T12:00:00Z`))
 export const dinero = (n: number) => `S/ ${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 export const estadoVisible = (cuota: Cuota) => cuota.estado === 'pendiente' && cuota.vencimiento < hoy() ? 'morosa' : cuota.estado
-export const tituloEstado = (estado: string) => ({ pagada: 'Pagada', pendiente: 'Pendiente', en_revision: 'En revisión', morosa: 'Morosa', conciliado_auto: 'Validado por reglas', conciliado_manual: 'Aprobado', pendiente_revision: 'En revisión', rechazado: 'Rechazado', activa: 'Activa', inactiva: 'Inactiva' }[estado] || estado)
+export const tituloEstado = (estado: string) => ({ pagada: 'Pagada', pendiente: 'Pendiente', en_revision: 'En revisión', morosa: 'Vencida', conciliado_auto: 'Validado por reglas', conciliado_manual: 'Aprobado', pendiente_revision: 'En revisión', rechazado: 'Rechazado', activa: 'Activa', inactiva: 'Inactiva' }[estado] || estado)
 export const fechaVencimiento = (periodo: string, dia: number) => `${periodo.slice(0, 8)}${String(dia).padStart(2, '0')}`
 export const hash = async (texto: string) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texto)))).map(n => n.toString(16).padStart(2, '0')).join('')
 

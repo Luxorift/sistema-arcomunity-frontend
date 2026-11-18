@@ -7,6 +7,7 @@ import { useRpc } from './lib/usarRpc'
 import { dataUrlABlob, optimizarImagen } from './image'
 import { extraerDatosComprobante } from './lib/ocr'
 import { Badge, Cargando, Empty, PageHead, Simulado, Stat } from './ui'
+import { Saludo } from './saludo'
 
 const periodos = Array.from({ length: 12 }, (_, i) => periodoAnterior(mes(), i))
 const textoAlertaVecino: Record<string, string> = {
@@ -71,7 +72,7 @@ export function VideovigilanciaPage() {
   }, [activas.length, registrarVistaCamaras])
 
   return <>
-    <PageHead eyebrow="SEGURIDAD" title="Videovigilancia comunitaria" description="Vista de demostración con cámaras simuladas de zonas comunes." />
+    <PageHead eyebrow="Seguridad" title="Videovigilancia comunitaria" description="Vista de demostración con cámaras simuladas de zonas comunes." />
     <div className="notice"><ShieldCheck size={20} /><div><strong>Solo zonas comunes · sin grabaciones</strong><p>Las imágenes se usan únicamente para la seguridad de áreas comunes (Ley N.º 29733). Cada acceso queda registrado en la auditoría.</p></div></div>
     {activas.length ? <div className="cameras-grid">{activas.map(cam => <div key={cam.id} className="camera-card">
       <div className="camera-card-head"><div><h2>{cam.nombre}</h2><small>{cam.ubicacion}</small></div><span className="camera-type">{cam.tipo === 'simulada' ? 'Simulada' : 'URL externa'}</span></div>
@@ -100,15 +101,15 @@ export function MiCuenta() {
 
   if (!datosListos) return <Cargando texto="Cargando tu estado de cuenta…" />
   return <>
-    <PageHead eyebrow="MI ESPACIO" title={`Hola, ${usuario?.nombre.split(' ')[0] ?? ''}`} description={`${usuario?.unidadCodigo ?? 'Sin unidad'} · ${datos.configuracion.nombre}`} />
+    <Saludo subtitulo={`${usuario?.unidadCodigo ?? 'Sin unidad'} · ${datos.configuracion.nombre}`} />
     {ultimoRechazo && <div className="notice notice-danger" role="alert"><XCircle size={20} /><div><strong>La junta observó tu pago</strong><p>{ultimoRechazo.motivoRechazo}. Puedes volver a enviarlo desde la cuota.</p></div></div>}
 
     <div className={`status-hero ${vencidas.length ? 'status-hero-alert' : porPagar.length ? 'status-hero-pending' : 'status-hero-ok'}`}>
       <div className="status-hero-icon">{vencidas.length ? <AlertCircle size={28} /> : porPagar.length ? <Clock3 size={28} /> : <CheckCircle2 size={28} />}</div>
       <div className="status-hero-text">
-        <span>{vencidas.length ? 'TIENES CUOTAS VENCIDAS' : porPagar.length ? 'CUOTA POR PAGAR' : 'ESTÁS AL DÍA'}</span>
+        <span>{vencidas.length ? (vencidas.length === 1 ? 'Tienes una cuota vencida' : `Tienes ${vencidas.length} cuotas vencidas`) : porPagar.length ? 'Cuota por pagar' : 'Estás al día'}</span>
         <strong>{porPagar.length ? dinero(deuda) : '¡Gracias por contribuir!'}</strong>
-        <p>{proxima ? `${porPagar.length === 1 ? 'Vence' : 'La próxima vence'} el ${fechaVisible(proxima.vencimiento)}.` : enRevision.length ? 'Tu último pago está en revisión.' : 'No tienes cuotas pendientes.'}</p>
+        <p>{proxima ? (proxima.vencimiento < hoy() ? `Venció el ${fechaVisible(proxima.vencimiento)}. Págala cuanto antes.` : `${porPagar.length === 1 ? 'Vence' : 'La próxima vence'} el ${fechaVisible(proxima.vencimiento)}.`) : enRevision.length ? 'Tu último pago está en revisión.' : 'No tienes cuotas pendientes.'}</p>
       </div>
       {proxima && <Link className="button button-primary" to={`/pagar/${proxima.id}`}>Pagar ahora <ArrowRight size={17} /></Link>}
     </div>
@@ -119,7 +120,7 @@ export function MiCuenta() {
       <Stat label="Pagadas" value={cuotas.filter(c => c.estado === 'pagada').length} note="Últimos 12 meses" icon={<CheckCircle2 size={20} />} />
     </div>
 
-    <div className="panel"><div className="panel-heading"><div><span className="eyebrow">TUS CUOTAS</span><h2>Estado de cuenta</h2></div><Simulado /></div>
+    <div className="panel"><div className="panel-heading"><div><span className="eyebrow">Tus cuotas</span><h2>Estado de cuenta</h2></div><Simulado /></div>
       {cuotas.length ? <div className="owner-quotas">{cuotas.map(c => <div className="owner-quota" key={c.id}>
         <div className="quota-calendar"><span>{mesVisible(c.periodo).split(' ')[0].slice(0, 3)}</span><small>{c.periodo.slice(0, 4)}</small></div>
         <div className="quota-main"><strong>Vigilancia · {mesVisible(c.periodo)}</strong><span>Vence: {fechaVisible(c.vencimiento)}{c.fechaPago ? ` · Pagada: ${fechaVisible(c.fechaPago)}` : ''}</span></div>
@@ -128,7 +129,7 @@ export function MiCuenta() {
       </div>)}</div> : <Empty title="Sin cuotas todavía" text="La administración aún no generó tus cuotas." />}
     </div>
 
-    <div className="panel"><div className="panel-heading"><div><span className="eyebrow">HISTORIAL</span><h2>Mis pagos enviados</h2></div><ReceiptText size={22} /></div>
+    <div className="panel"><div className="panel-heading"><div><span className="eyebrow">Historial</span><h2>Mis pagos enviados</h2></div><ReceiptText size={22} /></div>
       {datos.pagos.length ? <div className="table-wrap"><table><thead><tr><th>Cuota</th><th>Fecha</th><th>Medio</th><th>Monto</th><th>Estado</th></tr></thead><tbody>{datos.pagos.map(p => { const c = datos.cuotas.find(x => x.id === p.cuotaId); return <tr key={p.id}><td className="strong">{c ? mesVisible(c.periodo) : '—'}</td><td>{fechaVisible(p.fecha)}</td><td>{metodoVisible[p.metodo] ?? p.metodo}</td><td>{dinero(p.monto)}</td><td><Badge estado={p.estado} />{p.motivoRechazo && <small className="cell-note">{p.motivoRechazo}</small>}</td></tr> })}</tbody></table></div>
         : <Empty title="Aún no enviaste pagos" text="Cuando pagues una cuota, verás aquí su estado." />}
     </div>
@@ -236,7 +237,7 @@ export function PagarPage() {
 
   return <div ref={topRef}>
     <div className="back-line"><Link to="/mi-cuenta"><ArrowLeft size={17} /> Volver a mi cuenta</Link></div>
-    <PageHead eyebrow="PAGO DE CUOTA" title={`Cuota de ${mesVisible(cuota.periodo)}`} description={`${dinero(cuota.monto)} · vence el ${fechaVisible(cuota.vencimiento)}`} />
+    <PageHead eyebrow="Pago de cuota" title={`Cuota de ${mesVisible(cuota.periodo)}`} description={`${dinero(cuota.monto)} · vence el ${fechaVisible(cuota.vencimiento)}`} />
     <Pasos actual={paso} />
 
     {paso === 1 && <div className="panel payment-card">
@@ -296,7 +297,7 @@ export function TransparenciaPage() {
   const d = t.data
   const pct = d && d.cuotas_total ? Math.round(d.cuotas_pagadas / d.cuotas_total * 100) : 0
   return <>
-    <PageHead eyebrow="CUENTAS CLARAS" title="Así van las cuentas de la comunidad" description="Cuánto se recaudó, en qué se gastó y cuántas unidades están al día." action={<label className="select-wrap"><Clock3 size={17} /><select aria-label="Seleccionar mes" value={periodo} onChange={e => setPeriodo(e.target.value)}>{periodos.map(p => <option value={p} key={p}>{mesVisible(p)}</option>)}</select></label>} />
+    <PageHead eyebrow="Cuentas claras" title="Así van las cuentas de la comunidad" description="Cuánto se recaudó, en qué se gastó y cuántas unidades están al día." action={<label className="select-wrap"><Clock3 size={17} /><select aria-label="Seleccionar mes" value={periodo} onChange={e => setPeriodo(e.target.value)}>{periodos.map(p => <option value={p} key={p}>{mesVisible(p)}</option>)}</select></label>} />
     <div className="transparency-banner"><div className="transparency-badge"><LockKeyhole size={19} /></div><div><strong>Información compartida con responsabilidad</strong><p>Mostramos totales y, si la junta lo permite, el estado por código de unidad. Nunca nombres, montos individuales ni comprobantes.</p></div></div>
     {t.error && <div className="notice notice-danger" role="alert"><AlertCircle size={19} /><span>{t.error}</span></div>}
     {!d ? <Cargando /> : <>
@@ -306,7 +307,7 @@ export function TransparenciaPage() {
         <Stat label="Gastos" value={dinero(Number(d.egresos))} note={Object.entries(d.egresos_por_concepto).map(([k, v]) => `${conceptoVisible[k] ?? k}: ${dinero(Number(v))}`).join(' · ') || 'Sin gastos registrados'} icon={<CreditCard size={20} />} />
         <Stat label="Saldo del mes" value={dinero(Number(d.saldo))} icon={<ShieldCheck size={20} />} />
       </div>
-      {d.detalle_habilitado ? <div className="panel"><div className="panel-heading"><div><span className="eyebrow">ESTADO DE LA COMUNIDAD</span><h2>Pagos por unidad</h2></div><Simulado /></div>
+      {d.detalle_habilitado ? <div className="panel"><div className="panel-heading"><div><span className="eyebrow">Estado de la comunidad</span><h2>Pagos por unidad</h2></div><Simulado /></div>
         {d.unidades.length ? <div className="unit-grid">{d.unidades.map(u => <div key={u.codigo} className={`unit-chip unit-${u.estado} ${u.es_mia ? 'unit-mine' : ''}`}><strong>{u.codigo}{u.es_mia && <span className="my-unit">Mi unidad</span>}</strong><Badge estado={u.estado} /></div>)}</div>
           : <Empty title="Sin cuotas este mes" text="Aún no se generaron cuotas para este periodo." />}
       </div> : <div className="notice"><Home size={19} /><div><strong>La junta muestra solo totales</strong><p>El detalle por unidad está desactivado para proteger la privacidad de los vecinos.</p></div></div>}

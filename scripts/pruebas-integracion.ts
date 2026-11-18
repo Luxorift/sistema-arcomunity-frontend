@@ -32,7 +32,7 @@ const hoyLima = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima' }).f
 const periodo = `${hoyLima.slice(0, 7)}-01`
 
 // Estado a limpiar
-const limpieza = { usuarios: [] as string[], juntas: [] as string[], archivos: [] as string[], pagos: [] as string[], cuotaRestaurar: null as null | { id: string } }
+const limpieza = { usuarios: [] as string[], juntas: [] as string[], archivos: [] as string[], pagos: [] as string[], cuotaRestaurar: null as null | { id: string }, qr: '' as string, qrAnterior: null as string | null }
 
 async function main() {
   // --- Preparación: unidad libre con cuota pendiente del mes ----------------------------------
@@ -175,7 +175,21 @@ async function main() {
   check('admin B no abre comprobantes de la junta A', !!(await adminB.storage.from('comprobantes').createSignedUrl(path1, 60)).error)
   check('admin A no ve la junta B', ((await adminA.from('juntas').select('id').eq('id', juntaB)).data ?? []).length === 0)
 
-  seccion('7. Auditoría')
+  seccion('7. QR de Yape en Storage privado')
+  const qrPath = `${JUNTA}/qr-prueba-${crypto.randomUUID()}.jpg`
+  check('el propietario no puede subir el QR', !!(await prop.storage.from('junta-archivos').upload(qrPath, jpg(), { contentType: 'image/jpeg' })).error)
+  const subeQr = await adminA.storage.from('junta-archivos').upload(qrPath, jpg(), { contentType: 'image/jpeg' })
+  limpieza.qr = qrPath
+  check('el administrador sube el QR', !subeQr.error, subeQr.error?.message)
+  const { data: juntaAntes } = await admin.from('juntas').select('yape_qr_path').eq('id', JUNTA).single()
+  limpieza.qrAnterior = juntaAntes?.yape_qr_path ?? null
+  check('registra el QR en la configuración', !(await adminA.rpc('actualizar_qr_yape', { p_junta: JUNTA, p_path: qrPath })).error)
+  check('rechaza una ruta de QR inexistente', !!(await adminA.rpc('actualizar_qr_yape', { p_junta: JUNTA, p_path: `${JUNTA}/no-existe.jpg` })).error)
+  check('el propietario ve el QR con URL firmada', !!(await prop.storage.from('junta-archivos').createSignedUrl(qrPath, 60)).data?.signedUrl)
+  check('el admin de otra junta no ve el QR', !!(await adminB.storage.from('junta-archivos').createSignedUrl(qrPath, 60)).error)
+  check('un visitante no ve el QR', !!(await nuevo().storage.from('junta-archivos').createSignedUrl(qrPath, 60)).error)
+
+  seccion('8. Auditoría')
   const acciones = ((await adminA.from('auditoria').select('accion').eq('junta_id', JUNTA).order('creado_en', { ascending: false }).limit(30)).data ?? []).map(a => a.accion)
   check('registra registro, pagos, rechazo, reversión y pago manual', ['registro_propietario', 'pago_en_revision', 'rechazar_pago', 'pago_conciliado_auto', 'revertir_pago', 'pago_manual'].every(a => acciones.includes(a)), acciones.join(','))
   check('el administrador no puede borrar la auditoría', (await adminA.from('auditoria').delete().eq('junta_id', JUNTA)).error?.code === '42501')
@@ -186,6 +200,7 @@ async function limpiar() {
   if (limpieza.cuotaRestaurar) await admin.from('cuotas').update({ estado: 'pendiente', fecha_pago: null, pago_id: null }).eq('id', limpieza.cuotaRestaurar.id)
   if (limpieza.pagos.length) await admin.from('pagos').delete().in('id', limpieza.pagos)
   if (limpieza.archivos.length) await admin.storage.from('comprobantes').remove(limpieza.archivos)
+  if (limpieza.qr) { await admin.from('juntas').update({ yape_qr_path: limpieza.qrAnterior }).eq('id', JUNTA); await admin.storage.from('junta-archivos').remove([limpieza.qr]) }
   for (const id of limpieza.juntas) await admin.from('juntas').delete().eq('id', id)
   for (const id of limpieza.usuarios) await admin.auth.admin.deleteUser(id)
   console.log(`  cuota restaurada, ${limpieza.pagos.length} pagos, ${limpieza.archivos.length} archivos, ${limpieza.juntas.length} junta y ${limpieza.usuarios.length} usuarios de prueba eliminados`)
