@@ -22,6 +22,9 @@ export function mensajeError(error: unknown, contexto?: 'login' | 'registro' | '
     if (/Invalid login credentials/i.test(msg)) return 'Correo o contraseña incorrectos.'
   }
   if (/User already registered|already been registered/i.test(msg)) return 'Este correo ya está registrado.'
+  if (/Database error updating user|cuentas de demostración no pueden/i.test(msg)) {
+    return 'Las cuentas de demostración no pueden cambiar su contraseña, correo ni teléfono.'
+  }
   if (/Database error saving new user/i.test(msg)) {
     return 'No pudimos completar el registro. Verifica el código de invitación y que la unidad siga disponible.'
   }

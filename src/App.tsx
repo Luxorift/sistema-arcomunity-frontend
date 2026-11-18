@@ -26,8 +26,9 @@ const Owner = {
 
 const CUENTAS_DEMO = [
   { correo: 'admin@arcomunity.demo', titulo: 'Administración', nota: 'Panel completo', inicial: 'A' },
-  { correo: 'casa12@arcomunity.demo', titulo: 'Propietaria · Casa 12', nota: 'Cuota pendiente', inicial: '12' },
+  { correo: 'casa12@arcomunity.demo', titulo: 'Propietaria · Casa 12', nota: 'Cuota vencida: registra un pago', inicial: '12' },
   { correo: 'casa08@arcomunity.demo', titulo: 'Propietario · Casa 08', nota: 'Pago en revisión', inicial: '08' },
+  { correo: 'dpto301@arcomunity.demo', titulo: 'Propietaria · Dpto 301', nota: 'Al día: historial completo', inicial: '301' },
 ]
 
 function AuthShell({ children, pie }: { children: ReactNode; pie?: ReactNode }) {

@@ -280,6 +280,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           nombre: String(j.nombre), codigoInvitacion: str((invitacion.data as Fila | null)?.codigo) ?? '', cuotaMensual: num(j.cuota_mensual),
           diaVencimiento: num(j.dia_vencimiento), yapeTitular: str(j.yape_titular) ?? '', yapeQr, yapeQrPath: str(j.yape_qr_path),
           conciliacionAutomatica: Boolean(j.conciliacion_automatica), transparenciaDetalle: Boolean(j.transparencia_detalle_unidades),
+          modoDemo: Boolean(j.modo_demo),
         },
         unidades: ((unidades.data ?? []) as Fila[]).map(r => ({ id: String(r.id), codigo: String(r.codigo), activa: Boolean(r.activa), propietario: duenos.get(String(r.id)) })),
         camaras: ((camaras.data ?? []) as Fila[]).map(aCamara),
