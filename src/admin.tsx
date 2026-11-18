@@ -7,6 +7,7 @@ import { useApp, type CamaraEdicion } from './store'
 import { useRpc } from './lib/usarRpc'
 import { optimizarImagen, dataUrlABlob } from './image'
 import { Badge, Cargando, Confirmar, DateText, Empty, Modal, Money, PageHead, Simulado, Stat } from './ui'
+import { Saludo } from './saludo'
 
 // Mes siguiente (para generar cuotas por adelantado) y los 12 anteriores.
 const periodos = Array.from({ length: 13 }, (_, i) => periodoAnterior(mes(), i - 1))
@@ -41,7 +42,7 @@ export function Dashboard() {
   const pctAuto = met && met.pagos_conciliados ? Math.round(met.pagos_auto / met.pagos_conciliados * 100) : 0
 
   return <>
-    <PageHead eyebrow="VISIÓN GENERAL" title="Resumen de la junta" description="Recaudación, cuotas y pagos por revisar, calculados desde la base de datos." action={<SelectorMes value={periodo} onChange={setPeriodo} />} />
+    <Saludo subtitulo={datos.configuracion.nombre} accion={<SelectorMes value={periodo} onChange={setPeriodo} />} />
     {m.error && <div className="notice notice-danger" role="alert"><AlertCircle size={19} /><span>{m.error}</span></div>}
     {!met ? <Cargando texto="Calculando indicadores…" /> : <>
       {met.pagos_en_revision > 0 && <Link className="notice notice-action" to="/admin/conciliacion"><ShieldCheck size={20} /><div><strong>{met.pagos_en_revision} {met.pagos_en_revision === 1 ? 'pago espera' : 'pagos esperan'} tu revisión</strong><p>Revísalos en Conciliación para que las cuotas queden al día.</p></div><ArrowRight size={18} /></Link>}
@@ -52,16 +53,16 @@ export function Dashboard() {
         <Stat label="Saldo del mes" value={dinero(Number(met.saldo))} note={`Egresos: ${dinero(Number(met.egresos))}`} icon={<Banknote size={20} />} />
       </div>
       <div className="section-grid">
-        <div className="panel chart-panel"><div className="panel-heading"><div><span className="eyebrow">EVOLUCIÓN</span><h2>Ingresos y egresos</h2></div><span className="panel-muted">Últimos 12 meses</span></div>
+        <div className="panel chart-panel"><div className="panel-heading"><div><span className="eyebrow">Evolución</span><h2>Ingresos y egresos</h2></div><span className="panel-muted">Últimos 12 meses</span></div>
           <div className="chart-wrap" role="img" aria-label="Gráfico de ingresos y egresos de los últimos 12 meses">{serie.data ? <ResponsiveContainer width="100%" height="100%"><BarChart data={grafico} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}><CartesianGrid stroke="#e9eeec" vertical={false} /><XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: '#6b7f82', fontSize: 12 }} /><YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7f82', fontSize: 12 }} /><Tooltip formatter={(value, name) => [dinero(Number(value)), name === 'ingresos' ? 'Ingresos' : 'Egresos']} /><Bar dataKey="ingresos" fill="#8fbf5a" radius={[5, 5, 0, 0]} /><Bar dataKey="egresos" fill="#e8a27c" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer> : <Cargando />}</div>
         </div>
-        <div className="panel insight-panel"><div className="panel-heading"><div><span className="eyebrow">EFICIENCIA</span><h2>Conciliación</h2></div><ShieldCheck size={24} /></div>
+        <div className="panel insight-panel"><div className="panel-heading"><div><span className="eyebrow">Eficiencia</span><h2>Conciliación</h2></div><ShieldCheck size={24} /></div>
           <div className="big-metric">{pctAuto}<span>%</span></div><p>de los pagos del mes se validaron con las reglas sin revisión manual</p>
           <div className="progress-line"><span style={{ width: `${pctAuto}%` }} /></div>
           <div className="insight-bottom"><Clock3 size={19} /><div><strong>{Number(met.minutos_promedio).toFixed(1)} min</strong><span>Tiempo promedio hasta conciliar</span></div></div>
         </div>
       </div>
-      <div className="panel"><div className="panel-heading"><div><span className="eyebrow">SEGUIMIENTO</span><h2>Cuotas vencidas sin pagar</h2></div><span className="count-pill">{morosas.length} unidades</span></div>
+      <div className="panel"><div className="panel-heading"><div><span className="eyebrow">Seguimiento</span><h2>Cuotas vencidas sin pagar</h2></div><span className="count-pill">{morosas.length} unidades</span></div>
         {morosas.length ? <div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Propietario</th><th>Vencimiento</th><th>Monto</th><th>Estado</th></tr></thead><tbody>{morosas.map(c => { const u = datos.unidades.find(x => x.id === c.unidadId); return <tr key={c.id}><td className="strong">{u?.codigo}</td><td>{u?.propietario?.nombre ?? <span className="muted">Sin registrar</span>}</td><td><DateText value={c.vencimiento} /></td><td><Money value={c.monto} /></td><td><Badge estado="morosa" /></td></tr> })}</tbody></table></div>
           : <Empty title="Sin cuotas vencidas" text="Ninguna unidad tiene cuotas vencidas en este periodo." />}
       </div>
@@ -105,9 +106,9 @@ function ConfiguracionFormulario({ inicial }: { inicial: Configuracion }) {
   }
 
   return <>
-    <PageHead eyebrow="ADMINISTRACIÓN" title="Configuración" description="Cuánto y cuándo pagan los vecinos, cómo se concilia y qué ve la comunidad." />
+    <PageHead eyebrow="Administración" title="Configuración" description="Cuánto y cuándo pagan los vecinos, cómo se concilia y qué ve la comunidad." />
     <form onSubmit={e => void submit(e)} className="settings-grid">
-      <div className="panel form-panel"><div className="panel-heading"><div><span className="eyebrow">DATOS DE LA JUNTA</span><h2>Cuota y vencimiento</h2></div></div>
+      <div className="panel form-panel"><div className="panel-heading"><div><span className="eyebrow">Datos de la junta</span><h2>Cuota y vencimiento</h2></div></div>
         <div className="field-grid">
           <label className="field full"><span>Nombre de la junta</span><input required value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} /></label>
           <label className="field"><span>Cuota mensual (S/)</span><input required type="number" min="0.01" step="0.01" value={form.cuotaMensual} onChange={e => setForm({ ...form, cuotaMensual: Number(e.target.value) })} /><small>Se aplica a las cuotas que generes desde ahora.</small></label>
@@ -117,7 +118,7 @@ function ConfiguracionFormulario({ inicial }: { inicial: Configuracion }) {
         <label className="toggle-row"><div><strong>Validación automática por reglas</strong><small>Los comprobantes sin alertas marcan la cuota como pagada. No equivale a confirmación bancaria: puedes revertirlos en Pagos.</small></div><input type="checkbox" checked={form.conciliacionAutomatica} onChange={e => setForm({ ...form, conciliacionAutomatica: e.target.checked })} /><span className="switch" /></label>
         <label className="toggle-row"><div><strong>Mostrar estado por unidad en Transparencia</strong><small>Si lo desactivas, los vecinos solo ven totales de la comunidad.</small></div><input type="checkbox" checked={form.transparenciaDetalle ?? true} onChange={e => setForm({ ...form, transparenciaDetalle: e.target.checked })} /><span className="switch" /></label>
       </div>
-      <div className="panel form-panel"><div className="panel-heading"><div><span className="eyebrow">MÉTODO DE PAGO</span><h2>QR de Yape</h2></div></div>
+      <div className="panel form-panel"><div className="panel-heading"><div><span className="eyebrow">Método de pago</span><h2>QR de Yape</h2></div></div>
         <div className="qr-upload"><div className="qr-preview">{datos.configuracion.yapeQr ? <img src={datos.configuracion.yapeQr} alt="QR de Yape configurado" /> : <div className="qr-placeholder"><ImagePlus size={31} /><span>Aún no hay un QR cargado</span></div>}</div>
           <label className="button button-secondary upload-button"><ImagePlus size={17} /> {subiendoQr ? 'Subiendo…' : 'Subir imagen QR'}<input type="file" accept="image/png,image/jpeg" onChange={e => void qr(e.target.files?.[0])} hidden disabled={subiendoQr} /></label><small>JPG o PNG, máximo 2 MB. Se guarda en almacenamiento privado.</small></div>
         <label className="field"><span>Nombre del titular</span><input value={form.yapeTitular} onChange={e => setForm({ ...form, yapeTitular: e.target.value })} placeholder="Nombre que aparece en Yape" /></label>
@@ -127,7 +128,7 @@ function ConfiguracionFormulario({ inicial }: { inicial: Configuracion }) {
     </form>
 
     <div className="panel section-gap">
-      <div className="panel-heading"><div><span className="eyebrow">VIDEOVIGILANCIA</span><h2>Cámaras de zonas comunes</h2></div>
+      <div className="panel-heading"><div><span className="eyebrow">Videovigilancia</span><h2>Cámaras de zonas comunes</h2></div>
         <button type="button" className="button button-primary" onClick={() => setModalCamara({ id: null, nombre: '', ubicacion: '', tipo: 'simulada', activa: true })}><Plus size={18} /> Nueva cámara</button></div>
       {datos.camaras.length ? <div className="table-wrap"><table><thead><tr><th>Cámara</th><th>Ubicación</th><th>Tipo</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
         {datos.camaras.map(c => <tr key={c.id}><td className="strong">{c.nombre}</td><td>{c.ubicacion}</td><td>{c.tipo === 'simulada' ? 'Simulada' : c.tipo === 'mjpeg' ? 'Imagen / MJPEG' : 'Embed'}</td><td><Badge estado={c.activa ? 'activa' : 'inactiva'} /></td>
@@ -160,7 +161,7 @@ export function UnidadesPage() {
   const libres = datos.unidades.filter(u => u.activa && !u.propietario).length
 
   return <>
-    <PageHead eyebrow="PADRÓN VECINAL" title="Unidades y vecinos" description="Viviendas de la junta y su propietario registrado." action={<button className="button button-primary" onClick={() => setModal({ id: null, codigo: '' })}><Plus size={18} /> Nueva unidad</button>} />
+    <PageHead eyebrow="Padrón vecinal" title="Unidades y vecinos" description="Viviendas de la junta y su propietario registrado." action={<button className="button button-primary" onClick={() => setModal({ id: null, codigo: '' })}><Plus size={18} /> Nueva unidad</button>} />
     <div className="info-callout section-gap-bottom"><UsersRound size={18} /><span>Los propietarios se registran solos con el código <strong>{datos.configuracion.codigoInvitacion || '—'}</strong> y eligen su unidad. Hay {libres} unidades activas sin propietario.</span></div>
     <div className="panel"><div className="table-tools"><label className="search-box"><Search size={18} /><input aria-label="Buscar unidad o vecino" placeholder="Buscar unidad, nombre o correo…" value={buscar} onChange={e => setBuscar(e.target.value)} /></label><span className="count-pill">{datos.unidades.filter(u => u.activa).length} activas</span></div>
       <div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Propietario</th><th>Contacto</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
@@ -187,7 +188,7 @@ export function CuotasPage() {
   const cuotas = delPeriodo.filter(c => estado === 'todas' || estadoVisible(c) === estado).sort((a, b) => nombreUnidad(datos.unidades, a.unidadId).localeCompare(nombreUnidad(datos.unidades, b.unidadId), 'es', { numeric: true }))
   const activas = datos.unidades.filter(u => u.activa).length
   return <>
-    <PageHead eyebrow="COBRANZA" title="Cuotas" description="Genera y consulta las cuotas mensuales de cada unidad." action={<button className="button button-primary" onClick={() => setGenerar(true)}><Plus size={18} /> Generar cuotas</button>} />
+    <PageHead eyebrow="Cobranza" title="Cuotas" description="Genera y consulta las cuotas mensuales de cada unidad." action={<button className="button button-primary" onClick={() => setGenerar(true)}><Plus size={18} /> Generar cuotas</button>} />
     <div className="stats-grid three"><Stat label="Cuotas del periodo" value={delPeriodo.length} note={`${activas} unidades activas`} icon={<FileText size={20} />} /><Stat label="Pagadas" value={delPeriodo.filter(c => c.estado === 'pagada').length} icon={<CheckCircle2 size={20} />} tone="lime" /><Stat label="Por cobrar" value={dinero(delPeriodo.filter(c => c.estado !== 'pagada').reduce((n, c) => n + c.monto, 0))} icon={<Clock3 size={20} />} /></div>
     <div className="panel"><div className="table-tools"><SelectorMes value={periodo} onChange={setPeriodo} /><label className="select-wrap"><Filter size={17} /><select aria-label="Filtrar por estado" value={estado} onChange={e => setEstado(e.target.value)}><option value="todas">Todos los estados</option><option value="pagada">Pagadas</option><option value="pendiente">Pendientes</option><option value="morosa">Vencidas</option><option value="en_revision">En revisión</option></select></label></div>
       {cuotas.length ? <div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Vencimiento</th><th>Monto</th><th>Estado</th><th>Fecha de pago</th><th>Atraso</th></tr></thead><tbody>{cuotas.map(c => <tr key={c.id}><td className="strong">{nombreUnidad(datos.unidades, c.unidadId)}</td><td><DateText value={c.vencimiento} /></td><td><Money value={c.monto} /></td><td><Badge estado={estadoVisible(c)} /></td><td><DateText value={c.fechaPago} /></td><td>{c.diasAtraso ? `${c.diasAtraso} días` : '—'}</td></tr>)}</tbody></table></div>
@@ -224,9 +225,9 @@ export function ConciliacionPage() {
     if (!err) { setSeleccion(null); setMotivo('') }
   }
   return <>
-    <PageHead eyebrow="CONTROL DE PAGOS" title="Conciliación" description="Pagos declarados que necesitan tu decisión. Verifica en tu app de Yape/Plin antes de aprobar." />
+    <PageHead eyebrow="Control de pagos" title="Conciliación" description="Pagos declarados que necesitan tu decisión. Verifica en tu app de Yape/Plin antes de aprobar." />
     <div className="stats-grid two"><Stat label="Por revisar" value={pendientes.length} note="Se actualiza en tiempo real" icon={<AlertCircle size={20} />} tone={pendientes.length ? 'coral' : 'normal'} /><Stat label="Validados por reglas este mes" value={datos.pagos.filter(p => p.estado === 'conciliado_auto' && p.fecha.slice(0, 7) === mes().slice(0, 7)).length} note="Puedes revertirlos desde Pagos" icon={<ShieldCheck size={20} />} tone="lime" /></div>
-    <div className="panel"><div className="panel-heading"><div><span className="eyebrow">COLA DE REVISIÓN</span><h2>Pagos con alertas</h2></div><span className="count-pill">{pendientes.length} por revisar</span></div>
+    <div className="panel"><div className="panel-heading"><div><span className="eyebrow">Cola de revisión</span><h2>Pagos con alertas</h2></div><span className="count-pill">{pendientes.length} por revisar</span></div>
       {pendientes.length ? <div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Recibido</th><th>Monto</th><th>Operación</th><th>Motivo de revisión</th><th></th></tr></thead><tbody>{pendientes.map(p => <tr key={p.id}><td className="strong">{nombreUnidad(datos.unidades, p.unidadId)}</td><td><DateText value={p.subidoEn.slice(0, 10)} /></td><td><Money value={p.monto} /></td><td>{p.operacion || '—'}</td><td><div className="tag-list">{p.alertas.map(a => <span key={a} className="alert-tag">{textoAlerta[a] ?? a}</span>)}</div></td><td><button className="button button-secondary button-small" onClick={() => { setSeleccion(p.id); setModo('aprobar'); setMotivo('') }}>Revisar <ArrowRight size={15} /></button></td></tr>)}</tbody></table></div>
         : <Empty title="Todo al día" text="No hay pagos esperando revisión." />}
     </div>
@@ -267,7 +268,7 @@ export function PagosPage() {
     if (!err) { setModal(false); setF({ ...f, cuotaId: '', operacion: '', nota: '' }) }
   }
   return <>
-    <PageHead eyebrow="MOVIMIENTOS" title="Pagos" description="Historial de pagos y registro de pagos recibidos fuera de la app (efectivo o transferencia)." action={<button className="button button-primary" onClick={() => setModal(true)}><Plus size={18} /> Registrar pago manual</button>} />
+    <PageHead eyebrow="Movimientos" title="Pagos" description="Historial de pagos y registro de pagos recibidos fuera de la app (efectivo o transferencia)." action={<button className="button button-primary" onClick={() => setModal(true)}><Plus size={18} /> Registrar pago manual</button>} />
     <div className="panel"><div className="table-tools"><SelectorMes value={periodo} onChange={setPeriodo} /><span className="count-pill">{lista.length} registros</span></div>
       {lista.length ? <div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Fecha</th><th>Medio</th><th>Operación</th><th>Monto</th><th>Estado</th><th></th></tr></thead><tbody>{lista.map(p => <tr key={p.id}><td className="strong">{nombreUnidad(datos.unidades, p.unidadId)}</td><td><DateText value={p.fecha} /></td><td>{metodoVisible[p.metodo] ?? p.metodo}</td><td>{p.operacion || '—'}</td><td><Money value={p.monto} /></td><td><Badge estado={p.estado} />{p.motivoRechazo && <small className="cell-note">{p.motivoRechazo}</small>}</td><td>{(p.estado === 'conciliado_auto' || p.estado === 'conciliado_manual') && <button className="text-button danger" onClick={() => { setRevertir(p); setMotivo('') }}>Revertir</button>}</td></tr>)}</tbody></table></div>
         : <Empty title="Sin pagos en este periodo" text="Cuando los vecinos paguen, sus comprobantes aparecerán aquí." />}
@@ -304,7 +305,7 @@ export function EgresosPage() {
     if (!err) { setModal(false); setF({ ...f, beneficiario: '', monto: '', comentario: '' }) }
   }
   return <>
-    <PageHead eyebrow="GASTOS DE LA JUNTA" title="Egresos" description="Pagos al personal de vigilancia y otros gastos. Los vecinos ven los totales en Transparencia." action={<button className="button button-primary" onClick={() => setModal(true)}><Plus size={18} /> Nuevo egreso</button>} />
+    <PageHead eyebrow="Gastos de la junta" title="Egresos" description="Pagos al personal de vigilancia y otros gastos. Los vecinos ven los totales en Transparencia." action={<button className="button button-primary" onClick={() => setModal(true)}><Plus size={18} /> Nuevo egreso</button>} />
     <div className="stats-grid two"><Stat label="Total del mes" value={dinero(vigentes.reduce((n, e) => n + e.monto, 0))} note={mesVisible(periodo)} icon={<Banknote size={20} />} /><Stat label="Movimientos" value={vigentes.length} note={lista.length !== vigentes.length ? `${lista.length - vigentes.length} anulados` : 'Sin anulaciones'} icon={<FileText size={20} />} /></div>
     <div className="panel"><div className="table-tools"><SelectorMes value={periodo} onChange={setPeriodo} /></div>
       {lista.length ? <div className="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Beneficiario</th><th>Comentario</th><th>Monto</th><th></th></tr></thead><tbody>{lista.map(e => <tr key={e.id} className={e.anulado ? 'row-muted' : ''}><td><DateText value={e.fecha} /></td><td>{conceptoVisible[e.concepto]}</td><td className="strong">{e.beneficiario}</td><td>{e.anulado ? <span className="text-danger">Anulado: {e.motivoAnulacion}</span> : e.comentario || '—'}</td><td><Money value={e.monto} /></td><td>{!e.anulado && <button className="text-button danger" onClick={() => { setAnular(e.id); setMotivo('') }}>Anular</button>}</td></tr>)}</tbody></table></div>
@@ -407,14 +408,14 @@ export function ReportesPage() {
   }
 
   return <>
-    <PageHead eyebrow="RENDICIÓN DE CUENTAS" title="Reporte mensual" description="Cifras calculadas en el servidor, listas para compartir con la junta." action={<div className="button-group"><button className="button button-secondary" onClick={() => window.print()}><Printer size={17} /> Imprimir / PDF</button><button className="button button-secondary" disabled={!!exportando} onClick={() => void exportar('xlsx')}><FileText size={17} /> {exportando === 'xlsx' ? 'Generando…' : 'Dataset Excel'}</button><button className="button button-primary" disabled={!!exportando} onClick={() => void exportar('csv')}><ArrowDownToLine size={17} /> {exportando === 'csv' ? 'Generando…' : 'Dataset CSV'}</button></div>} />
+    <PageHead eyebrow="Rendición de cuentas" title="Reporte mensual" description="Cifras calculadas en el servidor, listas para compartir con la junta." action={<div className="button-group"><button className="button button-secondary" onClick={() => window.print()}><Printer size={17} /> Imprimir / PDF</button><button className="button button-secondary" disabled={!!exportando} onClick={() => void exportar('xlsx')}><FileText size={17} /> {exportando === 'xlsx' ? 'Generando…' : 'Dataset Excel'}</button><button className="button button-primary" disabled={!!exportando} onClick={() => void exportar('csv')}><ArrowDownToLine size={17} /> {exportando === 'csv' ? 'Generando…' : 'Dataset CSV'}</button></div>} />
     <div className="report-page">
-      <div className="report-header"><div><span className="eyebrow">ARCOMUNITY · REPORTE</span><h2>Resumen de {mesVisible(periodo)}</h2><p>{datos.configuracion.nombre}</p></div><SelectorMes value={periodo} onChange={setPeriodo} /></div>
+      <div className="report-header"><div><span className="eyebrow">Arcomunity · reporte</span><h2>Resumen de {mesVisible(periodo)}</h2><p>{datos.configuracion.nombre}</p></div><SelectorMes value={periodo} onChange={setPeriodo} /></div>
       {!m.data ? <Cargando /> : <div className="stats-grid three"><Stat label="Ingresos conciliados" value={dinero(Number(m.data.recaudado))} icon={<TrendingUp size={19} />} tone="lime" /><Stat label="Egresos" value={dinero(Number(m.data.egresos))} icon={<Banknote size={19} />} /><Stat label="Saldo" value={dinero(Number(m.data.saldo))} icon={<CheckCircle2 size={19} />} /></div>}
-      <div className="panel report-table"><div className="panel-heading"><div><span className="eyebrow">DETALLE</span><h2>Estado por unidad</h2></div><Simulado /></div>
+      <div className="panel report-table"><div className="panel-heading"><div><span className="eyebrow">Detalle</span><h2>Estado por unidad</h2></div><Simulado /></div>
         {cuotas.length ? <div className="table-wrap"><table><thead><tr><th>Unidad</th><th>Monto</th><th>Vencimiento</th><th>Estado</th><th>Fecha de pago</th></tr></thead><tbody>{cuotas.map(c => <tr key={c.id}><td className="strong">{nombreUnidad(datos.unidades, c.unidadId)}</td><td><Money value={c.monto} /></td><td><DateText value={c.vencimiento} /></td><td><Badge estado={estadoVisible(c)} /></td><td><DateText value={c.fechaPago} /></td></tr>)}</tbody></table></div> : <Empty title="Sin cuotas" text="No hay cuotas generadas para este mes." />}
       </div>
-      {egresos.length > 0 && <div className="panel report-table"><div className="panel-heading"><div><span className="eyebrow">EGRESOS</span><h2>Gastos del mes</h2></div></div><div className="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Beneficiario</th><th>Monto</th></tr></thead><tbody>{egresos.map(e => <tr key={e.id}><td><DateText value={e.fecha} /></td><td>{conceptoVisible[e.concepto]}</td><td>{e.beneficiario}</td><td><Money value={e.monto} /></td></tr>)}</tbody></table></div></div>}
+      {egresos.length > 0 && <div className="panel report-table"><div className="panel-heading"><div><span className="eyebrow">Egresos</span><h2>Gastos del mes</h2></div></div><div className="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Beneficiario</th><th>Monto</th></tr></thead><tbody>{egresos.map(e => <tr key={e.id}><td><DateText value={e.fecha} /></td><td>{conceptoVisible[e.concepto]}</td><td>{e.beneficiario}</td><td><Money value={e.monto} /></td></tr>)}</tbody></table></div></div>}
       <p className="report-foot">Cifras obtenidas de la base de datos de Arcomunity. La junta de demostración usa datos simulados. El dataset exportado usa seudónimos de unidad y solo incluye cuotas con etiqueta definitiva.</p>
     </div>
   </>
@@ -428,7 +429,7 @@ export function AuditoriaPage() {
   const lista = datos.auditoria.filter(a => !q || a.accion.includes(q.replaceAll(' ', '_')) || a.usuario.toLowerCase().includes(q) || a.detalle.toLowerCase().includes(q))
   const formato = new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', dateStyle: 'short', timeStyle: 'short' })
   return <>
-    <PageHead eyebrow="TRAZABILIDAD" title="Bitácora de auditoría" description="Acciones registradas por el servidor. Nadie puede editarlas ni borrarlas." />
+    <PageHead eyebrow="Trazabilidad" title="Bitácora de auditoría" description="Acciones registradas por el servidor. Nadie puede editarlas ni borrarlas." />
     <div className="panel"><div className="table-tools"><label className="search-box"><Search size={18} /><input aria-label="Buscar en la bitácora" placeholder="Buscar acción, persona o detalle…" value={buscar} onChange={e => setBuscar(e.target.value)} /></label><span className="count-pill">Últimas {datos.auditoria.length}</span></div>
       {lista.length ? <div className="table-wrap"><table><thead><tr><th>Fecha y hora</th><th>Persona</th><th>Acción</th><th>Detalle</th></tr></thead><tbody>{lista.map(a => <tr key={a.id}><td>{formato.format(new Date(a.fecha))}</td><td className="strong">{a.usuario}</td><td><span className="audit-action">{a.accion.replaceAll('_', ' ')}</span></td><td className="audit-detail">{a.detalle || '—'}</td></tr>)}</tbody></table></div> : <Empty title="Sin registros" text="No hay acciones que coincidan." />}
     </div>

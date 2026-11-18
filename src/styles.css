@@ -183,7 +183,7 @@
 .status-hero-alert{background:#fff0eb;border-color:#f6d6cb;color:#7c3a2f}
 .status-hero-icon{width:56px;height:56px;border-radius:15px;background:#ffffffb3;display:grid;place-items:center;flex:none}
 .status-hero-text{flex:1;min-width:0}
-.status-hero-text span{font-size:11px;font-weight:800;letter-spacing:.12em}
+.status-hero-text span{font-size:14px;font-weight:800}
 .status-hero-text strong{display:block;font:700 30px/1.15 Outfit,sans-serif;letter-spacing:-.03em;margin:4px 0}
 .status-hero-text p{margin:0;font-size:14px}
 
@@ -251,3 +251,117 @@
   .inline-field{flex-direction:column}
   .review-grid{grid-template-columns:1fr}
 }
+
+/* ==========================================================================================
+   Capa de experiencia de usuario (APF3): más cercana, legible y accesible.
+   Conserva la identidad (verde petróleo + lima + coral) y sube tamaños y contrastes para
+   personas de todas las edades. Contrastes de texto ≥ 4.5:1 sobre fondo blanco.
+   ========================================================================================== */
+:root{
+  --tinta:#17343b;--tinta-suave:#4a6164;--tinta-tenue:#5f7472;
+  --fondo:#f6f7f2;--borde:#e2e9e3;--acento:#2f7a5c;--acento-claro:#e6f2dc;
+  --coral:#c8643b;--radio:14px;
+  background:var(--fondo);color:var(--tinta)
+}
+body{background:var(--fondo);font-size:15px;line-height:1.5}
+.muted,.panel-muted{color:var(--tinta-tenue)}
+small{font-size:12.5px}
+
+/* Encabezados y etiquetas: menos "corporativo" (sin mayúsculas sostenidas) */
+.eyebrow{text-transform:none;letter-spacing:.01em;font-size:13px;font-weight:700;color:var(--acento);margin-bottom:6px}
+.sidebar-overline{font-size:11px;letter-spacing:.08em}
+.page-head h1{font-size:32px;letter-spacing:-.03em}
+.page-head p{font-size:15px;color:var(--tinta-suave);max-width:640px}
+.panel-heading h2{font-size:20px}
+
+/* Navegación */
+.nav-link{font-size:14px;min-height:46px;color:#c3d2cf}
+.topbar-date{color:var(--tinta-tenue);font-size:13px}
+.topbar-user small,.sidebar-user-card small{font-size:12px}
+
+/* Tarjetas e indicadores */
+.stat{border-color:var(--borde)}
+.stat-top{font-size:13px;color:var(--tinta-suave)}
+.stat small{font-size:13px;color:var(--tinta-tenue);line-height:1.4}
+.panel{border-color:var(--borde);border-radius:var(--radio)}
+
+/* Tablas legibles */
+table{font-size:14px}
+th{font-size:11.5px;color:var(--tinta-tenue);letter-spacing:.05em}
+td{color:var(--tinta-suave);padding:14px 20px}
+.badge{font-size:12px;padding:5px 10px}
+.alert-tag{font-size:12px}
+.count-pill{font-size:12px}
+
+/* Formularios */
+.field>span{font-size:13.5px;color:var(--tinta)}
+.field input,.field select,.field textarea{font-size:15px;min-height:46px;border-color:#d3ddd6}
+.field small{font-size:12.5px;color:var(--tinta-tenue);line-height:1.45}
+.form-hint{font-size:13px;color:var(--tinta-suave)}
+.consent{font-size:13px;color:var(--tinta-suave)}
+.info-callout{font-size:13px;color:#3f6650}
+.notice{font-size:14px;line-height:1.5}
+.notice p{color:inherit}
+.toggle-row strong{font-size:14px}
+.toggle-row small{font-size:13px;color:var(--tinta-tenue)}
+.search-box input,.select-wrap select{font-size:14px}
+.button{font-size:14px;min-height:44px;border-radius:10px}
+.text-button{font-size:14px}
+.detail-row{font-size:13px;color:var(--tinta-tenue)}
+.alert-box{font-size:13px}
+.segmented button{font-size:13px;min-height:40px}
+.modal-head h2{font-size:21px}
+
+/* Acceso */
+.auth-heading p{font-size:15px;color:var(--tinta-suave)}
+.auth-top{font-size:13px;color:var(--tinta-tenue)}
+.auth-form .field>span{font-size:13.5px}
+.demo-accounts>p{font-size:13px;color:var(--tinta-tenue)}
+.demo-options strong{font-size:13px}
+.demo-options small{font-size:12px;color:var(--tinta-tenue)}
+.auth-aside-foot{color:#9db8b4}
+
+/* Estado de cuenta */
+.quota-main strong{font-size:14px}
+.quota-main span{font-size:13px;color:var(--tinta-tenue)}
+.quota-calendar span{font-size:14px;text-transform:capitalize}
+
+/* Saludo y fechas especiales */
+.greeting{margin-bottom:22px;display:flex;flex-direction:column;gap:14px}
+.greeting-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.greeting h1{font-size:32px;line-height:1.15;letter-spacing:-.03em;margin:0 0 6px}
+.greeting p{margin:0;font-size:16px;color:var(--tinta-suave)}
+.festive{display:flex;align-items:center;gap:14px;border-radius:14px;padding:14px 16px;border:1px solid #f0d3c0;background:linear-gradient(90deg,#fff4ec,#fffaf5)}
+.festive-conmemoracion{border-color:#dbe8cd;background:#f4f9ee}
+.festive-icon{width:42px;height:42px;border-radius:12px;background:#fff;display:grid;place-items:center;font-size:22px;flex:none;color:var(--coral)}
+.festive div{flex:1;min-width:0}
+.festive strong{display:block;font-size:14px;color:#7a3f22}
+.festive-conmemoracion strong{color:#3f6650}
+.festive p{margin:2px 0 0;font-size:14px;color:var(--tinta-suave)}
+
+/* Accesibilidad */
+.skip-link{position:absolute;left:12px;top:-60px;z-index:100;background:#17383e;color:#fff;padding:10px 14px;border-radius:8px;font-weight:700}
+.skip-link:focus{top:12px}
+:focus-visible{outline:3px solid #2f7a5c;outline-offset:2px}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+/* Avisos emergentes */
+.toast{font-size:14px;line-height:1.45}
+@media(max-width:639px){
+  .greeting-row{flex-direction:column;align-items:stretch}
+  .greeting h1{font-size:26px}
+  .greeting p{font-size:15px}
+  .stats-grid.three,.stats-grid.four{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .stats-grid.three>.stat:first-child:nth-last-child(3){grid-column:1/-1}
+  .stat{min-height:auto;padding:14px}
+  .stat strong{font-size:22px}
+  .stat small{font-size:12px}
+  .status-hero{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start}
+  .status-hero-icon{width:44px;height:44px;border-radius:12px}
+  .status-hero .button{grid-column:1/-1}
+  .toast{left:12px;right:12px;bottom:max(14px,var(--safe-bottom));max-width:none}
+  table{font-size:14px}
+  td{padding:13px 16px}
+}
+.payment-card .step-heading>span{display:none}
