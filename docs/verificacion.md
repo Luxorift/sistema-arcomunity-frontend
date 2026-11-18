@@ -120,3 +120,17 @@ laborables que decreta cada año el Ejecutivo **no** se incluyen: no son feriado
   muestra unidades y `ARCO2026` lista 27 libres; recuperación con un usuario temporal (eliminado):
   Supabase acepta `/restablecer` de producción, la nueva contraseña funciona y la anterior no.
 - Después de todas las pruebas, el dataset regenerado es idéntico.
+
+## Diseño responsive (18/11/2026)
+
+- Reporte: en un Samsung Galaxy A55 (360 × 800) el login aparecía cortado a la derecha.
+- Causa: bajo 1024 px se muestra el logo móvil dentro de `.auth-main`, que es `flex` en fila; el logo
+  quedaba al lado del formulario y la página medía hasta 426 px. `overflow-x:hidden` en `html` y
+  `body` recortaba el sobrante sin dejar desplazarse, y por eso `test:ui` (que medía `scrollWidth`) no
+  lo detectó.
+- Segundo fallo encontrado en la auditoría: la lista del menú lateral se encogía con un scroll interno
+  invisible (en 1366 × 768 faltaban 4 enlaces; en 568 × 320 horizontal, todos).
+- Corrección: acceso en columna con `minmax(0,1fr)`, sin `overflow-x:hidden` global, menú lateral con
+  desplazamiento propio, «Volver a mi cuenta» de 44 px y etiquetas de al menos 10 px.
+- `npm run test:responsive`: 33 escenas × 8 tamaños en Chrome y 3 en Edge (352 vistas) sin problemas.
+  Contra producción (CSS anterior) marca los dos fallos, lo que confirma que la prueba los detecta.

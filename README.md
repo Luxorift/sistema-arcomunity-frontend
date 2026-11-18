@@ -103,6 +103,7 @@ npm run test:remoto  # integración contra el proyecto Supabase real (requiere l
 npm run build        # compilación de producción
 npm run test:navegadores  # Edge (móvil) + Chrome (escritorio): pago, revisión en tiempo real y aprobación
 npm run test:ui      # auditoría de solo lectura de todas las pantallas (consola, desborde, accesibilidad)
+npm run test:responsive  # 8 tamaños (320 px a escritorio y horizontal) en Chrome y Edge: desbordes, recortes, menú y modales
 ```
 
 `test:navegadores` y `test:ui` usan el frontend en `http://localhost:5173` (`npm run dev`). Para probar el
