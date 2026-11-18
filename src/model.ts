@@ -13,7 +13,7 @@ export interface Cuota { id: string; unidadId: string; periodo: string; monto: n
 export interface Pago { id: string; cuotaId: string; unidadId: string; monto: number; fecha: string; operacion: string; metodo: MetodoPago; estado: EstadoPago; alertas: string[]; comprobante?: string; comprobanteNombre?: string; ocrConfianza?: number; motivoRechazo?: string; notaAdmin?: string; comprobantePath?: string; revisadoEn?: string; subidoEn: string; conciliadoEn?: string; esSimulado: boolean }
 export interface Egreso { id: string; fecha: string; concepto: ConceptoEgreso; beneficiario: string; monto: number; comentario?: string; anulado?: boolean; motivoAnulacion?: string; esSimulado: boolean }
 export interface Auditoria { id: string; fecha: string; usuario: string; accion: string; detalle: string }
-export interface Configuracion { nombre: string; codigoInvitacion: string; cuotaMensual: number; diaVencimiento: number; yapeTitular: string; yapeQr?: string; yapeQrPath?: string; conciliacionAutomatica: boolean; transparenciaDetalle?: boolean }
+export interface Configuracion { nombre: string; codigoInvitacion: string; cuotaMensual: number; diaVencimiento: number; yapeTitular: string; yapeQr?: string; yapeQrPath?: string; conciliacionAutomatica: boolean; transparenciaDetalle?: boolean; modoDemo?: boolean }
 export interface Datos { usuarios: Usuario[]; unidades: Unidad[]; camaras: Camara[]; cuotas: Cuota[]; pagos: Pago[]; egresos: Egreso[]; auditoria: Auditoria[]; configuracion: Configuracion }
 
 export const id = () => crypto.randomUUID()
