@@ -10,5 +10,8 @@
   "assets": {
     "directory": "./dist",
     "not_found_handling": "single-page-application"
-  }
+  },
+  // Vistas previas de ramas que no son main (Workers Builds ejecuta `npx wrangler preview`). Vacío:
+  // usa los mismos recursos y la misma configuración de arriba.
+  "previews": {}
 }
