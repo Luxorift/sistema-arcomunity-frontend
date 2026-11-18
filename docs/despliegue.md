@@ -16,7 +16,7 @@ Publicar en producción = integrar `dev` en `main` (Pull Request). Requiere auto
 
 ## Antes de integrar `dev` en `main`
 
-1. **Migraciones 0900 (aplicada el 17/11/2026) y 1000** en Supabase (`supabase db push`). La 1000 hace
+1. **Migraciones 0900 y 1000** (aplicadas y verificadas el 17/11/2026) en Supabase (`supabase db push`). La 1000 hace
    que el límite de intentos del código de invitación use una IP que el cliente no puede falsificar.
    Después: `npm run test:remoto` y `npm run test:limite`.
 2. **Variables en Vercel** → *Settings → Environment Variables*: `VITE_SUPABASE_URL` y

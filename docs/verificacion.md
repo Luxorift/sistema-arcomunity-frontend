@@ -51,6 +51,16 @@ semilla al terminar (la auditoría generada se conserva por diseño).
 - Riesgo que se mantiene por diseño: el tope global de 200 fallos cada 15 minutos permite que alguien
   bloquee el registro de todos durante 15 minutos. Con códigos aleatorios de 8 caracteres adivinar es
   inviable; si ese bloqueo llega a ocurrir, conviene subir el tope o moverlo a un límite del proxy.
+- 1000 aplicada en Supabase (17/11/2026). `npm run test:limite`: la base recibe `cf-connecting-ip`; tras
+  10 fallos, el intento 11 se bloquea aunque cambie `X-Forwarded-For`; el servicio libera el bloqueo (6/6).
+
+## Realtime
+
+- `test:remoto` fallaba de forma intermitente («0 eventos»): el canal de la prueba podía unirse antes de
+  que el token del administrador llegara al socket y, como anónimo, RLS no le entrega pagos. Ahora la
+  prueba fija el token antes de suscribirse (4 de 4 ejecuciones seguidas en verde).
+- La app recarga cuotas y pagos al volver a la pestaña o al celular, por si el socket perdió eventos en
+  segundo plano (verificado en Chrome: recarga cuotas, pagos y auditoría).
 
 ## Calendario peruano
 
