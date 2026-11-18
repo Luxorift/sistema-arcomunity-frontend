@@ -105,3 +105,32 @@ laborables que decreta cada año el Ejecutivo **no** se incluyen: no son feriado
 - Desarrollo: `picomatch` ≤ 4.0.7 (ReDoS) vía `vite`/`vitest`. No hay versión 4.x corregida publicada y
   solo procesa patrones del propio proyecto; revisar cuando salga una actualización.
 - Todas las dependencias declaradas se usan.
+
+## Lanzamiento en producción (17/11/2026)
+
+- PR #19 (`dev` → `main`, merge 15300ca). Vercel desplegó *Production* desde `main`.
+- Antes del merge: migraciones 0100–1000 comprobadas en Supabase, `npm test` 83/83, `test:remoto` 78/78,
+  `test:limite` 6/6, `test:navegadores` 10/10 y `test:ui` sin problemas sobre el build de producción, y sin
+  secretos en `dist/` ni en el historial que entró a `main`.
+- Variables de Vercel: el JavaScript publicado tiene el mismo hash que el build local hecho con las mismas
+  `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`, es decir, Vercel usó esos valores.
+- En `https://sistema-arcomunity-frontend.vercel.app`: rutas profundas 200 y HSTS activo; `test:navegadores`
+  10/10 (pago desde Edge, revisión en tiempo real y aprobación en Chrome); `test:ui` 0 problemas en
+  18 pantallas por rol, escritorio y móvil; contraseña incorrecta rechazada; registro: un código falso no
+  muestra unidades y `ARCO2026` lista 27 libres; recuperación con un usuario temporal (eliminado):
+  Supabase acepta `/restablecer` de producción, la nueva contraseña funciona y la anterior no.
+- Después de todas las pruebas, el dataset regenerado es idéntico.
+
+## Diseño responsive (18/11/2026)
+
+- Reporte: en un Samsung Galaxy A55 (360 × 800) el login aparecía cortado a la derecha.
+- Causa: bajo 1024 px se muestra el logo móvil dentro de `.auth-main`, que es `flex` en fila; el logo
+  quedaba al lado del formulario y la página medía hasta 426 px. `overflow-x:hidden` en `html` y
+  `body` recortaba el sobrante sin dejar desplazarse, y por eso `test:ui` (que medía `scrollWidth`) no
+  lo detectó.
+- Segundo fallo encontrado en la auditoría: la lista del menú lateral se encogía con un scroll interno
+  invisible (en 1366 × 768 faltaban 4 enlaces; en 568 × 320 horizontal, todos).
+- Corrección: acceso en columna con `minmax(0,1fr)`, sin `overflow-x:hidden` global, menú lateral con
+  desplazamiento propio, «Volver a mi cuenta» de 44 px y etiquetas de al menos 10 px.
+- `npm run test:responsive`: 33 escenas × 8 tamaños en Chrome y 3 en Edge (352 vistas) sin problemas.
+  Contra producción (CSS anterior) marca los dos fallos, lo que confirma que la prueba los detecta.
