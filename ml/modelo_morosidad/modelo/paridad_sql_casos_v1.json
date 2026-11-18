@@ -1,0 +1,1041 @@
+{
+ "modelo_version": "v1",
+ "origen": "predict_proba del pipeline exportado sobre todas las combinaciones distintas de variables del dataset",
+ "casos": [
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 0.0,
+    "tasa_atraso_previa": 0.0,
+    "dias_atraso_promedio_previo": 0.0
+   },
+   "probabilidad_sklearn": 0.06510937059476188
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 1.0
+   },
+   "probabilidad_sklearn": 0.6722040402386625
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 22.0
+   },
+   "probabilidad_sklearn": 0.9742852944787077
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 13.0
+   },
+   "probabilidad_sklearn": 0.9156550821693678
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 5.0
+   },
+   "probabilidad_sklearn": 0.7813735533454996
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 11.0
+   },
+   "probabilidad_sklearn": 0.8915784043435009
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.5,
+    "dias_atraso_promedio_previo": 4.0
+   },
+   "probabilidad_sklearn": 0.2493879454590052
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.5,
+    "dias_atraso_promedio_previo": 0.5
+   },
+   "probabilidad_sklearn": 0.16967143180674388
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 28.5
+   },
+   "probabilidad_sklearn": 0.9646897533184802
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.5,
+    "dias_atraso_promedio_previo": 2.0
+   },
+   "probabilidad_sklearn": 0.20106708871064602
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 12.5
+   },
+   "probabilidad_sklearn": 0.7475448223746821
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.5,
+    "dias_atraso_promedio_previo": 2.5
+   },
+   "probabilidad_sklearn": 0.2124536173800013
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 10.5
+   },
+   "probabilidad_sklearn": 0.6916408082333725
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.3333,
+    "dias_atraso_promedio_previo": 2.67
+   },
+   "probabilidad_sklearn": 0.1158530205860694
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.3333,
+    "dias_atraso_promedio_previo": 0.33
+   },
+   "probabilidad_sklearn": 0.08648892413890238
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 3.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 29.33
+   },
+   "probabilidad_sklearn": 0.8996352645593547
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.3333,
+    "dias_atraso_promedio_previo": 1.33
+   },
+   "probabilidad_sklearn": 0.09811032512350139
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 3.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 12.0
+   },
+   "probabilidad_sklearn": 0.4468010971138133
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.3333,
+    "dias_atraso_promedio_previo": 1.67
+   },
+   "probabilidad_sklearn": 0.10236850348274659
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 3.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 13.33
+   },
+   "probabilidad_sklearn": 0.4927769295636204
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 3.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 10.0
+   },
+   "probabilidad_sklearn": 0.37957248644102143
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.25,
+    "dias_atraso_promedio_previo": 2.0
+   },
+   "probabilidad_sklearn": 0.0759997289160424
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.25,
+    "dias_atraso_promedio_previo": 0.75
+   },
+   "probabilidad_sklearn": 0.06467120753386539
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.25,
+    "dias_atraso_promedio_previo": 0.25
+   },
+   "probabilidad_sklearn": 0.33190701649608
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.25,
+    "dias_atraso_promedio_previo": 0.5
+   },
+   "probabilidad_sklearn": 0.06260251689357348
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 4.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 30.25
+   },
+   "probabilidad_sklearn": 0.9582205003031692
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.25,
+    "dias_atraso_promedio_previo": 1.0
+   },
+   "probabilidad_sklearn": 0.06680338611477578
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 4.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 11.5
+   },
+   "probabilidad_sklearn": 0.6291753227081288
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.25,
+    "dias_atraso_promedio_previo": 1.25
+   },
+   "probabilidad_sklearn": 0.3633871392985007
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 3.0,
+    "tasa_atraso_previa": 0.75,
+    "dias_atraso_promedio_previo": 17.75
+   },
+   "probabilidad_sklearn": 0.8187732808400335
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 3.0,
+    "tasa_atraso_previa": 0.75,
+    "dias_atraso_promedio_previo": 7.5
+   },
+   "probabilidad_sklearn": 0.5211231674867387
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.25,
+    "dias_atraso_promedio_previo": 1.75
+   },
+   "probabilidad_sklearn": 0.07359717739780053
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.2,
+    "dias_atraso_promedio_previo": 1.6
+   },
+   "probabilidad_sklearn": 0.32393333332886987
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.2,
+    "dias_atraso_promedio_previo": 0.6
+   },
+   "probabilidad_sklearn": 0.05136423460297877
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.2,
+    "dias_atraso_promedio_previo": 0.2
+   },
+   "probabilidad_sklearn": 0.28288711702775654
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.2,
+    "dias_atraso_promedio_previo": 0.4
+   },
+   "probabilidad_sklearn": 0.05002756947306738
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.2,
+    "dias_atraso_promedio_previo": 1.0
+   },
+   "probabilidad_sklearn": 0.054139502859836354
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 5.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 33.2
+   },
+   "probabilidad_sklearn": 0.9873090158889906
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.2,
+    "dias_atraso_promedio_previo": 0.8
+   },
+   "probabilidad_sklearn": 0.30009246333558187
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 4.0,
+    "tasa_atraso_previa": 0.8,
+    "dias_atraso_promedio_previo": 9.2
+   },
+   "probabilidad_sklearn": 0.7951139571394025
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.2,
+    "dias_atraso_promedio_previo": 1.0
+   },
+   "probabilidad_sklearn": 0.30595862691597947
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 4.0,
+    "tasa_atraso_previa": 0.8,
+    "dias_atraso_promedio_previo": 21.6
+   },
+   "probabilidad_sklearn": 0.9559818944789268
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 4.0,
+    "tasa_atraso_previa": 0.8,
+    "dias_atraso_promedio_previo": 7.4
+   },
+   "probabilidad_sklearn": 0.7513916623272568
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.2,
+    "dias_atraso_promedio_previo": 1.4
+   },
+   "probabilidad_sklearn": 0.0570557032316475
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 5.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 13.4
+   },
+   "probabilidad_sklearn": 0.8326151877838048
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.1667,
+    "dias_atraso_promedio_previo": 1.33
+   },
+   "probabilidad_sklearn": 0.2845068104501193
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.1667,
+    "dias_atraso_promedio_previo": 0.5
+   },
+   "probabilidad_sklearn": 0.04398460968312183
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.3333,
+    "dias_atraso_promedio_previo": 0.83
+   },
+   "probabilidad_sklearn": 0.1860149538258454
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.1667,
+    "dias_atraso_promedio_previo": 0.33
+   },
+   "probabilidad_sklearn": 0.043002449926114496
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.1667,
+    "dias_atraso_promedio_previo": 0.83
+   },
+   "probabilidad_sklearn": 0.04595255432482308
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 6.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 35.17
+   },
+   "probabilidad_sklearn": 0.9956767206249281
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.1667,
+    "dias_atraso_promedio_previo": 0.67
+   },
+   "probabilidad_sklearn": 0.2662221154893954
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 5.0,
+    "tasa_atraso_previa": 0.8333,
+    "dias_atraso_promedio_previo": 9.0
+   },
+   "probabilidad_sklearn": 0.9079571945985285
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.3333,
+    "dias_atraso_promedio_previo": 2.17
+   },
+   "probabilidad_sklearn": 0.2158500467963544
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 5.0,
+    "tasa_atraso_previa": 0.8333,
+    "dias_atraso_promedio_previo": 24.17
+   },
+   "probabilidad_sklearn": 0.9878204937336545
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 5.0,
+    "tasa_atraso_previa": 0.8333,
+    "dias_atraso_promedio_previo": 7.17
+   },
+   "probabilidad_sklearn": 0.8844020876602657
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.1667,
+    "dias_atraso_promedio_previo": 1.17
+   },
+   "probabilidad_sklearn": 0.048067634335758315
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 6.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 17.67
+   },
+   "probabilidad_sklearn": 0.9529797935307425
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.2857,
+    "dias_atraso_promedio_previo": 1.57
+   },
+   "probabilidad_sklearn": 0.16990836950259633
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.1429,
+    "dias_atraso_promedio_previo": 0.43
+   },
+   "probabilidad_sklearn": 0.23981886045040723
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.2857,
+    "dias_atraso_promedio_previo": 0.71
+   },
+   "probabilidad_sklearn": 0.1537205582166707
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.1429,
+    "dias_atraso_promedio_previo": 0.29
+   },
+   "probabilidad_sklearn": 0.23629221575716933
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.1429,
+    "dias_atraso_promedio_previo": 0.71
+   },
+   "probabilidad_sklearn": 0.04084626889945083
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 7.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 36.29
+   },
+   "probabilidad_sklearn": 0.9983522211824062
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 6.0,
+    "tasa_atraso_previa": 0.8571,
+    "dias_atraso_promedio_previo": 10.71
+   },
+   "probabilidad_sklearn": 0.9690702418096606
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.2857,
+    "dias_atraso_promedio_previo": 1.86
+   },
+   "probabilidad_sklearn": 0.17566449231746722
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 6.0,
+    "tasa_atraso_previa": 0.8571,
+    "dias_atraso_promedio_previo": 25.71
+   },
+   "probabilidad_sklearn": 0.9702972341158917
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 6.0,
+    "tasa_atraso_previa": 0.8571,
+    "dias_atraso_promedio_previo": 6.86
+   },
+   "probabilidad_sklearn": 0.7044298933361535
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.1429,
+    "dias_atraso_promedio_previo": 1.0
+   },
+   "probabilidad_sklearn": 0.25454606643555133
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 7.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 20.43
+   },
+   "probabilidad_sklearn": 0.985284778230394
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.25,
+    "dias_atraso_promedio_previo": 1.38
+   },
+   "probabilidad_sklearn": 0.1452486537376549
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.125,
+    "dias_atraso_promedio_previo": 0.38
+   },
+   "probabilidad_sklearn": 0.22431585511605737
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.25,
+    "dias_atraso_promedio_previo": 0.62
+   },
+   "probabilidad_sklearn": 0.13262889717006046
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.125,
+    "dias_atraso_promedio_previo": 0.25
+   },
+   "probabilidad_sklearn": 0.22119007408267238
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.125,
+    "dias_atraso_promedio_previo": 0.62
+   },
+   "probabilidad_sklearn": 0.23016864547874208
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 7.0,
+    "tasa_atraso_previa": 0.875,
+    "dias_atraso_promedio_previo": 35.62
+   },
+   "probabilidad_sklearn": 0.9995887532446667
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 7.0,
+    "tasa_atraso_previa": 0.875,
+    "dias_atraso_promedio_previo": 14.0
+   },
+   "probabilidad_sklearn": 0.9400194730032678
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.25,
+    "dias_atraso_promedio_previo": 1.62
+   },
+   "probabilidad_sklearn": 0.1494358814080491
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 7.0,
+    "tasa_atraso_previa": 0.875,
+    "dias_atraso_promedio_previo": 26.88
+   },
+   "probabilidad_sklearn": 0.989446093828601
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 7.0,
+    "tasa_atraso_previa": 0.875,
+    "dias_atraso_promedio_previo": 6.5
+   },
+   "probabilidad_sklearn": 0.8468731171608246
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.125,
+    "dias_atraso_promedio_previo": 0.88
+   },
+   "probabilidad_sklearn": 0.23662902378313289
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 8.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 22.5
+   },
+   "probabilidad_sklearn": 0.9950492510561431
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.2222,
+    "dias_atraso_promedio_previo": 1.22
+   },
+   "probabilidad_sklearn": 0.12797936091238327
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.2222,
+    "dias_atraso_promedio_previo": 1.0
+   },
+   "probabilidad_sklearn": 0.12460815172451464
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.2222,
+    "dias_atraso_promedio_previo": 0.56
+   },
+   "probabilidad_sklearn": 0.5077105675679086
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.2222,
+    "dias_atraso_promedio_previo": 0.78
+   },
+   "probabilidad_sklearn": 0.12131339215311895
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 1.0,
+    "tasa_atraso_previa": 0.1111,
+    "dias_atraso_promedio_previo": 0.56
+   },
+   "probabilidad_sklearn": 0.21791269063792595
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 8.0,
+    "tasa_atraso_previa": 0.8889,
+    "dias_atraso_promedio_previo": 36.33
+   },
+   "probabilidad_sklearn": 0.9998444541834195
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 8.0,
+    "tasa_atraso_previa": 0.8889,
+    "dias_atraso_promedio_previo": 16.44
+   },
+   "probabilidad_sklearn": 0.9813786776666734
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.2222,
+    "dias_atraso_promedio_previo": 1.44
+   },
+   "probabilidad_sklearn": 0.5381901524241949
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 8.0,
+    "tasa_atraso_previa": 0.8889,
+    "dias_atraso_promedio_previo": 27.67
+   },
+   "probabilidad_sklearn": 0.9960270616255053
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 8.0,
+    "tasa_atraso_previa": 0.8889,
+    "dias_atraso_promedio_previo": 8.22
+   },
+   "probabilidad_sklearn": 0.943909360824858
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 9.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 24.0
+   },
+   "probabilidad_sklearn": 0.9982091941070201
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.2,
+    "dias_atraso_promedio_previo": 1.1
+   },
+   "probabilidad_sklearn": 0.5016326701987143
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.2,
+    "dias_atraso_promedio_previo": 0.9
+   },
+   "probabilidad_sklearn": 0.11277594271635946
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.2,
+    "dias_atraso_promedio_previo": 0.5
+   },
+   "probabilidad_sklearn": 0.48081017396642634
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.2,
+    "dias_atraso_promedio_previo": 0.7
+   },
+   "probabilidad_sklearn": 0.11002650214887465
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.2,
+    "dias_atraso_promedio_previo": 1.3
+   },
+   "probabilidad_sklearn": 0.11845502290229346
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 9.0,
+    "tasa_atraso_previa": 0.9,
+    "dias_atraso_promedio_previo": 36.7
+   },
+   "probabilidad_sklearn": 0.9999375560667461
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 9.0,
+    "tasa_atraso_previa": 0.9,
+    "dias_atraso_promedio_previo": 18.2
+   },
+   "probabilidad_sklearn": 0.9937596433909553
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.2,
+    "dias_atraso_promedio_previo": 1.3
+   },
+   "probabilidad_sklearn": 0.5085758124342494
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 9.0,
+    "tasa_atraso_previa": 0.9,
+    "dias_atraso_promedio_previo": 28.1
+   },
+   "probabilidad_sklearn": 0.9984146533580013
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 9.0,
+    "tasa_atraso_previa": 0.9,
+    "dias_atraso_promedio_previo": 10.6
+   },
+   "probabilidad_sklearn": 0.9822763618193615
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 10.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 25.0
+   },
+   "probabilidad_sklearn": 0.9993070788028205
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 0.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.1818,
+    "dias_atraso_promedio_previo": 1.0
+   },
+   "probabilidad_sklearn": 0.4778213851745998
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.1818,
+    "dias_atraso_promedio_previo": 0.82
+   },
+   "probabilidad_sklearn": 0.10384440927769525
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 3.0,
+    "tasa_atraso_previa": 0.2727,
+    "dias_atraso_promedio_previo": 1.09
+   },
+   "probabilidad_sklearn": 0.2891802978819667
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.1818,
+    "dias_atraso_promedio_previo": 0.64
+   },
+   "probabilidad_sklearn": 0.10154097835258995
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 2.0,
+    "tasa_atraso_previa": 0.1818,
+    "dias_atraso_promedio_previo": 1.18
+   },
+   "probabilidad_sklearn": 0.1085901413930277
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 10.0,
+    "tasa_atraso_previa": 0.9091,
+    "dias_atraso_promedio_previo": 38.18
+   },
+   "probabilidad_sklearn": 0.9998330590797614
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 10.0,
+    "tasa_atraso_previa": 0.9091,
+    "dias_atraso_promedio_previo": 19.64
+   },
+   "probabilidad_sklearn": 0.9978126543476699
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 1.0,
+    "atrasos_previos_total": 3.0,
+    "tasa_atraso_previa": 0.2727,
+    "dias_atraso_promedio_previo": 1.45
+   },
+   "probabilidad_sklearn": 0.2995646504156924
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 9.0,
+    "tasa_atraso_previa": 0.8182,
+    "dias_atraso_promedio_previo": 28.36
+   },
+   "probabilidad_sklearn": 0.9997133612996904
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 2.0,
+    "atrasos_previos_total": 9.0,
+    "tasa_atraso_previa": 0.8182,
+    "dias_atraso_promedio_previo": 12.45
+   },
+   "probabilidad_sklearn": 0.9973942554733402
+  },
+  {
+   "entrada": {
+    "pagos_atrasados_previos": 3.0,
+    "atrasos_previos_total": 11.0,
+    "tasa_atraso_previa": 1.0,
+    "dias_atraso_promedio_previo": 25.82
+   },
+   "probabilidad_sklearn": 0.9997252864214278
+  }
+ ]
+}

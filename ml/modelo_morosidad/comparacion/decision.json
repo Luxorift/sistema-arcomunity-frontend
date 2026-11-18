@@ -1,0 +1,21 @@
+{
+  "datos": "meses 1–10 (300 cuotas); 180 predicciones externas (meses 5–10); prueba no usada",
+  "mejor_por_f1": "SVM RBF",
+  "elegibles": [
+    "SVM RBF",
+    "Regresión logística",
+    "SVM lineal"
+  ],
+  "empatados_con_el_mejor": [
+    "Regresión logística",
+    "SVM RBF"
+  ],
+  "orden_de_desempate": [
+    "Regresión logística",
+    "SVM RBF"
+  ],
+  "recomendado": "Regresión logística",
+  "motivo": "es el mejor según la regla",
+  "f1_regla_negocio": 0.583,
+  "ganancia_f1_recomendado_vs_v1": 0.0
+}

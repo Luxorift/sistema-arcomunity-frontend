@@ -1,0 +1,42 @@
+{
+  "modelo_version": "v1",
+  "algoritmo": "Regresión logística",
+  "umbral": 0.2258,
+  "caracteristicas": [
+    "pagos_atrasados_previos",
+    "atrasos_previos_total",
+    "tasa_atraso_previa",
+    "dias_atraso_promedio_previo"
+  ],
+  "hiperparametros": {
+    "C": 10,
+    "class_weight": null
+  },
+  "momento_prediccion": "primer día del periodo, antes del vencimiento (fecha_corte = periodo)",
+  "entrenado_con": {
+    "archivo": "..\\dataset_apf3\\dataset_arcomunity_apf3.csv",
+    "sha256": "12bfe4d0317c0996c1702e6513293cb15bd3587f3ef57aaea8fbd395bdf71dfa",
+    "filas": 300,
+    "periodos": "meses 1–10",
+    "origen": "simulado"
+  },
+  "metricas_validacion": {
+    "accuracy": 0.933,
+    "precision": 0.75,
+    "recall": 1.0,
+    "f1": 0.857
+  },
+  "metricas_prueba": {
+    "accuracy": 0.847,
+    "precision": 0.611,
+    "recall": 0.846,
+    "f1": 0.71
+  },
+  "versiones": {
+    "python": "3.12.10",
+    "scikit-learn": "1.9.1",
+    "pandas": "3.1.1",
+    "numpy": "2.5.5"
+  },
+  "limitaciones": "Datos 100 % simulados con reglas deterministas: resultados indicativos, no generalizables a vecinos reales."
+}

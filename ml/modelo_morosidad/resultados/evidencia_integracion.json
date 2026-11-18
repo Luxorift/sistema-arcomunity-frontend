@@ -1,0 +1,461 @@
+{
+  "generado_en": "2026-11-18T17:11:32+00:00",
+  "fuente": "Supabase · rpc ml_caracteristicas_cuotas (junta de demostración, datos simulados)",
+  "fecha_corte": "2026-11-01",
+  "cuotas": 30,
+  "ejemplo_entrada": {
+    "cuota_id": "938b6433-8509-47cf-b15d-38a55bf075a9",
+    "unidad_ref": "U-00d5979618",
+    "periodo": "2026-11-01",
+    "mes": 11,
+    "monto": 150.0,
+    "fecha_vencimiento": "2026-11-10",
+    "dias_para_vencer": 9,
+    "pagos_atrasados_previos": 0,
+    "cuotas_previas": 11,
+    "atrasos_previos_total": 0,
+    "tasa_atraso_previa": 0.0,
+    "dias_atraso_promedio_previo": 0.0,
+    "metodo_pago_ultimo": "yape_qr",
+    "es_simulado": true,
+    "fecha_corte": "2026-11-01"
+  },
+  "salida": {
+    "modelo_version": "v1",
+    "umbral": 0.2258,
+    "predicciones": [
+      {
+        "cuota_id": "938b6433-8509-47cf-b15d-38a55bf075a9",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-00d5979618"
+      },
+      {
+        "cuota_id": "f363eb6e-9838-4609-b43a-fca7cbd9c7d6",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-06e6c69fde"
+      },
+      {
+        "cuota_id": "4daca23a-3716-425b-9b61-9e6e9ddbfc99",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-0ae44c9092"
+      },
+      {
+        "cuota_id": "823366ef-53e5-432e-8904-e56c47bbe117",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-1a732f4d8a"
+      },
+      {
+        "cuota_id": "085146e1-f2d3-4b63-9738-abd52b8be166",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-2ce0bcbd1f"
+      },
+      {
+        "cuota_id": "209419a6-c3ad-4bbc-aa2b-92cf0637ed19",
+        "modelo_version": "v1",
+        "probabilidad": 0.4778,
+        "prediccion": 1,
+        "nivel_riesgo": "alto",
+        "umbral": 0.2258,
+        "factores": [
+          {
+            "variable": "atrasos_previos_total",
+            "aporte": 0.866
+          }
+        ],
+        "unidad_ref": "U-35618e2596"
+      },
+      {
+        "cuota_id": "22c741cb-67af-4caf-8bd4-999267e743d3",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-372edf85fb"
+      },
+      {
+        "cuota_id": "ca6d42e7-0b0c-4ee6-a5db-46a74533bd99",
+        "modelo_version": "v1",
+        "probabilidad": 0.1038,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [
+          {
+            "variable": "atrasos_previos_total",
+            "aporte": 0.866
+          }
+        ],
+        "unidad_ref": "U-37433a60b2"
+      },
+      {
+        "cuota_id": "c81348b0-b5d2-47e1-8aee-751db6055bad",
+        "modelo_version": "v1",
+        "probabilidad": 0.2892,
+        "prediccion": 1,
+        "nivel_riesgo": "alto",
+        "umbral": 0.2258,
+        "factores": [
+          {
+            "variable": "atrasos_previos_total",
+            "aporte": 1.678
+          },
+          {
+            "variable": "tasa_atraso_previa",
+            "aporte": 0.366
+          }
+        ],
+        "unidad_ref": "U-467eff7f57"
+      },
+      {
+        "cuota_id": "a1e59f86-2715-4e14-919b-da8ff86bae2c",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-5c6f40152c"
+      },
+      {
+        "cuota_id": "f2c57bf5-d78f-44f6-b25f-9e38b9943f70",
+        "modelo_version": "v1",
+        "probabilidad": 0.1015,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [
+          {
+            "variable": "atrasos_previos_total",
+            "aporte": 0.866
+          }
+        ],
+        "unidad_ref": "U-5d73d3162c"
+      },
+      {
+        "cuota_id": "c7cb0ec3-dc70-42c3-b333-74cce3083207",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-5e3c5f0e42"
+      },
+      {
+        "cuota_id": "0dc96d59-398c-4166-b8f6-202b067b709f",
+        "modelo_version": "v1",
+        "probabilidad": 0.1086,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [
+          {
+            "variable": "atrasos_previos_total",
+            "aporte": 0.866
+          }
+        ],
+        "unidad_ref": "U-6310315797"
+      },
+      {
+        "cuota_id": "0de1717e-9ddc-4822-9e64-06bd06860119",
+        "modelo_version": "v1",
+        "probabilidad": 0.9998,
+        "prediccion": 1,
+        "nivel_riesgo": "alto",
+        "umbral": 0.2258,
+        "factores": [
+          {
+            "variable": "atrasos_previos_total",
+            "aporte": 7.36
+          },
+          {
+            "variable": "dias_atraso_promedio_previo",
+            "aporte": 4.903
+          },
+          {
+            "variable": "tasa_atraso_previa",
+            "aporte": 3.213
+          }
+        ],
+        "unidad_ref": "U-6623e5f5d4"
+      },
+      {
+        "cuota_id": "82a03d6c-6733-4c06-abfc-9525a07fa09a",
+        "modelo_version": "v1",
+        "probabilidad": 0.4778,
+        "prediccion": 1,
+        "nivel_riesgo": "alto",
+        "umbral": 0.2258,
+        "factores": [
+          {
+            "variable": "atrasos_previos_total",
+            "aporte": 0.866
+          }
+        ],
+        "unidad_ref": "U-736572b855"
+      },
+      {
+        "cuota_id": "bd955abe-641a-436f-a27b-010c3560291f",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-79ae575e9d"
+      },
+      {
+        "cuota_id": "01c808e2-48d1-4b8b-8897-1d186338bb7e",
+        "modelo_version": "v1",
+        "probabilidad": 0.9978,
+        "prediccion": 1,
+        "nivel_riesgo": "alto",
+        "umbral": 0.2258,
+        "factores": [
+          {
+            "variable": "atrasos_previos_total",
+            "aporte": 7.36
+          },
+          {
+            "variable": "tasa_atraso_previa",
+            "aporte": 3.213
+          },
+          {
+            "variable": "dias_atraso_promedio_previo",
+            "aporte": 2.328
+          }
+        ],
+        "unidad_ref": "U-80268e245e"
+      },
+      {
+        "cuota_id": "e52c4f73-6a3e-49d7-b892-b963e3008152",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-83e8f58dbb"
+      },
+      {
+        "cuota_id": "d316b4d6-5d92-48bf-8839-43dcc02a0a8c",
+        "modelo_version": "v1",
+        "probabilidad": 0.2996,
+        "prediccion": 1,
+        "nivel_riesgo": "alto",
+        "umbral": 0.2258,
+        "factores": [
+          {
+            "variable": "atrasos_previos_total",
+            "aporte": 1.678
+          },
+          {
+            "variable": "tasa_atraso_previa",
+            "aporte": 0.366
+          }
+        ],
+        "unidad_ref": "U-8b38539bc6"
+      },
+      {
+        "cuota_id": "3b574949-a17f-4285-8fde-aba0264dbe11",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-8eeee4406d"
+      },
+      {
+        "cuota_id": "c2ab4ecb-8bb3-427a-ac8d-0911a600d382",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-9480e802c3"
+      },
+      {
+        "cuota_id": "c99a6b35-1648-4064-8800-4ae63a4bb5ca",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-9f2d128335"
+      },
+      {
+        "cuota_id": "451f76b6-194d-44da-961e-a7e7c8c85360",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-acd9651c56"
+      },
+      {
+        "cuota_id": "58ff0b29-c324-4fd2-b8ab-2b7f5630964f",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-aeed4a6317"
+      },
+      {
+        "cuota_id": "f70f4b9e-e9ea-47c7-8e81-6951edc8b3c1",
+        "modelo_version": "v1",
+        "probabilidad": 0.9997,
+        "prediccion": 1,
+        "nivel_riesgo": "alto",
+        "umbral": 0.2258,
+        "factores": [
+          {
+            "variable": "atrasos_previos_total",
+            "aporte": 6.548
+          },
+          {
+            "variable": "dias_atraso_promedio_previo",
+            "aporte": 3.539
+          },
+          {
+            "variable": "tasa_atraso_previa",
+            "aporte": 2.806
+          }
+        ],
+        "unidad_ref": "U-c5a734313d"
+      },
+      {
+        "cuota_id": "37c5d014-1eb3-43ce-a8db-839259c0f625",
+        "modelo_version": "v1",
+        "probabilidad": 0.9974,
+        "prediccion": 1,
+        "nivel_riesgo": "alto",
+        "umbral": 0.2258,
+        "factores": [
+          {
+            "variable": "atrasos_previos_total",
+            "aporte": 6.548
+          },
+          {
+            "variable": "tasa_atraso_previa",
+            "aporte": 2.806
+          },
+          {
+            "variable": "dias_atraso_promedio_previo",
+            "aporte": 1.33
+          }
+        ],
+        "unidad_ref": "U-cb22960dae"
+      },
+      {
+        "cuota_id": "d87a95b0-7276-4314-90e6-76f421e7775c",
+        "modelo_version": "v1",
+        "probabilidad": 0.1038,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [
+          {
+            "variable": "atrasos_previos_total",
+            "aporte": 0.866
+          }
+        ],
+        "unidad_ref": "U-cfda0bbca3"
+      },
+      {
+        "cuota_id": "0d31b1cc-eb14-4aad-8d95-1cd148608fe8",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-dba4a2e97f"
+      },
+      {
+        "cuota_id": "b1a9bae1-ce25-488d-93ed-8e31acf860b7",
+        "modelo_version": "v1",
+        "probabilidad": 0.0651,
+        "prediccion": 0,
+        "nivel_riesgo": "bajo",
+        "umbral": 0.2258,
+        "factores": [],
+        "unidad_ref": "U-e7898ec111"
+      },
+      {
+        "cuota_id": "5b376b81-837e-4f55-8393-55b79a1908dd",
+        "modelo_version": "v1",
+        "probabilidad": 0.9997,
+        "prediccion": 1,
+        "nivel_riesgo": "alto",
+        "umbral": 0.2258,
+        "factores": [
+          {
+            "variable": "atrasos_previos_total",
+            "aporte": 8.171
+          },
+          {
+            "variable": "tasa_atraso_previa",
+            "aporte": 3.62
+          },
+          {
+            "variable": "dias_atraso_promedio_previo",
+            "aporte": 3.187
+          }
+        ],
+        "unidad_ref": "U-f9515632ee"
+      }
+    ]
+  },
+  "consistencia_con_entrenamiento": {
+    "comparadas": 29,
+    "diferencias": []
+  },
+  "calculo_en_postgresql": {
+    "resumen_postgresql": {
+      "alto": 9,
+      "bajo": 21,
+      "medio": 0,
+      "cuotas": 30,
+      "umbral": 0.2258,
+      "fecha_corte": "2026-11-01",
+      "modelo_version": "v1"
+    },
+    "cuotas_comparadas": 30,
+    "diferencia_maxima_probabilidad": 0.0,
+    "mismo_nivel_de_riesgo": 30
+  },
+  "escritura_en_base": "predicciones con fecha de corte histórica"
+}

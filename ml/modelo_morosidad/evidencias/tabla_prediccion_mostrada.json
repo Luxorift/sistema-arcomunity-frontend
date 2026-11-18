@@ -1,0 +1,246 @@
+{
+  "capturado_en": "2026-11-18T17:15:14.859Z",
+  "url": "http://localhost:5173/admin/prediccion",
+  "filas": [
+    {
+      "unidad": "Casa 14",
+      "vence": "10/12/2026",
+      "probabilidad": "> 99 %",
+      "riesgo": "alto",
+      "porque": "Atrasos anteriores · Se atrasa a menudo · Atrasos largos",
+      "accion": "Priorizar recordatorio"
+    },
+    {
+      "unidad": "Dpto 307",
+      "vence": "10/12/2026",
+      "probabilidad": "> 99 %",
+      "riesgo": "alto",
+      "porque": "Atrasos anteriores · Atrasos largos · Se atrasa a menudo",
+      "accion": "Priorizar recordatorio"
+    },
+    {
+      "unidad": "Casa 03",
+      "vence": "10/12/2026",
+      "probabilidad": "> 99 %",
+      "riesgo": "alto",
+      "porque": "Atrasos anteriores · Atrasos largos · Se atrasa a menudo",
+      "accion": "Priorizar recordatorio"
+    },
+    {
+      "unidad": "Casa 20",
+      "vence": "10/12/2026",
+      "probabilidad": "> 99 %",
+      "riesgo": "alto",
+      "porque": "Atrasos anteriores · Se atrasa a menudo · Atrasos largos",
+      "accion": "Priorizar recordatorio"
+    },
+    {
+      "unidad": "Casa 07",
+      "vence": "10/12/2026",
+      "probabilidad": "> 99 %",
+      "riesgo": "alto",
+      "porque": "Atrasos anteriores · Se atrasa a menudo · Atrasos largos",
+      "accion": "Priorizar recordatorio"
+    },
+    {
+      "unidad": "Casa 05",
+      "vence": "10/12/2026",
+      "probabilidad": "46 %",
+      "riesgo": "alto",
+      "porque": "Atrasos anteriores",
+      "accion": "Priorizar recordatorio"
+    },
+    {
+      "unidad": "Dpto 302",
+      "vence": "10/12/2026",
+      "probabilidad": "45 %",
+      "riesgo": "alto",
+      "porque": "Atrasos anteriores",
+      "accion": "Priorizar recordatorio"
+    },
+    {
+      "unidad": "Casa 02",
+      "vence": "10/12/2026",
+      "probabilidad": "45 %",
+      "riesgo": "alto",
+      "porque": "Atrasos anteriores",
+      "accion": "Priorizar recordatorio"
+    },
+    {
+      "unidad": "Dpto 305",
+      "vence": "10/12/2026",
+      "probabilidad": "28 %",
+      "riesgo": "alto",
+      "porque": "Atrasos anteriores · Se atrasa a menudo",
+      "accion": "Priorizar recordatorio"
+    },
+    {
+      "unidad": "Casa 09",
+      "vence": "10/12/2026",
+      "probabilidad": "28 %",
+      "riesgo": "alto",
+      "porque": "Atrasos anteriores · Se atrasa a menudo",
+      "accion": "Priorizar recordatorio"
+    },
+    {
+      "unidad": "Casa 17",
+      "vence": "10/12/2026",
+      "probabilidad": "27 %",
+      "riesgo": "alto",
+      "porque": "Atrasos anteriores · Se atrasa a menudo",
+      "accion": "Priorizar recordatorio"
+    },
+    {
+      "unidad": "Dpto 309",
+      "vence": "10/12/2026",
+      "probabilidad": "27 %",
+      "riesgo": "alto",
+      "porque": "Atrasos anteriores · Se atrasa a menudo",
+      "accion": "Priorizar recordatorio"
+    },
+    {
+      "unidad": "Casa 13",
+      "vence": "10/12/2026",
+      "probabilidad": "10 %",
+      "riesgo": "bajo",
+      "porque": "Atrasos anteriores",
+      "accion": "—"
+    },
+    {
+      "unidad": "Casa 10",
+      "vence": "10/12/2026",
+      "probabilidad": "7 %",
+      "riesgo": "bajo",
+      "porque": "Sin atrasos relevantes",
+      "accion": "—"
+    },
+    {
+      "unidad": "Dpto 303",
+      "vence": "10/12/2026",
+      "probabilidad": "7 %",
+      "riesgo": "bajo",
+      "porque": "Sin atrasos relevantes",
+      "accion": "—"
+    },
+    {
+      "unidad": "Casa 01",
+      "vence": "10/12/2026",
+      "probabilidad": "7 %",
+      "riesgo": "bajo",
+      "porque": "Sin atrasos relevantes",
+      "accion": "—"
+    },
+    {
+      "unidad": "Casa 15",
+      "vence": "10/12/2026",
+      "probabilidad": "7 %",
+      "riesgo": "bajo",
+      "porque": "Sin atrasos relevantes",
+      "accion": "—"
+    },
+    {
+      "unidad": "Casa 16",
+      "vence": "10/12/2026",
+      "probabilidad": "7 %",
+      "riesgo": "bajo",
+      "porque": "Sin atrasos relevantes",
+      "accion": "—"
+    },
+    {
+      "unidad": "Dpto 310",
+      "vence": "10/12/2026",
+      "probabilidad": "7 %",
+      "riesgo": "bajo",
+      "porque": "Sin atrasos relevantes",
+      "accion": "—"
+    },
+    {
+      "unidad": "Casa 11",
+      "vence": "10/12/2026",
+      "probabilidad": "7 %",
+      "riesgo": "bajo",
+      "porque": "Sin atrasos relevantes",
+      "accion": "—"
+    },
+    {
+      "unidad": "Casa 19",
+      "vence": "10/12/2026",
+      "probabilidad": "7 %",
+      "riesgo": "bajo",
+      "porque": "Sin atrasos relevantes",
+      "accion": "—"
+    },
+    {
+      "unidad": "Dpto 301",
+      "vence": "10/12/2026",
+      "probabilidad": "7 %",
+      "riesgo": "bajo",
+      "porque": "Sin atrasos relevantes",
+      "accion": "—"
+    },
+    {
+      "unidad": "Casa 18",
+      "vence": "10/12/2026",
+      "probabilidad": "7 %",
+      "riesgo": "bajo",
+      "porque": "Sin atrasos relevantes",
+      "accion": "—"
+    },
+    {
+      "unidad": "Dpto 304",
+      "vence": "10/12/2026",
+      "probabilidad": "7 %",
+      "riesgo": "bajo",
+      "porque": "Sin atrasos relevantes",
+      "accion": "—"
+    },
+    {
+      "unidad": "Casa 06",
+      "vence": "10/12/2026",
+      "probabilidad": "7 %",
+      "riesgo": "bajo",
+      "porque": "Sin atrasos relevantes",
+      "accion": "—"
+    },
+    {
+      "unidad": "Casa 04",
+      "vence": "10/12/2026",
+      "probabilidad": "7 %",
+      "riesgo": "bajo",
+      "porque": "Sin atrasos relevantes",
+      "accion": "—"
+    },
+    {
+      "unidad": "Dpto 306",
+      "vence": "10/12/2026",
+      "probabilidad": "7 %",
+      "riesgo": "bajo",
+      "porque": "Sin atrasos relevantes",
+      "accion": "—"
+    },
+    {
+      "unidad": "Dpto 308",
+      "vence": "10/12/2026",
+      "probabilidad": "7 %",
+      "riesgo": "bajo",
+      "porque": "Sin atrasos relevantes",
+      "accion": "—"
+    },
+    {
+      "unidad": "Casa 12",
+      "vence": "10/12/2026",
+      "probabilidad": "3 %",
+      "riesgo": "bajo",
+      "porque": "Atrasos anteriores",
+      "accion": "—"
+    },
+    {
+      "unidad": "Casa 08",
+      "vence": "10/12/2026",
+      "probabilidad": "3 %",
+      "riesgo": "bajo",
+      "porque": "Atrasos anteriores",
+      "accion": "—"
+    }
+  ]
+}
