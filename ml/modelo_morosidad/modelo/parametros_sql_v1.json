@@ -1,0 +1,33 @@
+{
+  "modelo_version": "v1",
+  "umbral": 0.2258,
+  "caracteristicas": [
+    "pagos_atrasados_previos",
+    "atrasos_previos_total",
+    "tasa_atraso_previa",
+    "dias_atraso_promedio_previo"
+  ],
+  "media": {
+    "pagos_atrasados_previos": 0.49333333333333335,
+    "atrasos_previos_total": 0.9333333333333333,
+    "tasa_atraso_previa": 0.19085900000000003,
+    "dias_atraso_promedio_previo": 2.873933333333333
+  },
+  "escala": {
+    "pagos_atrasados_previos": 0.9146705539275998,
+    "atrasos_previos_total": 1.8535251699277124,
+    "tasa_atraso_previa": 0.3381141461385489,
+    "dias_atraso_promedio_previo": 7.181849752133654
+  },
+  "coeficientes": {
+    "pagos_atrasados_previos": -1.867253564818405,
+    "atrasos_previos_total": 1.5045516739791496,
+    "tasa_atraso_previa": 1.5125120342833231,
+    "dias_atraso_promedio_previo": 0.9974120646642042
+  },
+  "intercepto": -1.6609517594445344,
+  "paridad": {
+    "cuotas": 359,
+    "diferencia_maxima": 3.3306690738754696e-16
+  }
+}

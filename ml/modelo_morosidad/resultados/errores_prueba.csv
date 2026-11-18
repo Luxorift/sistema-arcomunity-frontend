@@ -1,0 +1,10 @@
+unidad_ref,periodo,moroso,pagos_atrasados_previos,atrasos_previos_total,tasa_atraso_previa,dias_atraso_promedio_previo,probabilidad,prediccion,perfil_unidad (auditoría),tipo,hipotesis
+U-35618e2596,2026-10-01,0,0.0,2.0,0.2,1.1,0.502,1,ocasional (1–4),Falso positivo,"Unidad ocasional con atrasos previos: el modelo eleva su riesgo, pero esta vez pagó a tiempo (sus atrasos siguen una regla no observable)."
+U-736572b855,2026-10-01,0,0.0,2.0,0.2,1.1,0.502,1,ocasional (1–4),Falso positivo,"Unidad ocasional con atrasos previos: el modelo eleva su riesgo, pero esta vez pagó a tiempo (sus atrasos siguen una regla no observable)."
+U-c5a734313d,2026-10-01,0,3.0,9.0,0.9,28.1,0.998,1,crónica (≥ 5),Falso positivo,Unidad crónica que esta vez pagó a tiempo (en la semilla los crónicos pagan a tiempo algunos meses).
+U-cb22960dae,2026-10-01,0,3.0,9.0,0.9,10.6,0.982,1,crónica (≥ 5),Falso positivo,Unidad crónica que esta vez pagó a tiempo (en la semilla los crónicos pagan a tiempo algunos meses).
+U-35618e2596,2026-11-01,0,0.0,2.0,0.1818,1.0,0.478,1,ocasional (1–4),Falso positivo,"Unidad ocasional con atrasos previos: el modelo eleva su riesgo, pero esta vez pagó a tiempo (sus atrasos siguen una regla no observable)."
+U-467eff7f57,2026-11-01,0,1.0,3.0,0.2727,1.09,0.289,1,ocasional (1–4),Falso positivo,"Unidad ocasional con atrasos previos: el modelo eleva su riesgo, pero esta vez pagó a tiempo (sus atrasos siguen una regla no observable)."
+U-5d73d3162c,2026-11-01,1,1.0,2.0,0.1818,0.64,0.102,0,ocasional (1–4),Falso negativo,Historial con pocos atrasos: la probabilidad no supera el umbral; el atraso ocasional sigue una regla no observable.
+U-8b38539bc6,2026-11-01,0,1.0,3.0,0.2727,1.45,0.3,1,ocasional (1–4),Falso positivo,"Unidad ocasional con atrasos previos: el modelo eleva su riesgo, pero esta vez pagó a tiempo (sus atrasos siguen una regla no observable)."
+U-e7898ec111,2026-11-01,1,0.0,0.0,0.0,0.0,0.065,0,ocasional (1–4),Falso negativo,Unidad sin atrasos previos: el atraso no tiene antecedentes en el historial (regla ocasional de la semilla o primer atraso).

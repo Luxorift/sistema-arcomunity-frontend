@@ -1,0 +1,13 @@
+modelo,conjunto,accuracy,precision,recall,f1,avg_precision
+Dummy (clase mayoritaria),entrenamiento,0.793,0.0,0.0,0.0,
+Dummy (clase mayoritaria),validacion,0.8,0.0,0.0,0.0,
+Dummy (estratificado),entrenamiento,0.644,0.155,0.161,0.158,
+Dummy (estratificado),validacion,0.733,0.25,0.167,0.2,
+Regla: atraso en 3 meses previos,entrenamiento,0.785,0.486,0.643,0.554,
+Regla: atraso en 3 meses previos,validacion,0.8,0.5,0.833,0.625,
+Regresión logística,entrenamiento,0.893,0.729,0.768,0.748,0.732
+Regresión logística,validacion,0.933,0.75,1.0,0.857,0.958
+Regresión logística,cv temporal (fuera de muestra),0.92,0.806,0.806,0.806,0.826
+Árbol de decisión,entrenamiento,0.907,0.782,0.768,0.775,0.778
+Árbol de decisión,validacion,0.933,0.75,1.0,0.857,0.958
+Árbol de decisión,cv temporal (fuera de muestra),0.94,0.893,0.806,0.847,0.799

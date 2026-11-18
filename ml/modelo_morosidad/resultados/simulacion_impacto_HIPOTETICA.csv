@@ -1,0 +1,13 @@
+efectividad_supuesta,estrategia,recordatorios,morosas_avisadas (medido),morosas_esperadas (simulado),reduccion_morosidad (simulado),recordatorios_por_morosa_evitada
+10%,Sin recordatorios,0,0,13.0,0.0%,
+10%,Recordar a todos,59,13,11.7,10.0%,45.4
+10%,Regla: atraso en 3 meses previos,20,9,12.1,6.9%,22.2
+10%,Modelo (Regresión logística),18,11,11.9,8.5%,16.4
+20%,Sin recordatorios,0,0,13.0,0.0%,
+20%,Recordar a todos,59,13,10.4,20.0%,22.7
+20%,Regla: atraso en 3 meses previos,20,9,11.2,13.8%,11.1
+20%,Modelo (Regresión logística),18,11,10.8,16.9%,8.2
+30%,Sin recordatorios,0,0,13.0,0.0%,
+30%,Recordar a todos,59,13,9.1,30.0%,15.1
+30%,Regla: atraso en 3 meses previos,20,9,10.3,20.8%,7.4
+30%,Modelo (Regresión logística),18,11,9.7,25.4%,5.5
