@@ -838,4 +838,20 @@
 :root[data-theme="dark"] .payment-amount span,:root[data-theme="dark"] .payment-amount small {
     color: #aad4b0
 }
+:root[data-theme="dark"] .ml-seccion+.ml-seccion {
+    border-top: 1px solid #2f3631
+}
+:root[data-theme="dark"] .kpi-modelo {
+    background: #192224
+}
+:root[data-theme="dark"] .kpi-modelo-icono {
+    background: #1e240d;
+    color: #8fcea6
+}
+:root[data-theme="dark"] .kpi-modelo-valor {
+    color: #d3e3e7
+}
+:root[data-theme="dark"] .kpi-modelo-medidor {
+    background: #1e2420
+}
 }
