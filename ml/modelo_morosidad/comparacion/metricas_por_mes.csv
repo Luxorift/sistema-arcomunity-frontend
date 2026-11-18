@@ -1,0 +1,61 @@
+modelo,mes,f1,recall,precision
+Dummy (clase mayoritaria),5,0.0,0.0,0.0
+Dummy (clase mayoritaria),6,0.0,0.0,0.0
+Dummy (clase mayoritaria),7,0.0,0.0,0.0
+Dummy (clase mayoritaria),8,0.0,0.0,0.0
+Dummy (clase mayoritaria),9,0.0,0.0,0.0
+Dummy (clase mayoritaria),10,0.0,0.0,0.0
+Dummy (estratificado),5,0.2,0.2,0.2
+Dummy (estratificado),6,0.167,0.143,0.2
+Dummy (estratificado),7,0.0,0.0,0.0
+Dummy (estratificado),8,0.167,0.25,0.125
+Dummy (estratificado),9,0.286,0.25,0.333
+Dummy (estratificado),10,0.0,0.0,0.0
+Regla: atraso en 3 meses previos,5,0.533,0.8,0.4
+Regla: atraso en 3 meses previos,6,0.625,0.714,0.556
+Regla: atraso en 3 meses previos,7,0.556,0.714,0.455
+Regla: atraso en 3 meses previos,8,0.571,1.0,0.4
+Regla: atraso en 3 meses previos,9,0.588,0.625,0.556
+Regla: atraso en 3 meses previos,10,0.625,0.833,0.5
+Regresión logística,5,0.357,1.0,0.217
+Regresión logística,6,0.8,0.857,0.75
+Regresión logística,7,0.933,1.0,0.875
+Regresión logística,8,0.667,1.0,0.5
+Regresión logística,9,0.941,1.0,0.889
+Regresión logística,10,0.857,1.0,0.75
+SVM lineal,5,0.296,0.8,0.182
+SVM lineal,6,0.424,1.0,0.269
+SVM lineal,7,0.875,1.0,0.778
+SVM lineal,8,0.533,1.0,0.364
+SVM lineal,9,0.941,1.0,0.889
+SVM lineal,10,0.857,1.0,0.75
+SVM RBF,5,0.667,0.8,0.571
+SVM RBF,6,0.875,1.0,0.778
+SVM RBF,7,0.7,1.0,0.538
+SVM RBF,8,0.5,1.0,0.333
+SVM RBF,9,0.769,0.625,1.0
+SVM RBF,10,0.857,1.0,0.75
+KNN,5,0.357,1.0,0.217
+KNN,6,0.345,0.714,0.227
+KNN,7,0.452,1.0,0.292
+KNN,8,0.667,1.0,0.5
+KNN,9,0.769,0.625,1.0
+KNN,10,0.857,1.0,0.75
+Árbol de decisión,5,0.276,0.8,0.167
+Árbol de decisión,6,0.833,0.714,1.0
+Árbol de decisión,7,0.833,0.714,1.0
+Árbol de decisión,8,0.667,1.0,0.5
+Árbol de decisión,9,0.769,0.625,1.0
+Árbol de decisión,10,0.857,1.0,0.75
+AdaBoost,5,0.667,0.6,0.75
+AdaBoost,6,0.833,0.714,1.0
+AdaBoost,7,0.833,0.714,1.0
+AdaBoost,8,0.667,1.0,0.5
+AdaBoost,9,0.769,0.625,1.0
+AdaBoost,10,0.387,1.0,0.24
+Gradient Boosting,5,0.235,0.8,0.138
+Gradient Boosting,6,0.833,0.714,1.0
+Gradient Boosting,7,0.833,0.714,1.0
+Gradient Boosting,8,0.667,1.0,0.5
+Gradient Boosting,9,0.769,0.625,1.0
+Gradient Boosting,10,0.857,1.0,0.75

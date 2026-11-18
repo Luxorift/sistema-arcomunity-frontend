@@ -25,6 +25,8 @@ En Google Colab: abrir el notebook desde GitHub y *Ejecutar todas*; la primera c
 | `APF3_TD_Grupo6_ML_Innovacion.ipynb` | Notebook comentado por bloques, ejecutado (salidas incluidas). |
 | `caracteristicas.py` | Variables al corte, sin fuga; misma semántica que `ml_caracteristicas_cuotas` en Supabase. |
 | `inferencia.py` | Carga el modelo y predice uno o varios registros (valida el contrato y rechaza campos de fuga). |
+| `comparacion.py`, `comparacion/` | Reevaluación de algoritmos: regla previa, métricas anidadas, decisión y gráficos. |
+| `herramientas/construir_notebook.py` | Genera el notebook (luego se ejecuta con nbconvert). |
 | `exportar_parametros.py` | Exporta medias, escalas, coeficientes e intercepto y verifica paridad con scikit-learn. |
 | `evidencia_integracion.py` | Anexo C: obtiene variables reales de Supabase y llama al modelo exportado. |
 | `contrato_integracion.json`, `ejemplo_entrada.json` | Contrato JSON de entrada/salida y ejemplo. |
@@ -69,6 +71,14 @@ Hiperparámetros elegidos: regresión logística `C = 10`, sin pesos de clase; �
   correlacionadas (0,82–0,93): los coeficientes individuales no se interpretan aislados.
 - Variables auditadas (AP en CV temporal): principal 0,826 · + método del último pago 0,812 · + mes y cuotas
   previas 0,810 → no aportan; se mantienen fuera.
+
+## Reevaluación de algoritmos (S13–S14)
+
+Regla registrada antes de comparar (`comparacion/REGLA_DE_SELECCION.md`) y evaluación anidada con origen móvil
+**solo con los meses 1–10** (`python comparacion.py`, sección 13 del notebook). Se compararon regresión logística,
+SVM lineal y RBF, KNN, árbol, AdaBoost y Gradient Boosting. SVM RBF tuvo el mayor F1 (0,725) pero empata con la
+logística (0,713; IC 95 % de la diferencia −0,087 a +0,111); la logística gana el desempate y deja 1 morosa sin
+aviso frente a 4. **Se conserva la regresión logística v1.** Detalle: `comparacion/RESULTADOS.md`.
 
 ## Auditoría de la simulación (hallazgo principal)
 
