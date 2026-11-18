@@ -1,0 +1,56 @@
+{
+  "fecha_corte": "2026-11-01",
+  "registros": [
+    {
+      "cuota_id": "938b6433-8509-47cf-b15d-38a55bf075a9",
+      "unidad_ref": "U-00d5979618",
+      "periodo": "2026-11-01",
+      "mes": 11,
+      "monto": 150.0,
+      "fecha_vencimiento": "2026-11-10",
+      "dias_para_vencer": 9,
+      "pagos_atrasados_previos": 0,
+      "cuotas_previas": 11,
+      "atrasos_previos_total": 0,
+      "tasa_atraso_previa": 0.0,
+      "dias_atraso_promedio_previo": 0.0,
+      "metodo_pago_ultimo": "yape_qr",
+      "es_simulado": true,
+      "fecha_corte": "2026-11-01"
+    },
+    {
+      "cuota_id": "00000000-0000-4000-8000-000000000002",
+      "unidad_ref": "U-ejemplo0002",
+      "periodo": "2026-11-01",
+      "mes": 11,
+      "monto": 150.0,
+      "fecha_vencimiento": "2026-11-10",
+      "dias_para_vencer": 9,
+      "pagos_atrasados_previos": 0,
+      "cuotas_previas": 11,
+      "atrasos_previos_total": 0,
+      "tasa_atraso_previa": 0.0,
+      "dias_atraso_promedio_previo": 0.0,
+      "metodo_pago_ultimo": "yape_captura",
+      "es_simulado": true,
+      "fecha_corte": "2026-11-01"
+    },
+    {
+      "cuota_id": "00000000-0000-4000-8000-000000000003",
+      "unidad_ref": "U-ejemplo0003",
+      "periodo": "2026-11-01",
+      "mes": 11,
+      "monto": 150.0,
+      "fecha_vencimiento": "2026-11-10",
+      "dias_para_vencer": 9,
+      "pagos_atrasados_previos": 3,
+      "cuotas_previas": 11,
+      "atrasos_previos_total": 9,
+      "tasa_atraso_previa": 0.9,
+      "dias_atraso_promedio_previo": 12.5,
+      "metodo_pago_ultimo": "efectivo",
+      "es_simulado": true,
+      "fecha_corte": "2026-11-01"
+    }
+  ]
+}

@@ -32,14 +32,19 @@ def cargar_modelo(directorio: Path | str = DIR_MODELO, version: str = "v1") -> d
 
 
 def _factores(pipeline, fila) -> list[dict]:
-    """Aporte de cada variable al logit (solo modelos lineales); las 3 que más empujan hacia el riesgo."""
+    """Variables que elevan el riesgo de esta cuota (solo modelos lineales), con su aporte al logit.
+
+    Solo se listan variables cuyo valor está por encima del promedio de entrenamiento y que, con ese valor,
+    suben el riesgo. Así una cuota sin historial no muestra "factores" (con variables correlacionadas, un
+    coeficiente negativo haría parecer que tener 0 atrasos aumenta el riesgo).
+    """
     modelo = pipeline.named_steps["modelo"]
     if not hasattr(modelo, "coef_"):
         return []
     x = pipeline.named_steps["preprocesamiento"].transform(fila)[0]
     aportes = modelo.coef_[0] * x
     orden = np.argsort(-aportes)[:3]
-    return [{"variable": VARIABLES_MODELO[i], "aporte": round(float(aportes[i]), 3)} for i in orden if aportes[i] > 0]
+    return [{"variable": VARIABLES_MODELO[i], "aporte": round(float(aportes[i]), 3)} for i in orden if aportes[i] > 0 and x[i] > 0]
 
 
 def predecir_registro(modelo: dict, registro: dict) -> dict:

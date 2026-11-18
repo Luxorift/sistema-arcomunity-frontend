@@ -1,0 +1,95 @@
+{
+  "nombre": "Arcomunity · riesgo de morosidad por cuota",
+  "modelo_version": "v1",
+  "estado": "preliminar (APF3)",
+  "momento_prediccion": "Antes del vencimiento. La entrada se calcula con ml_caracteristicas_cuotas(p_junta, p_fecha_corte) usando solo cuotas vencidas antes del corte.",
+  "fuente_en_el_mvp": "Supabase · rpc public.ml_caracteristicas_cuotas (migración 20261117000500); campos que el MVP ya captura en cuotas y pagos.",
+  "entrada": {
+    "tipo": "objeto con 'registros': lista de cuotas",
+    "campos": {
+      "cuota_id": {
+        "tipo": "uuid",
+        "uso": "identificador de salida (no predictor)"
+      },
+      "unidad_ref": {
+        "tipo": "texto U-xxxxxxxxxx",
+        "uso": "seudónimo para mostrar (no predictor)"
+      },
+      "periodo": {
+        "tipo": "fecha AAAA-MM-01",
+        "uso": "contexto"
+      },
+      "fecha_vencimiento": {
+        "tipo": "fecha",
+        "uso": "contexto"
+      },
+      "pagos_atrasados_previos": {
+        "tipo": "entero 0–3",
+        "obligatorio": true,
+        "uso": "predictor"
+      },
+      "atrasos_previos_total": {
+        "tipo": "entero ≥ pagos_atrasados_previos",
+        "obligatorio": true,
+        "uso": "predictor"
+      },
+      "tasa_atraso_previa": {
+        "tipo": "decimal 0–1",
+        "obligatorio": true,
+        "uso": "predictor"
+      },
+      "dias_atraso_promedio_previo": {
+        "tipo": "decimal ≥ 0",
+        "obligatorio": true,
+        "uso": "predictor"
+      },
+      "cuotas_previas": {
+        "tipo": "entero",
+        "uso": "contexto (no predictor)"
+      },
+      "metodo_pago_ultimo": {
+        "tipo": "texto",
+        "uso": "contexto (excluido: artefacto de la semilla)"
+      },
+      "mes": {
+        "tipo": "entero",
+        "uso": "contexto (no predictor)"
+      },
+      "monto": {
+        "tipo": "decimal",
+        "uso": "contexto (no predictor)"
+      },
+      "dias_para_vencer": {
+        "tipo": "entero",
+        "uso": "contexto"
+      },
+      "es_simulado": {
+        "tipo": "booleano",
+        "uso": "trazabilidad"
+      }
+    },
+    "rechazados": [
+      "fecha_pago",
+      "dias_atraso",
+      "metodo_pago",
+      "moroso"
+    ]
+  },
+  "salida": {
+    "modelo_version": "texto",
+    "umbral": 0.2258,
+    "predicciones": [
+      {
+        "cuota_id": "uuid",
+        "probabilidad": "decimal 0–1",
+        "prediccion": "1 si probabilidad ≥ umbral",
+        "nivel_riesgo": "alto (≥ 0.2258), medio (≥ umbral/2), bajo",
+        "factores": "hasta 3 variables que más elevan el riesgo, con su aporte al logit"
+      }
+    ]
+  },
+  "accion_en_la_interfaz": "Pantalla Administración → Predicción de morosidad: lista las cuotas por vencer ordenadas por probabilidad; las de nivel alto se marcan para recordatorio previo al vencimiento. Solo la administración ve los resultados; nunca se muestran a otros vecinos.",
+  "almacenamiento": "public.predicciones_morosidad (probabilidad, prediccion, nivel_riesgo, factores, entrada) + public.modelos_ml (versión activa, umbral, características, métricas); lectura con predicciones_vigentes(p_junta).",
+  "ejemplo_entrada": "ejemplo_entrada.json",
+  "ejemplo_salida": "resultados/evidencia_integracion.json"
+}
