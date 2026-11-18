@@ -6,6 +6,19 @@ comprobante; la administración concilia, registra egresos y rinde cuentas en un
 
 **La junta de demostración usa datos 100 % simulados** (`es_simulado = true`).
 
+## Acceder a Arcomunity
+
+| Versión | Dirección |
+| --- | --- |
+| **Versión principal — Vercel** | <https://sistema-arcomunity-frontend.vercel.app/login> |
+| **Versión alternativa — Cloudflare Workers** | <https://sistema-arcomunity-frontend.luxorift.workers.dev/login> |
+
+Las dos direcciones publican el **mismo código** (rama `main`) y usan el **mismo backend**: el mismo proyecto
+Supabase (autenticación, base de datos, comprobantes y tiempo real). Una cuenta, un pago o una aprobación hecha
+en una se ve también en la otra. Cloudflare es nuestra alternativa para entrar desde redes donde Vercel puede
+estar bloqueado (como ocurrió en la red de la universidad durante el APF2). Las cuentas de prueba están en
+[Cuentas de demostración](#cuentas-de-demostración).
+
 ## Arquitectura
 
 | Capa | Tecnología |
@@ -83,7 +96,8 @@ scripts/pruebas-integracion.ts  Pruebas contra el proyecto Supabase real
 
 ## Cuentas de demostración
 
-**Acceso:** <https://sistema-arcomunity-frontend.vercel.app/login>
+**Acceso:** <https://sistema-arcomunity-frontend.vercel.app/login> (alternativa:
+<https://sistema-arcomunity-frontend.luxorift.workers.dev/login>)
 
 Son cuentas reales de Supabase Auth creadas solo para la exposición, las pruebas y la revisión docente.
 Pertenecen a una junta **ficticia** («Junta Vecinal Arcomunity — Piloto», 30 unidades, 12 meses de
@@ -94,9 +108,13 @@ Contraseña de las cuatro cuentas: **`Demo2026!`** (pública y exclusiva de esta
 | Rol | Correo | Contraseña | Qué permite probar |
 | --- | --- | --- | --- |
 | Administración | `admin@arcomunity.demo` | `Demo2026!` | Resumen con métricas, cuotas, conciliación de pagos (aprobar o rechazar con el comprobante), pagos y reversión, egresos, reportes con exportación CSV/Excel, unidades y vecinos, auditoría, transparencia, videovigilancia simulada y configuración. |
-| Propietaria · Casa 12 | `casa12@arcomunity.demo` | `Demo2026!` | Cuota de noviembre vencida: pago guiado en 3 pasos con el comprobante de ejemplo, lectura OCR y seguimiento del estado. Si se usa a la vez que la administración, el pago aparece en Conciliación sin recargar. |
-| Propietario · Casa 08 | `casa08@arcomunity.demo` | `Demo2026!` | Pago enviado que espera revisión: cómo ve el vecino un pago pendiente y el motivo. |
-| Propietaria · Dpto 301 | `dpto301@arcomunity.demo` | `Demo2026!` | Vecina al día: historial completo de pagos, mensaje de agradecimiento y diferencias frente a un perfil con deuda. |
+| Propietaria · Casa 12 | `casa12@arcomunity.demo` | `Demo2026!` | Una cuota vencida (noviembre, S/ 150): pago guiado en 3 pasos con el comprobante de ejemplo, lectura OCR y seguimiento del estado. Si se usa a la vez que la administración, el pago aparece en Conciliación sin recargar. |
+| Propietario · Casa 08 | `casa08@arcomunity.demo` | `Demo2026!` | Pago en revisión: declaró S/ 140 por la cuota de noviembre de S/ 150, por eso la regla lo envió a Conciliación. La administración puede aprobarlo o rechazarlo con motivo; el vecino ve el resultado. |
+| Propietaria · Dpto 301 | `dpto301@arcomunity.demo` | `Demo2026!` | Sin cuotas vencidas: 12 meses pagados (diciembre 2025 – noviembre 2026), mensaje de agradecimiento y diferencias frente a un perfil con deuda. |
+
+Después de **Preparar demostración** cada unidad tiene además la cuota de diciembre, que vence el día 10: no es
+deuda vencida. Casa 12 sigue con S/ 150 vencidos (su total por pagar es S/ 300), Casa 08 sigue en revisión y
+Dpto 301 sigue sin cuotas vencidas. **Reiniciar demostración** vuelve al estado de la tabla.
 
 ### Cómo ingresar
 
@@ -191,7 +209,11 @@ npm run dataset:apf3   # exporta y valida el dataset desde Supabase (solo lectur
 Genera en `ml/dataset_apf3/` el CSV del contrato de datos, una copia `.xlsx`, el diccionario de datos,
 una partición temporal de referencia y `validacion_dataset.md`. Ver ese informe antes de usar el dataset.
 
-## Despliegue (Vercel)
+## Despliegue (Vercel y Cloudflare Workers)
+
+Vercel y Cloudflare Workers se publican solos desde `main` (mismo código). Cloudflare usa `wrangler.jsonc`
+(construye con `npm run build`, publica `dist` y sirve las rutas internas como aplicación de una sola página).
+Detalles y verificación: [docs/despliegue.md](docs/despliegue.md#despliegue-alternativo-si-la-universidad-bloquea-vercel).
 
 1. Importa el repositorio en Vercel (framework: Vite; `vercel.json` ya reescribe las rutas a `index.html`).
 2. Variables de entorno: **solo** `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.

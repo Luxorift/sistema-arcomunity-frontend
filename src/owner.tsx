@@ -98,21 +98,36 @@ export function MiCuenta() {
   const rechazos = datos.pagos.filter(p => p.estado === 'rechazado' && porPagar.some(c => c.id === p.cuotaId))
   const ultimoRechazo = rechazos.sort((a, b) => (b.revisadoEn ?? '').localeCompare(a.revisadoEn ?? ''))[0]
   const proxima = [...porPagar].sort((a, b) => a.vencimiento.localeCompare(b.vencimiento))[0]
-  const deuda = porPagar.reduce((n, c) => n + c.monto, 0)
+  // Lo vencido y lo que aún no vence se muestran por separado: la cuota del mes siguiente no es deuda vencida.
+  const montoVencido = vencidas.reduce((n, c) => n + c.monto, 0)
+  const porVencer = porPagar.filter(c => estadoVisible(c) !== 'morosa').sort((a, b) => a.vencimiento.localeCompare(b.vencimiento))
+  const siguiente = porVencer[0]
+  const textoSiguiente = siguiente ? `Tu próxima cuota (${dinero(siguiente.monto)}) vence el ${fechaVisible(siguiente.vencimiento)}.` : ''
+  const ultimaVencida = [...vencidas].sort((a, b) => b.vencimiento.localeCompare(a.vencimiento))[0]
+  const hero = vencidas.length
+    ? { tono: 'alert', icono: <AlertCircle size={28} />, titulo: vencidas.length === 1 ? 'Tienes una cuota vencida' : `Tienes ${vencidas.length} cuotas vencidas`, monto: dinero(montoVencido),
+      texto: `${vencidas.length === 1 ? `Venció el ${fechaVisible(ultimaVencida.vencimiento)}` : `La más reciente venció el ${fechaVisible(ultimaVencida.vencimiento)}`}. Págala cuanto antes. ${textoSiguiente}` }
+    : enRevision.length
+      ? { tono: 'pending', icono: <Clock3 size={28} />, titulo: 'Tu pago está en revisión',
+        monto: `Pagaste ${dinero(datos.pagos.filter(p => p.estado === 'pendiente_revision').reduce((n, p) => n + p.monto, 0))}`,
+        texto: `La junta está verificando tu comprobante de la cuota de ${mesVisible(enRevision[0].periodo)} (${dinero(enRevision[0].monto)}). No necesitas enviarlo otra vez. ${textoSiguiente}` }
+      : siguiente
+        ? { tono: 'ok', icono: <CheckCircle2 size={28} />, titulo: 'No tienes cuotas vencidas', monto: `Próxima cuota: ${dinero(siguiente.monto)}`, texto: `Vence el ${fechaVisible(siguiente.vencimiento)}. Puedes pagarla desde ahora.` }
+        : { tono: 'ok', icono: <CheckCircle2 size={28} />, titulo: 'Estás al día', monto: '¡Gracias por contribuir!', texto: 'No tienes cuotas pendientes.' }
 
   if (!datosListos) return <Cargando texto="Cargando tu estado de cuenta…" />
   return <>
     <Saludo subtitulo={`${usuario?.unidadCodigo ?? 'Sin unidad'} · ${datos.configuracion.nombre}`} />
     {ultimoRechazo && <div className="notice notice-danger" role="alert"><XCircle size={20} /><div><strong>La junta observó tu pago</strong><p>{ultimoRechazo.motivoRechazo}. Puedes volver a enviarlo desde la cuota.</p></div></div>}
 
-    <div className={`status-hero ${vencidas.length ? 'status-hero-alert' : porPagar.length ? 'status-hero-pending' : 'status-hero-ok'}`}>
-      <div className="status-hero-icon">{vencidas.length ? <AlertCircle size={28} /> : porPagar.length ? <Clock3 size={28} /> : <CheckCircle2 size={28} />}</div>
+    <div className={`status-hero status-hero-${hero.tono}`}>
+      <div className="status-hero-icon" aria-hidden="true">{hero.icono}</div>
       <div className="status-hero-text">
-        <span>{vencidas.length ? (vencidas.length === 1 ? 'Tienes una cuota vencida' : `Tienes ${vencidas.length} cuotas vencidas`) : porPagar.length ? 'Cuota por pagar' : 'Estás al día'}</span>
-        <strong>{porPagar.length ? dinero(deuda) : '¡Gracias por contribuir!'}</strong>
-        <p>{proxima ? (proxima.vencimiento < hoy() ? `Venció el ${fechaVisible(proxima.vencimiento)}. Págala cuanto antes.` : `${porPagar.length === 1 ? 'Vence' : 'La próxima vence'} el ${fechaVisible(proxima.vencimiento)}.`) : enRevision.length ? 'Tu último pago está en revisión.' : 'No tienes cuotas pendientes.'}</p>
+        <span>{hero.titulo}</span>
+        <strong>{hero.monto}</strong>
+        <p>{hero.texto.trim()}</p>
       </div>
-      {proxima && <Link className="button button-primary" to={`/pagar/${proxima.id}`}>Pagar ahora <ArrowRight size={17} /></Link>}
+      {proxima && <Link className="button button-primary" to={`/pagar/${proxima.id}`}>{vencidas.length ? 'Pagar ahora' : 'Pagar cuota'} <ArrowRight size={17} aria-hidden="true" /></Link>}
     </div>
 
     <div className="stats-grid three">

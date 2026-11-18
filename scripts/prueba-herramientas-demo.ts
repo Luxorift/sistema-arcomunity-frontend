@@ -74,8 +74,17 @@ const pago = await casa12.rpc('enviar_pago', { p_cuota_id: cuota!.id, p_metodo: 
 ok(!pago.error, `Casa 12 envía el pago (${pago.error?.message ?? (pago.data as { estado: string }).estado})`)
 const eg = await admin.rpc('registrar_egreso', { p_junta: JUNTA, p_fecha: hoy, p_concepto: 'otros', p_beneficiario: 'Ensayo automático', p_monto: 10, p_comentario: null })
 ok(!eg.error, 'la administración registra un egreso de ensayo')
+// El pago en revisión de Casa 08 existe, corresponde a su cuota y se puede aprobar en la demostración.
+const { data: u08 } = await sb.from('unidades').select('id').eq('junta_id', JUNTA).eq('codigo', 'Casa 08').single()
+const { data: p08 } = await sb.from('pagos').select('id, cuota_id, monto_declarado, alertas').eq('unidad_id', u08!.id).eq('estado', 'pendiente_revision').single()
+const { data: c08 } = await sb.from('cuotas').select('periodo, estado, monto').eq('id', p08!.cuota_id).single()
+ok(c08?.estado === 'en_revision', `Casa 08: pago de S/ ${p08!.monto_declarado} en revisión para la cuota ${c08?.periodo} de S/ ${c08?.monto} (${p08!.alertas})`)
+const ap = await admin.rpc('revisar_pago', { p_pago_id: p08!.id, p_decision: 'aprobar', p_motivo: null })
+const { data: c08b } = await sb.from('cuotas').select('estado').eq('id', p08!.cuota_id).single()
+ok(!ap.error && c08b?.estado === 'pagada', `la administración aprueba el pago de Casa 08 y la cuota pasa a pagada ${ap.error?.message ?? ''}`)
 const d1 = (await rpc<Diag>(admin, 'diagnostico_demostracion')).data
-ok(d1.cambios.pagos_nuevos === 1 && d1.cambios.egresos_nuevos === 1 && d1.cambios.cuotas_nuevas === 30, `el diagnóstico ve el ensayo: ${JSON.stringify(d1.cambios)}`)
+ok(d1.cambios.pagos_nuevos === 1 && d1.cambios.pagos_revisados === 1 && d1.cambios.egresos_nuevos === 1 && d1.cambios.cuotas_nuevas === 30, `el diagnóstico ve el ensayo: ${JSON.stringify(d1.cambios)}`)
+ok(d1.escenarios.find(e => e.cuenta === 'Casa 08')?.ok === false, 'el diagnóstico avisa que Casa 08 ya no tiene pago en revisión')
 
 // 5) Reiniciar
 const r1 = await rpc<{ ok: boolean; pagos_quitados: number; predicciones_quitadas: number; archivos: { bucket: string; nombre: string }[] }>(admin, 'reiniciar_demostracion')
@@ -86,6 +95,9 @@ const borrado = await admin.storage.from('comprobantes').remove(nombres)
 ok(!borrado.error && (borrado.data ?? []).length === nombres.length, `la administración borra los ${nombres.length} archivo(s) del ensayo (${(borrado.data ?? []).length})`)
 const { data: quedan } = await sb.storage.from('comprobantes').list(`${JUNTA}/${u12!.id}`)
 ok(!(quedan ?? []).some(o => ruta.endsWith(o.name)), 'el comprobante del ensayo ya no está en Storage')
+const { data: p08b } = await sb.from('pagos').select('estado').eq('id', p08!.id).single()
+const { data: c08c } = await sb.from('cuotas').select('estado').eq('id', p08!.cuota_id).single()
+ok(p08b?.estado === 'pendiente_revision' && c08c?.estado === 'en_revision', 'tras reiniciar, el pago de Casa 08 vuelve a estar en revisión')
 const d2 = (await rpc<Diag>(admin, 'diagnostico_demostracion')).data
 ok(Object.values(d2.cambios).every(n => n === 0) && d2.escenarios.every(e => e.ok), `de vuelta al estado inicial: ${JSON.stringify(d2.cambios)}, escenarios ${d2.escenarios.every(e => e.ok) ? 'ok' : 'NO'}`)
 
