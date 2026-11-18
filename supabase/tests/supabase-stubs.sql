@@ -18,6 +18,10 @@ grant usage on schema auth to anon, authenticated, service_role;
 create table auth.users (
   id uuid primary key default gen_random_uuid(),
   email text unique,
+  encrypted_password text,
+  email_change text default '',
+  phone text,
+  raw_app_meta_data jsonb default '{}'::jsonb,
   raw_user_meta_data jsonb default '{}'::jsonb,
   created_at timestamptz default now()
 );
