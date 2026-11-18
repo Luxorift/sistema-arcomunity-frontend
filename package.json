@@ -18,7 +18,9 @@
     "test:responsive": "node scripts/prueba-responsive.ts",
     "demo:restaurar": "node --env-file=.env.local scripts/restaurar-demo.ts",
     "test:demo": "node --env-file=.env.local scripts/prueba-demo.ts",
-    "test:acceso": "node scripts/prueba-acceso-demo.ts"
+    "test:acceso": "node scripts/prueba-acceso-demo.ts",
+    "test:prediccion": "node --env-file=.env.local scripts/prueba-prediccion.ts",
+    "evidencias:ml": "node scripts/captura-evidencias-ml.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
