@@ -13,7 +13,8 @@
     "test:remoto": "node --env-file=.env.local scripts/pruebas-integracion.ts",
     "test:navegadores": "node --env-file=.env.local scripts/prueba-navegadores.ts",
     "dataset:apf3": "node --env-file=.env.local scripts/exportar-dataset-apf3.ts",
-    "test:ui": "node --env-file=.env.local scripts/auditoria-ui.ts"
+    "test:ui": "node --env-file=.env.local scripts/auditoria-ui.ts",
+    "test:limite": "node --env-file=.env.local scripts/prueba-limite-invitacion.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
