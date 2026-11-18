@@ -439,17 +439,49 @@ describe('Preparación ML sin fuga de información', () => {
 })
 
 describe('Seguridad del código de invitación', () => {
-  const consultar = async (codigo: string, ip: string) => {
+  // Cabeceras como llegan a Supabase: Cloudflare fija cf-connecting-ip; el cliente puede escribir
+  // cualquier cosa al inicio de x-forwarded-for.
+  const consultarCon = async (codigo: string, headers: Record<string, string>) => {
     await como(db, { tipo: 'anon' })
-    await db.query(`select set_config('request.headers', $1, false)`, [JSON.stringify({ 'x-forwarded-for': `${ip}, 10.0.0.1` })])
+    await db.query(`select set_config('request.headers', $1, false)`, [JSON.stringify(headers)])
     return errorDe(db, 'select * from public.unidades_disponibles($1)', [codigo])
   }
+  const consultar = (codigo: string, ip: string, falsa = '192.0.2.99') =>
+    consultarCon(codigo, { 'cf-connecting-ip': ip, 'x-forwarded-for': `${falsa}, ${ip}, 10.0.0.1` })
 
   it('bloquea una IP tras 10 códigos incorrectos en 15 minutos, sin afectar a otras', async () => {
     for (let i = 0; i < 10; i++) expect(await consultar(`MAL${i}CODIGO`, '203.0.113.7')).toBeNull()
     expect(await consultar('OTROMAL1', '203.0.113.7')).toMatch(/Demasiados intentos/)
     expect(await consultar('ARCO2026', '203.0.113.7')).toMatch(/Demasiados intentos/)
     expect(await consultar('ARCO2026', '198.51.100.20')).toBeNull()
+  })
+
+  it('no se salta el límite cambiando X-Forwarded-For', async () => {
+    for (let i = 0; i < 10; i++) expect(await consultar(`FALSA${i}XX`, '203.0.113.50', `192.0.2.${i}`)).toBeNull()
+    expect(await consultar('FALSA99X', '203.0.113.50', '192.0.2.200')).toMatch(/Demasiados intentos/)
+    // Sin cf-connecting-ip se usa el último valor público de X-Forwarded-For, no el primero.
+    for (let i = 0; i < 10; i++) expect(await consultarCon(`SINCF${i}XX`, { 'x-forwarded-for': `192.0.2.${i}, 203.0.113.60, 10.1.2.3` })).toBeNull()
+    expect(await consultarCon('SINCF99X', { 'x-forwarded-for': '192.0.2.201, 203.0.113.60, 10.1.2.3' })).toMatch(/Demasiados intentos/)
+  })
+
+  it('el diagnóstico de cabeceras es solo para el servicio y no devuelve IPs', async () => {
+    await como(db, { tipo: 'anon' })
+    expect(await errorDe(db, 'select public.diagnostico_ip_solicitud()')).toMatch(/permission denied/)
+    await como(db, { tipo: 'usuario', id: ids.adminA })
+    expect(await errorDe(db, 'select public.diagnostico_ip_solicitud()')).toMatch(/permission denied/)
+    await como(db, { tipo: 'servicio' })
+    await db.query(`select set_config('request.headers', $1, false)`, [JSON.stringify({ 'cf-connecting-ip': '203.0.113.70', 'x-forwarded-for': '203.0.113.70' })])
+    const [d] = await filas<{ d: Record<string, unknown> }>(db, 'select public.diagnostico_ip_solicitud() as d')
+    expect(d.d).toMatchObject({ fuente: 'cf-connecting-ip', hay_cf_connecting_ip: true, entradas_x_forwarded_for: 1 })
+    expect(JSON.stringify(d.d)).not.toMatch(/203\.0\.113/)
+    await como(db, { tipo: 'anon' })
+    expect(await errorDe(db, 'select public.ip_solicitud()')).toMatch(/permission denied/)
+  })
+
+  it('el servicio puede liberar bloqueos', async () => {
+    await como(db, { tipo: 'servicio' })
+    expect(await errorDe(db, `delete from public.intentos_invitacion where creado_en > now() - interval '1 hour'`)).toBeNull()
+    expect(await consultar('OTROMAL2', '203.0.113.7')).toBeNull()
   })
 
   it('guarda la IP solo como hash', async () => {
