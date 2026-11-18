@@ -74,6 +74,9 @@ export function PrediccionPage() {
   return <>
     <PageHead eyebrow="Apoyo a la cobranza" title="Predicción de morosidad" description="Prioriza recordatorios antes del vencimiento según el riesgo de pago con atraso."
       action={<button className="button button-primary" disabled={calculando} onClick={() => void calcular()}><RefreshCw size={17} /> {calculando ? 'Calculando…' : 'Calcular riesgo de hoy'}</button>} />
+    <div className="info-callout aviso-experimental" role="note"><AlertCircle size={18} /><span>
+      <strong>Modelo experimental (APF3).</strong> Se entrenó con datos simulados de la junta de demostración; sus probabilidades no están validadas con vecinos reales. Úsalo solo como apoyo para priorizar recordatorios, nunca para sancionar ni para decidir sobre un vecino.
+    </span></div>
     <div className="stats-grid three">
       <Stat label="Cuotas evaluadas" value={lista.length} note="por vencer en los próximos 31 días" icon={<CalendarClock size={20} />} />
       <Stat label="Riesgo alto" value={alto} note="recordatorios sugeridos" icon={<AlertCircle size={20} />} tone="coral" />
@@ -91,8 +94,8 @@ export function PrediccionPage() {
           : <Empty title="Aún no se calculó el riesgo de hoy" text="Pulsa «Calcular riesgo de hoy» para evaluar las cuotas por vencer." />}
     </div>
     <div className="info-callout model-note"><ShieldCheck size={18} /><span>
-      <strong>{modelo.algoritmo}</strong>, entrenada con el historial de pagos de esta junta (datos simulados), con umbral {modelo.umbral}.
-      En la evaluación final detectó {pct(prueba?.recall)} de las cuotas morosas (precision {pct(prueba?.precision)}). Es una ayuda para priorizar recordatorios antes del vencimiento, no una decisión sobre el vecino: los propietarios no ven su riesgo.
+      <strong>{modelo.algoritmo}</strong>, versión {modelo.version}, umbral {modelo.umbral}. En su evaluación final con datos simulados detectó {pct(prueba?.recall)} de las cuotas morosas (precision {pct(prueba?.precision)}); estas cifras no garantizan el mismo desempeño con pagos reales.
+      Solo la administración ve estas predicciones: los propietarios no ven su riesgo.
     </span></div>
     {p.error && <Empty title="No se pudo consultar" text={p.error} />}
   </>

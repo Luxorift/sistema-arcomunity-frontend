@@ -370,3 +370,4 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
 .field input:disabled,.field select:disabled,.field textarea:disabled,.inline-field input:disabled{background:#eef3ef;color:#5f7472;border-style:dashed;cursor:not-allowed}
 .model-note{margin-top:18px}
 .celda-factores{white-space:normal!important;min-width:200px;max-width:300px;line-height:1.45}
+.aviso-experimental{margin:0 0 18px;background:#fff4e5;color:#7a4f12;border:1px solid #f1d3a1;font-size:13px}
