@@ -72,7 +72,7 @@ function Login() {
     if (err) setError(err)
   }
   return <AuthShell pie={<span>¿Nuevo en Arcomunity? <Link to="/registro">Regístrate</Link></span>}>
-    <div className="auth-heading"><span className="eyebrow">BIENVENIDO DE NUEVO</span><h2>Inicia sesión</h2><p>Ingresa para ver tus cuotas y las cuentas de tu comunidad.</p></div>
+    <div className="auth-heading"><span className="eyebrow">Bienvenido de nuevo</span><h2>Inicia sesión</h2><p>Ingresa para ver tus cuotas y las cuentas de tu comunidad.</p></div>
     <form className="form-stack auth-form" onSubmit={e => void submit(e)}>
       <label className="field"><span>Correo electrónico</span><div className="input-icon"><Mail size={19} /><input type="email" required autoComplete="email" value={correo} onChange={e => setCorreo(e.target.value)} placeholder="tu@correo.com" /></div></label>
       <label className="field"><span>Contraseña</span><CampoClave value={clave} onChange={setClave} placeholder="Ingresa tu contraseña" autoComplete="current-password" /></label>
@@ -126,11 +126,11 @@ function Registro() {
   }
 
   if (confirmar) return <AuthShell pie={<span><Link to="/login">Ir a iniciar sesión</Link></span>}>
-    <div className="auth-heading"><span className="eyebrow">CASI LISTO</span><h2>Revisa tu correo</h2><p>Te enviamos un enlace a <strong>{f.correo}</strong>. Ábrelo para activar tu cuenta y luego inicia sesión.</p></div>
+    <div className="auth-heading"><span className="eyebrow">Casi listo</span><h2>Revisa tu correo</h2><p>Te enviamos un enlace a <strong>{f.correo}</strong>. Ábrelo para activar tu cuenta y luego inicia sesión.</p></div>
   </AuthShell>
 
   return <AuthShell pie={<span>¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link></span>}>
-    <div className="auth-heading"><span className="eyebrow">ÚNETE A TU COMUNIDAD</span><h2>Crea tu cuenta</h2><p>Necesitas el código que te dio la junta vecinal.</p></div>
+    <div className="auth-heading"><span className="eyebrow">Únete a tu comunidad</span><h2>Crea tu cuenta</h2><p>Necesitas el código que te dio la junta vecinal.</p></div>
     <form className="form-stack auth-form" onSubmit={e => void submit(e)}>
       <div className="field"><span>1. Código de la junta</span>
         <div className="inline-field">
@@ -170,7 +170,7 @@ function Recuperar() {
     if (err) setError(err); else setEnviado(true)
   }
   return <AuthShell pie={<span><Link to="/login">Volver a iniciar sesión</Link></span>}>
-    <div className="auth-heading"><span className="eyebrow">RECUPERAR ACCESO</span><h2>¿Olvidaste tu contraseña?</h2><p>Te enviaremos un enlace para crear una nueva.</p></div>
+    <div className="auth-heading"><span className="eyebrow">Recuperar acceso</span><h2>¿Olvidaste tu contraseña?</h2><p>Te enviaremos un enlace para crear una nueva.</p></div>
     {enviado
       ? <div className="notice"><Mail size={19} /><div><strong>Revisa tu correo</strong><p>Si {correo} está registrado, recibirás un enlace en unos minutos. Revisa también la carpeta de spam.</p></div></div>
       : <form className="form-stack auth-form" onSubmit={e => void submit(e)}>
@@ -188,7 +188,7 @@ function Restablecer() {
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState('')
   if (estado === 'sin_sesion') return <AuthShell pie={<span><Link to="/recuperar">Pedir otro enlace</Link></span>}>
-    <div className="auth-heading"><span className="eyebrow">ENLACE NO VÁLIDO</span><h2>El enlace expiró</h2><p>Pide un nuevo enlace de recuperación.</p></div>
+    <div className="auth-heading"><span className="eyebrow">Enlace no válido</span><h2>El enlace expiró</h2><p>Pide un nuevo enlace de recuperación.</p></div>
   </AuthShell>
   const submit = async (e: FormEvent) => {
     e.preventDefault(); setError(''); setCargando(true)
@@ -199,7 +199,7 @@ function Restablecer() {
     navigate('/')
   }
   return <AuthShell>
-    <div className="auth-heading"><span className="eyebrow">NUEVA CONTRASEÑA</span><h2>Crea tu nueva contraseña</h2></div>
+    <div className="auth-heading"><span className="eyebrow">Nueva contraseña</span><h2>Crea tu nueva contraseña</h2></div>
     <form className="form-stack auth-form" onSubmit={e => void submit(e)}>
       <label className="field"><span>Nueva contraseña</span><CampoClave value={clave} onChange={setClave} placeholder="Mínimo 8 caracteres" autoComplete="new-password" minLength={8} /></label>
       {error && <div role="alert" className="form-error">{error}</div>}
@@ -211,14 +211,14 @@ function Restablecer() {
 function SinMembresia() {
   const { salir } = useApp()
   return <AuthShell>
-    <div className="auth-heading"><span className="eyebrow">CUENTA SIN JUNTA</span><h2>Tu cuenta no está vinculada</h2><p>Tu usuario existe, pero no pertenece a ninguna junta activa. Pide a la administración que revise tu unidad.</p></div>
+    <div className="auth-heading"><span className="eyebrow">Cuenta sin junta</span><h2>Tu cuenta no está vinculada</h2><p>Tu usuario existe, pero no pertenece a ninguna junta activa. Pide a la administración que revise tu unidad.</p></div>
     <button className="button button-secondary" onClick={() => void salir()}>Cerrar sesión</button>
   </AuthShell>
 }
 
 function ConfiguracionFaltante() {
   return <AuthShell>
-    <div className="auth-heading"><span className="eyebrow">CONFIGURACIÓN</span><h2>Falta conectar Supabase</h2><p>Define <code>VITE_SUPABASE_URL</code> y <code>VITE_SUPABASE_ANON_KEY</code> en <code>.env.local</code> (o en Vercel) y vuelve a iniciar la aplicación.</p></div>
+    <div className="auth-heading"><span className="eyebrow">Configuración</span><h2>Falta conectar Supabase</h2><p>Define <code>VITE_SUPABASE_URL</code> y <code>VITE_SUPABASE_ANON_KEY</code> en <code>.env.local</code> (o en Vercel) y vuelve a iniciar la aplicación.</p></div>
   </AuthShell>
 }
 

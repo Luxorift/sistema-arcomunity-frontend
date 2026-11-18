@@ -83,6 +83,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const cerrarSesion = async () => { await salir(); navigate('/login') }
   const inicial = usuario?.nombre.slice(0, 1).toUpperCase()
   return <div className="app-shell">
+    <a className="skip-link" href="#contenido">Saltar al contenido</a>
     {open && <button className="sidebar-scrim" aria-label="Cerrar menú" onClick={() => setOpen(false)} />}
     <aside className={`sidebar ${open ? 'sidebar-open' : ''}`}>
       <div className="sidebar-brand"><Brand light /><button className="sidebar-close icon-button" onClick={() => setOpen(false)} aria-label="Cerrar menú"><X size={20} /></button></div>
@@ -91,7 +92,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <nav className="nav-list" aria-label="Navegación principal">{nav.map(item => <NavLink key={item.to} to={item.to} end={item.end} onClick={() => setOpen(false)} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}><item.icon size={19} /><span>{item.label}</span>{!!item.contador && <span className="nav-count" aria-label={`${item.contador} por revisar`}>{item.contador}</span>}{item.etiqueta && <span className="nav-tag">{item.etiqueta}</span>}</NavLink>)}</nav>
       <div className="sidebar-bottom"><div className="demo-note"><div className="demo-note-icon"><ShieldCheck size={17} /></div><strong>{usuario?.juntaNombre}</strong><p>Los datos se guardan de forma segura y se comparten entre tus dispositivos.</p></div><button className="logout" onClick={() => void cerrarSesion()}><LogOut size={18} /> Cerrar sesión <ArrowRight size={16} /></button></div>
     </aside>
-    <div className="main-area"><header className="topbar"><button className="menu-button icon-button" onClick={() => setOpen(true)} aria-label="Abrir menú"><Menu size={23} /></button><div className="topbar-left"><span className="topbar-kicker">Arcomunity</span><span className="topbar-divider" /><span className="topbar-date">{usuario?.juntaNombre}</span></div><div className="topbar-right"><Simulado /><div className="avatar">{inicial}</div><div className="topbar-user"><strong>{usuario?.nombre}</strong><small>{admin ? 'Administración' : usuario?.unidadCodigo ?? 'Propietario'}</small></div></div></header><main className="content" id="contenido">{children}</main></div>
+    <div className="main-area"><header className="topbar"><button className="menu-button icon-button" onClick={() => setOpen(true)} aria-label="Abrir menú"><Menu size={23} /></button><div className="topbar-left"><span className="topbar-kicker">Arcomunity</span><span className="topbar-divider" /><span className="topbar-date">{usuario?.juntaNombre}</span></div><div className="topbar-right"><Simulado /><div className="avatar">{inicial}</div><div className="topbar-user"><strong>{usuario?.nombre}</strong><small>{admin ? 'Administración' : usuario?.unidadCodigo ?? 'Propietario'}</small></div></div></header><main className="content" id="contenido" tabIndex={-1}>{children}</main></div>
     {aviso && <div role={aviso.tipo === 'error' ? 'alert' : 'status'} className={`toast toast-${aviso.tipo}`}>{aviso.texto}</div>}
   </div>
 }
