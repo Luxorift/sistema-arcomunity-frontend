@@ -1,5 +1,5 @@
 {
-  "generado_en": "2026-11-18T17:00:09+00:00",
+  "generado_en": "2026-11-18T17:11:32+00:00",
   "fuente": "Supabase · rpc ml_caracteristicas_cuotas (junta de demostración, datos simulados)",
   "fecha_corte": "2026-11-01",
   "cuotas": 30,
@@ -443,6 +443,19 @@
     "comparadas": 29,
     "diferencias": []
   },
-  "calculo_en_postgresql": null,
-  "escritura_en_base": "ninguna (solo lectura)"
+  "calculo_en_postgresql": {
+    "resumen_postgresql": {
+      "alto": 9,
+      "bajo": 21,
+      "medio": 0,
+      "cuotas": 30,
+      "umbral": 0.2258,
+      "fecha_corte": "2026-11-01",
+      "modelo_version": "v1"
+    },
+    "cuotas_comparadas": 30,
+    "diferencia_maxima_probabilidad": 0.0,
+    "mismo_nivel_de_riesgo": 30
+  },
+  "escritura_en_base": "predicciones con fecha de corte histórica"
 }
