@@ -366,3 +366,5 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
 }
 .payment-card .step-heading>span{display:none}
 .field-label{font-size:13.5px;font-weight:800;color:var(--tinta)}
+.upload-button.is-disabled{opacity:.55;cursor:not-allowed;pointer-events:none}.demo-callout{margin-bottom:18px}
+.field input:disabled,.field select:disabled,.field textarea:disabled,.inline-field input:disabled{background:#eef3ef;color:#5f7472;border-style:dashed;cursor:not-allowed}

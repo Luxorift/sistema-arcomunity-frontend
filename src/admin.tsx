@@ -85,6 +85,7 @@ function ConfiguracionFormulario({ inicial }: { inicial: Configuracion }) {
   const [subiendoQr, setSubiendoQr] = useState(false)
   const [generando, setGenerando] = useState(false)
   const { rpc, usuario, recargar } = useApp()
+  const demo = !!inicial.modoDemo
   const generarCodigo = async () => {
     if (!usuario) return
     setGenerando(true)
@@ -119,21 +120,22 @@ function ConfiguracionFormulario({ inicial }: { inicial: Configuracion }) {
 
   return <>
     <PageHead eyebrow="Administración" title="Configuración" description="Cuánto y cuándo pagan los vecinos, cómo se concilia y qué ve la comunidad." />
+    {demo && <div className="info-callout demo-callout" role="note"><AlertCircle size={18} /><span><strong>Modo demostración.</strong> Puedes cambiar la cuota, el vencimiento y las opciones. El nombre de la junta, el código de invitación, el titular y el QR de Yape están bloqueados para que la demostración funcione para todos. Los cambios se restauran cada noche.</span></div>}
     <form onSubmit={e => void submit(e)} className="settings-grid">
       <div className="panel form-panel"><div className="panel-heading"><div><span className="eyebrow">Datos de la junta</span><h2>Cuota y vencimiento</h2></div></div>
         <div className="field-grid">
-          <label className="field full"><span>Nombre de la junta</span><input required value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} /></label>
+          <label className="field full"><span>Nombre de la junta</span><input required value={form.nombre} disabled={demo} onChange={e => setForm({ ...form, nombre: e.target.value })} /></label>
           <label className="field"><span>Cuota mensual (S/)</span><input required type="number" min="0.01" step="0.01" value={form.cuotaMensual} onChange={e => setForm({ ...form, cuotaMensual: Number(e.target.value) })} /><small>Se aplica a las cuotas que generes desde ahora.</small></label>
           <label className="field"><span>Día de vencimiento</span><input required type="number" min="1" max="28" value={form.diaVencimiento} onChange={e => setForm({ ...form, diaVencimiento: Number(e.target.value) })} /></label>
-          <div className="field full"><label htmlFor="codigo-invitacion"><span className="field-label">Código de invitación</span></label><div className="inline-field"><input id="codigo-invitacion" required minLength={8} maxLength={32} value={form.codigoInvitacion} onChange={e => setForm({ ...form, codigoInvitacion: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '') })} /><button type="button" className="button button-secondary" disabled={generando} onClick={() => void generarCodigo()}><RefreshCw size={16} /> {generando ? 'Generando…' : 'Generar código seguro'}</button></div><small>Mínimo 8 caracteres con letras y números. Compártelo solo con propietarios; si se filtró, genera uno nuevo (el anterior deja de funcionar).</small></div>
+          <div className="field full"><label htmlFor="codigo-invitacion"><span className="field-label">Código de invitación</span></label><div className="inline-field"><input id="codigo-invitacion" required minLength={8} maxLength={32} value={form.codigoInvitacion} disabled={demo} onChange={e => setForm({ ...form, codigoInvitacion: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '') })} /><button type="button" className="button button-secondary" disabled={generando || demo} onClick={() => void generarCodigo()}><RefreshCw size={16} /> {generando ? 'Generando…' : 'Generar código seguro'}</button></div><small>Mínimo 8 caracteres con letras y números. Compártelo solo con propietarios; si se filtró, genera uno nuevo (el anterior deja de funcionar).</small></div>
         </div>
         <label className="toggle-row"><div><strong>Validación automática por reglas</strong><small>Los comprobantes sin alertas marcan la cuota como pagada. No equivale a confirmación bancaria: puedes revertirlos en Pagos.</small></div><input type="checkbox" checked={form.conciliacionAutomatica} onChange={e => setForm({ ...form, conciliacionAutomatica: e.target.checked })} /><span className="switch" /></label>
         <label className="toggle-row"><div><strong>Mostrar estado por unidad en Transparencia</strong><small>Si lo desactivas, los vecinos solo ven totales de la comunidad.</small></div><input type="checkbox" checked={form.transparenciaDetalle ?? true} onChange={e => setForm({ ...form, transparenciaDetalle: e.target.checked })} /><span className="switch" /></label>
       </div>
       <div className="panel form-panel"><div className="panel-heading"><div><span className="eyebrow">Método de pago</span><h2>QR de Yape</h2></div></div>
         <div className="qr-upload"><div className="qr-preview">{datos.configuracion.yapeQr ? <img src={datos.configuracion.yapeQr} alt="QR de Yape configurado" /> : <div className="qr-placeholder"><ImagePlus size={31} /><span>Aún no hay un QR cargado</span></div>}</div>
-          <label className="button button-secondary upload-button"><ImagePlus size={17} /> {subiendoQr ? 'Subiendo…' : 'Subir imagen QR'}<input type="file" accept="image/png,image/jpeg" onChange={e => void qr(e.target.files?.[0])} hidden disabled={subiendoQr} /></label><small>JPG o PNG, máximo 2 MB. Se guarda en almacenamiento privado.</small></div>
-        <label className="field"><span>Nombre del titular</span><input value={form.yapeTitular} onChange={e => setForm({ ...form, yapeTitular: e.target.value })} placeholder="Nombre que aparece en Yape" /></label>
+          <label className={`button button-secondary upload-button${demo ? ' is-disabled' : ''}`} aria-disabled={demo || undefined}><ImagePlus size={17} /> {subiendoQr ? 'Subiendo…' : 'Subir imagen QR'}<input type="file" accept="image/png,image/jpeg" onChange={e => void qr(e.target.files?.[0])} hidden disabled={subiendoQr || demo} /></label><small>JPG o PNG, máximo 2 MB. Se guarda en almacenamiento privado.</small></div>
+        <label className="field"><span>Nombre del titular</span><input value={form.yapeTitular} disabled={demo} onChange={e => setForm({ ...form, yapeTitular: e.target.value })} placeholder="Nombre que aparece en Yape" /></label>
         <div className="info-callout"><AlertCircle size={18} /><span>Arcomunity no se conecta con Yape ni con bancos. Verifica en tu app los pagos dudosos antes de aprobarlos.</span></div>
       </div>
       <div className="form-actions full-row"><button className="button button-primary" type="submit" disabled={guardando}><Check size={18} /> {guardando ? 'Guardando…' : 'Guardar cambios'}</button></div>
@@ -152,7 +154,7 @@ function ConfiguracionFormulario({ inicial }: { inicial: Configuracion }) {
       <form onSubmit={e => void guardarModal(e)} className="form-stack">
         <label className="field"><span>Nombre</span><input autoFocus required value={modalCamara.nombre} onChange={e => setModalCamara({ ...modalCamara, nombre: e.target.value })} placeholder="Ej.: Ingreso peatonal" /></label>
         <label className="field"><span>Ubicación</span><input required value={modalCamara.ubicacion} onChange={e => setModalCamara({ ...modalCamara, ubicacion: e.target.value })} placeholder="Ej.: Portón principal" /></label>
-        <label className="field"><span>Tipo de transmisión</span><select value={modalCamara.tipo} onChange={e => setModalCamara({ ...modalCamara, tipo: e.target.value as TipoCamara })}><option value="simulada">Simulada (demostración)</option><option value="mjpeg">Imagen / MJPEG por URL</option><option value="embed">Embed por URL (iframe aislado)</option></select></label>
+        <label className="field"><span>Tipo de transmisión</span><select value={modalCamara.tipo} onChange={e => setModalCamara({ ...modalCamara, tipo: e.target.value as TipoCamara })}><option value="simulada">Simulada (demostración)</option>{!demo && <><option value="mjpeg">Imagen / MJPEG por URL</option><option value="embed">Embed por URL (iframe aislado)</option></>}</select>{demo && <small>En la demostración solo se usan cámaras simuladas.</small>}</label>
         {modalCamara.tipo !== 'simulada' && <label className="field"><span>URL de transmisión (https://)</span><input required type="url" pattern="https://.*" value={modalCamara.url ?? ''} onChange={e => setModalCamara({ ...modalCamara, url: e.target.value })} placeholder="https://ejemplo.com/stream" /><small>Si el sitio bloquea ser embebido, el navegador no lo mostrará.</small></label>}
         <div className="modal-actions"><button type="button" className="button button-secondary" onClick={() => setModalCamara(null)}>Cancelar</button><button className="button button-primary" type="submit"><Check size={17} /> Guardar cámara</button></div>
       </form>
