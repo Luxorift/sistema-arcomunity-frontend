@@ -1,0 +1,19 @@
+{
+  "dataset_sha256": "12bfe4d0317c0996c1702e6513293cb15bd3587f3ef57aaea8fbd395bdf71dfa",
+  "filas": 359,
+  "morosas": 75,
+  "seleccionado": "Regresión logística",
+  "umbral": 0.2258,
+  "validacion": {
+    "accuracy": 0.933,
+    "precision": 0.75,
+    "recall": 1.0,
+    "f1": 0.857
+  },
+  "prueba": {
+    "accuracy": 0.847,
+    "precision": 0.611,
+    "recall": 0.846,
+    "f1": 0.71
+  }
+}
