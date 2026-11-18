@@ -45,7 +45,7 @@ export function Dashboard() {
     <Saludo subtitulo={datos.configuracion.nombre} accion={<SelectorMes value={periodo} onChange={setPeriodo} />} />
     {m.error && <div className="notice notice-danger" role="alert"><AlertCircle size={19} /><span>{m.error}</span></div>}
     {!met ? <Cargando texto="Calculando indicadores…" /> : <>
-      {met.pagos_en_revision > 0 && <Link className="notice notice-action" to="/admin/conciliacion"><ShieldCheck size={20} /><div><strong>{met.pagos_en_revision} {met.pagos_en_revision === 1 ? 'pago espera' : 'pagos esperan'} tu revisión</strong><p>Revísalos en Conciliación para que las cuotas queden al día.</p></div><ArrowRight size={18} /></Link>}
+      {met.pagos_en_revision > 0 && <Link className="notice notice-action" to="/admin/conciliacion"><ShieldCheck size={20} /><div><strong>Ir a Conciliación</strong><p>Mira el comprobante, verifica en tu app y aprueba o rechaza con un clic.</p></div><ArrowRight size={18} /></Link>}
       <div className="stats-grid four">
         <Stat label="Recaudado" value={dinero(Number(met.recaudado))} note="Pagos validados o aprobados" icon={<TrendingUp size={20} />} tone="lime" />
         <Stat label="Por cobrar" value={dinero(Number(met.monto_por_cobrar))} note={`${met.cuotas_total - met.cuotas_pagadas} cuotas sin pagar`} icon={<Clock3 size={20} />} />
