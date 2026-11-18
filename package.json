@@ -24,7 +24,8 @@
     "test:a11y": "node scripts/auditoria-accesibilidad.ts",
     "tema:oscuro": "node scripts/generar-tema-oscuro.ts",
     "capturas:temas": "node scripts/capturas-temas.ts",
-    "verificar:red": "node --env-file=.env.local scripts/verificar-conexion.ts"
+    "verificar:red": "node --env-file=.env.local scripts/verificar-conexion.ts",
+    "grabar:demo": "node scripts/grabar-demo.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
