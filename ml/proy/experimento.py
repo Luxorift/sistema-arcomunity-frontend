@@ -46,19 +46,25 @@ def ajustar_con_umbral(variables, grilla, X_e, y_e, cv):
 
 
 def pruebas_fuga() -> dict:
-    """Cambiar el desenlace de la cuota actual o de cuotas futuras no debe cambiar sus variables."""
+    """Cambiar el desenlace de la cuota actual no debe cambiar sus variables ni las de meses anteriores.
+
+    Solo usa los meses 1–10: se alteran las cuotas del mes 10 y se comparan las variables de los meses 1–10.
+    """
     df = cargar_dataset(str(RUTA_DATOS))
+    periodos = sorted(df["periodo"].unique())
+    df = df[df["periodo"] <= periodos[MESES_PERMITIDOS - 1]].reset_index(drop=True)
     base = pd.concat([caracteristicas_al_corte(df), variables_recencia(df)], axis=1)[VARIABLES_PROY]
     alterado = df.copy()
-    ultimo = alterado["periodo"].max()
-    sel = alterado["periodo"] == ultimo
-    alterado.loc[sel, "fecha_pago"] = pd.NaT                     # el último mes queda impago y moroso
+    sel = alterado["periodo"] == periodos[MESES_PERMITIDOS - 1]
+    alterado.loc[sel, "fecha_pago"] = pd.NaT                     # el mes 10 queda impago y moroso
     alterado.loc[sel, ["moroso", "dias_atraso"]] = [1, 0]
     alterado.loc[sel, "metodo_pago"] = None
     nuevo = pd.concat([caracteristicas_al_corte(alterado), variables_recencia(alterado)], axis=1)[VARIABLES_PROY]
-    return {"descripcion": "Se cambió el desenlace de las cuotas del último mes; las variables de todas las cuotas "
-                           "(incluidas las de ese mes) deben quedar iguales porque solo usan cuotas anteriores al corte.",
-            "cuotas_alteradas": int(sel.sum()), "filas_con_variables_distintas": int((base != nuevo).any(axis=1).sum()),
+    return {"descripcion": "Se cambió el desenlace de las 30 cuotas del mes 10 (impagas y morosas). Las variables de "
+                           "los meses 1–10, incluidas las de ese mes, deben quedar iguales porque solo usan cuotas "
+                           "anteriores al corte. No se usan los meses 11–12.",
+            "cuotas_alteradas": int(sel.sum()), "filas_comparadas": int(len(df)),
+            "filas_con_variables_distintas": int((base != nuevo).any(axis=1).sum()),
             "resultado": "pasó" if bool((base == nuevo).all().all()) else "no pasó"}
 
 
@@ -98,7 +104,7 @@ def main() -> None:
             d["f1_ent"].append(f1_score(y_e, (gs.best_estimator_.predict_proba(X_e[variables])[:, 1] >= umbral).astype(int)))
             hiper.append({"modelo": nombre, "mes_externo": k + 1, "C": gs.best_params_["modelo__C"],
                           "class_weight": str(gs.best_params_["modelo__class_weight"]), "umbral": round(umbral, 4),
-                          "ap_interna": round(gs.best_score_, 6)})
+                          "ap_interna": round(float(gs.cv_results_["mean_test_score"][gs.best_index_]), 6)})
 
     filas = []
     for nombre, d in ext.items():
