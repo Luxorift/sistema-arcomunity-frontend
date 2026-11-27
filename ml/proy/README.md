@@ -40,6 +40,7 @@ Cada salida guarda su entorno: `resultados/entorno_experimento.json` y `resultad
 | `6974e7b` | Ficha de coherencia de los 7 criterios |
 | `1fa734b`, `ff002d6` | Código del experimento |
 | `c296ff1` | `decision.json` con la decisión, **antes** de evaluar la prueba |
+| `e128dd9` | Script de la prueba, confirmado antes de ejecutarlo |
 | `1e6983e` | Evaluación única de la prueba |
 
 ## Paso 2a · Corrección del modelo base
