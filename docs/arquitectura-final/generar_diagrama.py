@@ -68,7 +68,7 @@ CAJAS = [
     ("c14", 1000, 720, 315, 60, ["ml_evaluar()", "valida entrada y salida · regla de respaldo"], PROY),
     ("c17", 660, 798, 205, 82, ["probar_entrada_modelo()", "rechaza entradas inválidas", "simular_falla_modelo() (demo)"], PROY),
     ("c16", 880, 798, 205, 82, ["recordatorios", "acción de la administración", "auditada"], PROY),
-    ("c15", 1100, 798, 215, 82, ["registro_predicciones", "bitácora de solo inserción", "conservación de 12 meses"], PROY),
+    ("c15", 1100, 798, 215, 82, ["registro_predicciones", "solo inserción · lote y demora", "conservación de 12 meses"], PROY),
     ("c18", 645, 905, 690, 44, ["pg_cron", "restauración nocturna de la demo (03:00, Lima) · purga mensual del registro (PROY)"], PUB),
     ("d1", 1415, 100, 255, 62, ["Notebook en Colab · Python 3.12", "scikit-learn 1.9.1 · random_state 42"], OFF),
     ("d2", 1415, 185, 255, 62, ["ml/modelo_morosidad", "v1: joblib + metadatos (APF3)"], OFF),
@@ -76,7 +76,7 @@ CAJAS = [
     ("d4", 1415, 355, 255, 100, ["exportar_parametros.py", "coeficientes → JSON → migración SQL",
                                  "Python y PostgreSQL dan la misma", "probabilidad (< 10⁻⁹)"], OFF),
     ("e1", 1415, 540, 255, 60, ["GitHub", "main (publicado) · dev · Pull Requests"], OFF),
-    ("e2", 1415, 618, 255, 60, ["Pruebas automáticas", "Vitest + PGlite · 145 aprobadas"], OFF),
+    ("e2", 1415, 618, 255, 60, ["Pruebas automáticas", "Vitest + PGlite · 151 aprobadas"], OFF),
     ("e3", 1415, 696, 255, 86, ["Builds automáticos", "main → producción", "Pull Request → vista previa"], OFF),
 ]
 

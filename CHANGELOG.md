@@ -94,6 +94,15 @@ corresponden a la zona horaria de Lima.
 - El texto «Recordado el …» se cortaba en la tabla.
 - El caso manual enviaba texto en lugar de números.
 
+**Corregido** (auditoría del tiempo límite de 8 s, 27/11/2026)
+
+- Podían quedar vigentes a la vez una predicción del modelo y otra de la regla para la misma cuota y corte. Ahora un
+  índice único garantiza una sola por cuota y corte, y el último cálculo la reemplaza.
+- Los cálculos de una misma junta ya no se ejecutan en paralelo: un bloqueo por junta evita que una respuesta tardía
+  se mezcle con otra.
+- La bitácora agrega `lote`, `solicitado_en` y `demora_ms` para separar reintentos y marcar las respuestas tardías.
+- Tras el aviso de 8 s, la pantalla de predicción se vuelve a consultar sola y pide no volver a pulsar.
+
 **Pendiente de despliegue**
 
 - Aplicar la migración 1500 en el Supabase de producción. La aplica el responsable, siguiendo
@@ -103,8 +112,9 @@ corresponden a la zona horaria de Lima.
 
 ### Pruebas del PROY
 
-- `npm test`: 145 de 145 en la rama del PR #38 (antes, 114). Se agregaron:
+- `npm test`: 151 de 151 en la rama del PR #38 (antes, 114). Se agregaron:
   - 23 pruebas del flujo, la degradación y los permisos;
+  - 6 pruebas de reintentos y respuestas tardías;
   - 1 prueba del retorno de la migración;
   - 7 pruebas unitarias de la interfaz.
 - `npm run build`: correcto.
@@ -116,7 +126,9 @@ corresponden a la zona horaria de Lima.
   - caso válido;
   - permisos del propietario;
   - vista móvil;
-  - tiempo límite de 8 s (8 099 ms y 8 043 ms).
+  - tiempo límite de 8 s (8 099 ms y 8 043 ms);
+  - respuesta tardía con recarga sola de la lista;
+  - 3 reintentos simultáneos sin filas duplicadas.
 
 ---
 

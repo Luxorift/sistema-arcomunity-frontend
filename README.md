@@ -30,9 +30,12 @@ estar bloqueado (como ocurrió en la red de la universidad durante el APF2). Las
 | Archivos | Supabase Storage privado (comprobantes y QR) con URLs firmadas temporales |
 | Tiempo real | Supabase Realtime (cuotas y pagos) |
 | OCR | Tesseract.js en el navegador (solo ayuda a llenar el formulario) |
+| Predicción de morosidad | Modelo v1 (regresión logística) calculado en PostgreSQL con los coeficientes exportados de scikit-learn |
 
 Detalle, decisiones y controles de seguridad: [docs/arquitectura.md](docs/arquitectura.md).
 Preparación para Machine Learning: [docs/ml-contrato.md](docs/ml-contrato.md).
+Proyecto Final: [CHANGELOG.md](CHANGELOG.md), [arquitectura final](docs/arquitectura-final/README.md),
+[guía de la migración 1500](docs/GUIA_MIGRACION_1500.md) y [revisión de la migración 1500](docs/REVISION_MIGRACION_1500.md).
 
 ```text
 src/                     Frontend (pantallas, store, cliente Supabase)
