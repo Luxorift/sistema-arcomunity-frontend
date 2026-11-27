@@ -1,0 +1,6 @@
+,recall,recall,recall,precision,precision,precision,f1,f1,f1,avg_precision,avg_precision,avg_precision,tasa_morosidad,tasa_morosidad,tasa_morosidad,concentracion_top5,concentracion_top5,concentracion_top5
+,mean,min,max,mean,min,max,mean,min,max,mean,min,max,mean,min,max,mean,min,max
+modelo,,,,,,,,,,,,,,,,,,
+APF3 corregido,0.439,0.128,0.617,0.275,0.098,0.411,0.336,0.111,0.466,0.285,0.134,0.4,0.215,0.144,0.281,0.376,0.287,0.439
+PROY-A · recencia,0.496,0.231,0.683,0.26,0.129,0.362,0.339,0.165,0.456,0.282,0.133,0.396,0.215,0.144,0.281,0.376,0.287,0.439
+Regla: atraso en 3 meses previos,0.587,0.41,0.817,0.268,0.17,0.403,0.367,0.241,0.54,,,,0.215,0.144,0.281,0.376,0.287,0.439
