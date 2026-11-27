@@ -103,7 +103,7 @@ function FallaSimulada({ juntaId, onCambio }: { juntaId: string; onCambio: () =>
     mostrar(activa ? 'Modelo restablecido. Vuelve a calcular el riesgo.' : 'Falla simulada activada: el próximo cálculo usará la regla manual de respaldo.', 'info')
     setVersion(v => v + 1); onCambio()
   }
-  return <div className={`info-callout ${activa ? 'aviso-experimental' : 'model-note'}`} role="note"><FlaskConical size={18} aria-hidden="true" /><span>
+  return <div className={`info-callout ml-prueba-fallas ${activa ? 'aviso-experimental' : 'model-note'}`} role="note"><FlaskConical size={18} aria-hidden="true" /><span>
     <strong>Prueba de fallas (solo demostración).</strong> {activa ? 'Se está simulando que el modelo no responde.' : 'Simula que el modelo no responde para ver qué hace el sistema.'}{' '}
     <button type="button" className="button button-secondary button-small" disabled={ocupado} aria-busy={ocupado} onClick={() => void cambiar()}>{activa ? 'Restablecer el modelo' : 'Simular falla del modelo'}</button>
   </span></div>
@@ -128,7 +128,8 @@ function ProbarCaso({ juntaId }: { juntaId: string }) {
     setResultado(null)
     if (campos.some(c => valores[c.k].trim() === '')) { setError('Completa los cuatro datos del caso.'); return }
     setError(''); setOcupado(true)
-    const entrada = Object.fromEntries(campos.map(c => [c.k, valores[c.k].trim().replace(',', '.')]))
+    // Números como números; un texto no numérico se envía tal cual para que el servidor lo rechace con su mensaje.
+    const entrada = Object.fromEntries(campos.map(c => { const v = valores[c.k].trim().replace(',', '.'); return [c.k, v !== '' && Number.isFinite(Number(v)) ? Number(v) : v] }))
     const r = await conLimite(rpc<Evaluacion>('probar_entrada_modelo', { p_junta: juntaId, p_entrada: entrada }))
     setOcupado(false)
     if (!r.ok) { setError(r.error); return }
@@ -137,7 +138,7 @@ function ProbarCaso({ juntaId }: { juntaId: string }) {
   return <section className="ml-seccion" aria-labelledby="ml-probar">
     <div className="ml-seccion-head"><div><span className="eyebrow">3 · Probar el modelo</span><h2 id="ml-probar">Probar con un caso</h2>
       <p>Escribe el historial de una unidad imaginaria para ver qué responde el modelo. Queda en el registro de predicciones como «caso manual» y no cambia ninguna cuota.</p></div></div>
-    <form className="panel form-stack" onSubmit={e => void enviar(e)} noValidate>
+    <form className="panel form-stack ml-probar" onSubmit={e => void enviar(e)} noValidate>
       <div className="field-grid">{campos.map(c => <label key={c.k} className="field"><span>{c.etiqueta}</span>
         <input inputMode="decimal" value={valores[c.k]} aria-describedby={`ayuda-${c.k}`} onChange={e => setValores(v => ({ ...v, [c.k]: e.target.value }))} />
         <small id={`ayuda-${c.k}`}>{c.ayuda}</small></label>)}</div>
@@ -247,7 +248,7 @@ export function PrediccionPage() {
           <td><span className={`badge badge-riesgo-${x.nivel_riesgo}`}>{x.nivel_riesgo}</span></td>
           <td className="celda-factores">{x.origen === 'regla_respaldo' ? (x.motivo_respaldo === 'entrada_fuera_de_rango' ? 'Datos por revisar' : x.nivel_riesgo === 'alto' ? 'Se atrasó en los últimos 3 meses' : 'Sin atrasos en los últimos 3 meses') : x.factores.length ? x.factores.map(f => FACTOR[f.variable] ?? f.variable).join(' · ') : 'Sin atrasos relevantes'}</td>
           <td>{x.nivel_riesgo === 'bajo' ? ACCION.bajo
-            : x.ultimo_recordatorio ? <span className="muted">Recordado el {fechaHora.format(new Date(x.ultimo_recordatorio))}{x.canal_recordatorio ? ` (${CANALES[x.canal_recordatorio as keyof typeof CANALES] ?? x.canal_recordatorio})` : ''}</span>
+            : x.ultimo_recordatorio ? <span className="muted celda-recordado">Recordado el {fechaHora.format(new Date(x.ultimo_recordatorio))}{x.canal_recordatorio ? ` (${CANALES[x.canal_recordatorio as keyof typeof CANALES] ?? x.canal_recordatorio})` : ''}</span>
             : <button type="button" className="button button-secondary button-small" onClick={() => { setCanal('whatsapp'); setNota(''); setARecordar(x) }}><MessageCircle size={15} aria-hidden="true" /> {ACCION[x.nivel_riesgo]}</button>}</td></tr>)}
       </tbody></table></div>
         : proximas === 0
