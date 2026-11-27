@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="1030" viewBox="0 0 1700 1030" font-family="Segoe UI, Arial, sans-serif">
+<defs><marker id="m2F6B5A" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2F6B5A"/></marker><marker id="mD9822B" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#D9822B"/></marker><marker id="m7A8885" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7A8885"/></marker><marker id="m3C7090" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3C7090"/></marker></defs>
+<rect width="1700" height="1030" fill="#FFFFFF"/>
+<text x="10" y="32" font-size="21" font-weight="700" fill="#173A33">Arquitectura final de Arcomunity · Proyecto Final</text>
+<text x="10" y="52" font-size="12" fill="#4A5D58">Estado al 27/11/2026. Borde continuo: publicado (main 33acc2f). Borde naranja discontinuo: pendiente de integración (PR #37 y #38, migración 1500).</text>
+<rect x="10" y="100" width="225" height="310" rx="12" fill="#EEF5F1" stroke="#9DB8AD" stroke-width="1.4"/>
+<text x="22" y="120" font-size="12.5" font-weight="700" fill="#2A4A55">Usuarios</text>
+<rect x="250" y="100" width="335" height="600" rx="12" fill="#EEF5F1" stroke="#9DB8AD" stroke-width="1.4"/>
+<text x="262" y="120" font-size="12.5" font-weight="700" fill="#2A4A55">Frontend publicado · archivos estáticos</text>
+<rect x="605" y="60" width="770" height="925" rx="12" fill="#E8F1F6" stroke="#7FA7BC" stroke-width="1.4"/>
+<text x="617" y="80" font-size="12.5" font-weight="700" fill="#2A4A55">Supabase · un solo proyecto (plan gratuito)</text>
+<rect x="628" y="185" width="726" height="775" rx="12" fill="#F5FAFD" stroke="#9CBBCC" stroke-width="1.4"/>
+<text x="640" y="205" font-size="12.5" font-weight="700" fill="#2A4A55">PostgreSQL</text>
+<rect x="645" y="305" width="690" height="130" rx="12" fill="none" stroke="#C3D5DE" stroke-width="1.4"/>
+<text x="657" y="325" font-size="12.5" font-weight="700" fill="#2A4A55">Datos del negocio</text>
+<rect x="645" y="448" width="690" height="222" rx="12" fill="none" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="657" y="468" font-size="12.5" font-weight="700" fill="#2A4A55">Inferencia ML dentro de la base · APF3 (publicado)</text>
+<rect x="645" y="683" width="690" height="210" rx="12" fill="#FFF9F0" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="8 5"/>
+<text x="657" y="703" font-size="12.5" font-weight="700" fill="#2A4A55">Flujo E2E · PROY (migración 1500, PR #38, pendiente)</text>
+<rect x="1395" y="60" width="295" height="420" rx="12" fill="#F2F4F3" stroke="#8A9894" stroke-width="1.4"/>
+<text x="1407" y="80" font-size="12.5" font-weight="700" fill="#2A4A55">Entrenamiento del modelo (fuera de línea)</text>
+<rect x="1395" y="500" width="295" height="300" rx="12" fill="#F2F4F3" stroke="#8A9894" stroke-width="1.4"/>
+<text x="1407" y="520" font-size="12.5" font-weight="700" fill="#2A4A55">Repositorio y entrega continua</text>
+<rect x="25" y="140" width="195" height="66" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="122.5" y="170.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">Administración de la junta</text>
+<text x="122.5" y="187.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">navegador de escritorio</text>
+<rect x="25" y="225" width="195" height="66" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="122.5" y="255.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">Propietarios</text>
+<text x="122.5" y="272.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">navegador del celular</text>
+<rect x="25" y="310" width="195" height="66" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="122.5" y="340.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">Docente y revisores</text>
+<text x="122.5" y="357.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">cuentas de demostración</text>
+<rect x="268" y="140" width="145" height="62" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="340.5" y="168.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">Vercel</text>
+<text x="340.5" y="185.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">dominio principal</text>
+<rect x="423" y="140" width="145" height="62" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="495.5" y="168.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">Cloudflare Workers</text>
+<text x="495.5" y="185.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">dominio alternativo</text>
+<rect x="268" y="222" width="300" height="118" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="418.0" y="264.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">SPA React 19 + Vite + TypeScript</text>
+<text x="418.0" y="281.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">Cuotas · Pagos · Conciliación R1–R4</text>
+<text x="418.0" y="295.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">Egresos · Reportes · Transparencia</text>
+<text x="418.0" y="309.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">Auditoría · Predicción de morosidad</text>
+<rect x="268" y="360" width="300" height="60" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="418.0" y="387.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">supabase-js</text>
+<text x="418.0" y="404.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">clave pública + JWT del usuario</text>
+<rect x="268" y="440" width="300" height="60" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="418.0" y="467.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5C3A0E">Interfaz PROY</text>
+<text x="418.0" y="484.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">recordatorio · probar un caso · prueba de fallas</text>
+<rect x="268" y="518" width="300" height="60" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="418.0" y="545.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5C3A0E">Tiempo límite de 8 s</text>
+<text x="418.0" y="562.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">aviso + regla manual en pantalla</text>
+<rect x="268" y="598" width="300" height="82" rx="9" fill="#F7F9F6" stroke="#B9C7C0" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="418.0" y="629.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3B4A47">Sin datos de negocio en el navegador</text>
+<text x="418.0" y="646.0" text-anchor="middle" font-size="11" font-weight="400" fill="#3B4A47">localStorage solo guarda el tema visual</text>
+<text x="418.0" y="660.0" text-anchor="middle" font-size="11" font-weight="400" fill="#3B4A47">y el aviso de bienvenida cerrado</text>
+<rect x="628" y="116" width="172" height="60" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="714.0" y="143.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">Auth</text>
+<text x="714.0" y="160.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">correo + contraseña · JWT</text>
+<rect x="812" y="116" width="172" height="60" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="898.0" y="143.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">API REST y RPC</text>
+<text x="898.0" y="160.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">PostgREST</text>
+<rect x="996" y="116" width="172" height="60" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="1082.0" y="143.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">Realtime</text>
+<text x="1082.0" y="160.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">cambios de cuotas y pagos</text>
+<rect x="1180" y="116" width="174" height="60" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="1267.0" y="143.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">Storage privado</text>
+<text x="1267.0" y="160.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">comprobantes y QR · URL firmadas</text>
+<rect x="645" y="225" width="335" height="62" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="812.5" y="253.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">RLS en todas las tablas</text>
+<text x="812.5" y="270.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">aislamiento por junta y unidad</text>
+<rect x="1000" y="225" width="335" height="62" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="1167.5" y="253.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">Funciones RPC SECURITY DEFINER</text>
+<text x="1167.5" y="270.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">únicas vías de escritura financiera</text>
+<rect x="660" y="340" width="310" height="78" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="815.0" y="369.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">juntas · unidades · perfiles</text>
+<text x="815.0" y="386.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">cuotas · pagos · egresos · cámaras</text>
+<text x="815.0" y="400.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">consentimiento con fecha (Ley 29733)</text>
+<rect x="990" y="340" width="330" height="78" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="1155.0" y="369.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">auditoria</text>
+<text x="1155.0" y="386.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">inmutable: no se edita ni se borra</text>
+<text x="1155.0" y="400.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">registra quién hizo qué y cuándo</text>
+<rect x="660" y="483" width="315" height="62" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="817.5" y="511.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">ml_caracteristicas_cuotas()</text>
+<text x="817.5" y="528.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">variables al corte, sin fuga de información</text>
+<rect x="1000" y="483" width="315" height="62" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="1157.5" y="511.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">modelos_ml</text>
+<text x="1157.5" y="528.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">v1: coeficientes, media, escala, umbral 0,2258</text>
+<rect x="660" y="578" width="315" height="80" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="817.5" y="608.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">calcular_riesgo_morosidad()</text>
+<text x="817.5" y="625.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">ml_probabilidad + ml_factores</text>
+<text x="817.5" y="639.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">paridad con scikit-learn (115 casos)</text>
+<rect x="1000" y="578" width="315" height="80" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="1157.5" y="608.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">predicciones_morosidad</text>
+<text x="1157.5" y="625.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">una vigente por cuota y corte</text>
+<text x="1157.5" y="639.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">PROY: origen modelo o respaldo</text>
+<rect x="660" y="720" width="315" height="60" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="817.5" y="747.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5C3A0E">calcular_riesgo_periodo()</text>
+<text x="817.5" y="764.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">cuotas nuevas → predicción automática</text>
+<rect x="1000" y="720" width="315" height="60" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="1157.5" y="747.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5C3A0E">ml_evaluar()</text>
+<text x="1157.5" y="764.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">valida entrada y salida · regla de respaldo</text>
+<rect x="660" y="798" width="205" height="82" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="762.5" y="829.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5C3A0E">probar_entrada_modelo()</text>
+<text x="762.5" y="846.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">rechaza entradas inválidas</text>
+<text x="762.5" y="860.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">simular_falla_modelo() (demo)</text>
+<rect x="880" y="798" width="205" height="82" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="982.5" y="829.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5C3A0E">recordatorios</text>
+<text x="982.5" y="846.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">acción de la administración</text>
+<text x="982.5" y="860.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">auditada</text>
+<rect x="1100" y="798" width="215" height="82" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="1207.5" y="829.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5C3A0E">registro_predicciones</text>
+<text x="1207.5" y="846.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">bitácora de solo inserción</text>
+<text x="1207.5" y="860.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">conservación de 12 meses</text>
+<rect x="645" y="905" width="690" height="44" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="990.0" y="924.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">pg_cron</text>
+<text x="990.0" y="941.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">restauración nocturna de la demo (03:00, Lima) · purga mensual del registro (PROY)</text>
+<rect x="1415" y="100" width="255" height="62" rx="9" fill="#F2F4F3" stroke="#8A9894" stroke-width="1.4"/>
+<text x="1542.5" y="128.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3B4A47">Notebook en Colab · Python 3.12</text>
+<text x="1542.5" y="145.0" text-anchor="middle" font-size="11" font-weight="400" fill="#3B4A47">scikit-learn 1.9.1 · random_state 42</text>
+<rect x="1415" y="185" width="255" height="62" rx="9" fill="#F2F4F3" stroke="#8A9894" stroke-width="1.4"/>
+<text x="1542.5" y="213.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3B4A47">ml/modelo_morosidad</text>
+<text x="1542.5" y="230.0" text-anchor="middle" font-size="11" font-weight="400" fill="#3B4A47">v1: joblib + metadatos (APF3)</text>
+<rect x="1415" y="270" width="255" height="62" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="1542.5" y="298.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5C3A0E">ml/proy · PR #37</text>
+<text x="1542.5" y="315.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">corrección, mejora y robustez</text>
+<rect x="1415" y="355" width="255" height="100" rx="9" fill="#F2F4F3" stroke="#8A9894" stroke-width="1.4"/>
+<text x="1542.5" y="388.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3B4A47">exportar_parametros.py</text>
+<text x="1542.5" y="405.0" text-anchor="middle" font-size="11" font-weight="400" fill="#3B4A47">coeficientes → JSON → migración SQL</text>
+<text x="1542.5" y="419.0" text-anchor="middle" font-size="11" font-weight="400" fill="#3B4A47">Python y PostgreSQL dan la misma</text>
+<text x="1542.5" y="433.0" text-anchor="middle" font-size="11" font-weight="400" fill="#3B4A47">probabilidad (&lt; 10⁻⁹)</text>
+<rect x="1415" y="540" width="255" height="60" rx="9" fill="#F2F4F3" stroke="#8A9894" stroke-width="1.4"/>
+<text x="1542.5" y="567.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3B4A47">GitHub</text>
+<text x="1542.5" y="584.0" text-anchor="middle" font-size="11" font-weight="400" fill="#3B4A47">main (publicado) · dev · Pull Requests</text>
+<rect x="1415" y="618" width="255" height="60" rx="9" fill="#F2F4F3" stroke="#8A9894" stroke-width="1.4"/>
+<text x="1542.5" y="645.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3B4A47">Pruebas automáticas</text>
+<text x="1542.5" y="662.0" text-anchor="middle" font-size="11" font-weight="400" fill="#3B4A47">Vitest + PGlite · 145 aprobadas</text>
+<rect x="1415" y="696" width="255" height="86" rx="9" fill="#F2F4F3" stroke="#8A9894" stroke-width="1.4"/>
+<text x="1542.5" y="729.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3B4A47">Builds automáticos</text>
+<text x="1542.5" y="746.0" text-anchor="middle" font-size="11" font-weight="400" fill="#3B4A47">main → producción</text>
+<text x="1542.5" y="760.0" text-anchor="middle" font-size="11" font-weight="400" fill="#3B4A47">Pull Request → vista previa</text>
+<polyline points="235,281 268,281" fill="none" stroke="#2F6B5A" stroke-width="1.6" marker-end="url(#m2F6B5A)"/>
+<text x="236" y="274" font-size="10.5" fill="#2F6B5A" font-style="italic">HTTPS</text>
+<polyline points="340,202 340,222" fill="none" stroke="#2F6B5A" stroke-width="1.6" marker-end="url(#m2F6B5A)"/>
+<polyline points="495,202 495,222" fill="none" stroke="#2F6B5A" stroke-width="1.6" marker-end="url(#m2F6B5A)"/>
+<polyline points="418,340 418,360" fill="none" stroke="#2F6B5A" stroke-width="1.6" marker-end="url(#m2F6B5A)"/>
+<polyline points="568,390 594,390 594,100 1267,100 1267,116" fill="none" stroke="#3C7090" stroke-width="1.6" marker-end="url(#m3C7090)"/>
+<text x="1052" y="95" font-size="10.5" fill="#3C7090" font-style="italic">supabase-js: sesión, consultas, RPC, Realtime y archivos</text>
+<polyline points="714,100 714,116" fill="none" stroke="#3C7090" stroke-width="1.6" marker-end="url(#m3C7090)"/>
+<polyline points="898,100 898,116" fill="none" stroke="#3C7090" stroke-width="1.6" marker-end="url(#m3C7090)"/>
+<polyline points="1082,100 1082,116" fill="none" stroke="#3C7090" stroke-width="1.6" marker-end="url(#m3C7090)"/>
+<polyline points="898,176 898,205 812,205 812,225" fill="none" stroke="#3C7090" stroke-width="1.6" marker-end="url(#m3C7090)"/>
+<polyline points="898,205 1167,205 1167,225" fill="none" stroke="#3C7090" stroke-width="1.6" marker-end="url(#m3C7090)"/>
+<polyline points="760,545 760,578" fill="none" stroke="#2F6B5A" stroke-width="1.6" marker-end="url(#m2F6B5A)"/>
+<text x="766" y="566" font-size="10.5" fill="#2F6B5A" font-style="italic">variables</text>
+<polyline points="1157,545 1157,561 900,561 900,578" fill="none" stroke="#2F6B5A" stroke-width="1.6" marker-end="url(#m2F6B5A)"/>
+<text x="1010" y="556" font-size="10.5" fill="#2F6B5A" font-style="italic">parámetros v1</text>
+<polyline points="975,618 1000,618" fill="none" stroke="#2F6B5A" stroke-width="1.6" marker-end="url(#m2F6B5A)"/>
+<polyline points="975,750 1000,750" fill="none" stroke="#D9822B" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#mD9822B)"/>
+<polyline points="1157,720 1157,658" fill="none" stroke="#D9822B" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#mD9822B)"/>
+<text x="1163" y="695" font-size="10.5" fill="#D9822B" font-style="italic">guarda: modelo o respaldo</text>
+<polyline points="1315,640 1340,640 1340,839 1315,839" fill="none" stroke="#D9822B" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#mD9822B)"/>
+<text x="1281" y="680" font-size="10.5" fill="#D9822B" font-style="italic">disparador</text>
+<polyline points="1542,162 1542,185" fill="none" stroke="#7A8885" stroke-width="1.6" marker-end="url(#m7A8885)"/>
+<polyline points="1542,247 1542,270" fill="none" stroke="#D9822B" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#mD9822B)"/>
+<polyline points="1542,332 1542,355" fill="none" stroke="#7A8885" stroke-width="1.6" marker-end="url(#m7A8885)"/>
+<polyline points="1415,405 1385,405 1385,514 1315,514" fill="none" stroke="#7A8885" stroke-width="1.6" marker-end="url(#m7A8885)"/>
+<text x="1322" y="508" font-size="10.5" fill="#7A8885" font-style="italic">migración SQL</text>
+<polyline points="1542,600 1542,618" fill="none" stroke="#7A8885" stroke-width="1.6" marker-end="url(#m7A8885)"/>
+<polyline points="1542,678 1542,696" fill="none" stroke="#7A8885" stroke-width="1.6" marker-end="url(#m7A8885)"/>
+<polyline points="1415,739 1388,739 1388,1000 418,1000 418,700" fill="none" stroke="#7A8885" stroke-width="1.6" marker-end="url(#m7A8885)"/>
+<text x="430" y="994" font-size="10.5" fill="#7A8885" font-style="italic">despliegue automático del frontend</text>
+<rect x="10" y="725" width="225" height="200" rx="10" fill="#FFFFFF" stroke="#B9C7C0"/>
+<text x="22" y="747" font-size="12.5" font-weight="700" fill="#173A33">Leyenda</text>
+<rect x="22" y="763" width="34" height="24" rx="5" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
+<text x="65" y="773" font-size="11.5" font-weight="700" fill="#173A33">Publicado hoy</text>
+<text x="65" y="787" font-size="10" fill="#4A5D58">main 33acc2f · migraciones 0100–1400</text>
+<rect x="22" y="813" width="34" height="24" rx="5" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="65" y="823" font-size="11.5" font-weight="700" fill="#173A33">PROY pendiente</text>
+<text x="65" y="837" font-size="10" fill="#4A5D58">PR #37, PR #38 · migración 1500</text>
+<rect x="22" y="863" width="34" height="24" rx="5" fill="#F2F4F3" stroke="#8A9894" stroke-width="1.4"/>
+<text x="65" y="873" font-size="11.5" font-weight="700" fill="#173A33">Fuera de línea o herramienta</text>
+<text x="65" y="887" font-size="10" fill="#4A5D58">entrenamiento, repositorio, CI</text>
+<text x="22" y="913" font-size="10" fill="#4A5D58">Flecha naranja: flujo nuevo del PROY.</text>
+</svg>
