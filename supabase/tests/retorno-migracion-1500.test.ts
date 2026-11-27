@@ -57,11 +57,16 @@ describe('Retorno de la migración 1500', () => {
     await db.query('select public.calcular_riesgo_periodo($1, $2::date)', [junta, s])
     const [{ cuota_id }] = await filas<{ cuota_id: string }>(db, 'select cuota_id from public.predicciones_vigentes($1)', [junta])
     await db.query(`select public.registrar_recordatorio($1, 'llamada')`, [cuota_id])
-
+    // Una segunda cuota (corte de otro día) queda calculada por el modelo, para comprobar que el retorno la conserva.
+    await db.query('select public.simular_falla_modelo($1, false)', [junta])
     await como(db, { tipo: 'postgres' })
+    await db.query(`insert into public.predicciones_morosidad (junta_id, cuota_id, modelo_id, fecha_corte, probabilidad, prediccion, nivel_riesgo, entrada)
+      select junta_id, cuota_id, (select id from public.modelos_ml where version = 'v1'), fecha_corte - 1, 0.3, 1, 'alto', '{}'::jsonb
+      from public.predicciones_morosidad limit 1`)
+
     await db.exec(leer('rollback', '20261126001500_revertir_flujo_prediccion_e2e.sql'))
     expect(await esquema(db)).toEqual(antes)
-    // Quedan solo las predicciones del modelo, con su probabilidad.
+    // Limitación documentada: el retorno elimina las predicciones de respaldo; las del modelo se conservan.
     const quedan = await filas<{ n: number; nulas: number }>(db, 'select count(*)::int as n, count(*) filter (where probabilidad is null)::int as nulas from public.predicciones_morosidad')
     expect(quedan[0]).toEqual({ n: 1, nulas: 0 })
 

@@ -13,6 +13,10 @@
 --   6) probar_entrada_modelo: la administración prueba el modelo con un caso escrito a mano; las entradas
 --      inválidas se rechazan con un mensaje claro.
 --   7) simular_falla_modelo: solo en la junta de demostración, para mostrar en vivo la degradación controlada.
+--   8) Solicitudes repetidas o tardías (el cliente deja de esperar a los 8 s, pero el servidor termina): un cálculo a
+--      la vez por junta (bloqueo transaccional), una sola predicción vigente por cuota y corte (el último cálculo
+--      reemplaza al anterior, sea del modelo o de la regla) y una bitácora con lote, inicio de la solicitud y demora
+--      para distinguir cálculos normales, respaldos, reintentos y respuestas tardías (demora > 8000 ms).
 -- Reglas que se mantienen: solo la administración de la junta ve y calcula predicciones (RLS + exigir_admin);
 -- los propietarios nunca ven su riesgo; el modelo solo sugiere y la decisión es humana (Ley N.° 31814).
 
@@ -27,6 +31,10 @@ alter table public.predicciones_morosidad
 alter table public.predicciones_morosidad alter column probabilidad drop not null;
 alter table public.predicciones_morosidad add constraint predicciones_probabilidad_segun_origen
   check ((origen = 'modelo') = (probabilidad is not null) and (origen = 'modelo') = (motivo_respaldo is null));
+-- Una sola predicción vigente por cuota y corte: el modelo y la regla de respaldo nunca conviven como resultados
+-- contradictorios. El último cálculo reemplaza la fila (conserva su id y el vínculo de los recordatorios); la historia
+-- completa queda en registro_predicciones. Antes de esta migración solo existía el modelo v1, así que no hay duplicados.
+create unique index predicciones_una_por_cuota_y_corte on public.predicciones_morosidad (cuota_id, fecha_corte);
 
 -- La regla de respaldo se registra como una versión inactiva, para que cada fila tenga su «modelo».
 -- Métricas: evaluación única de la prueba del PROY (ml/proy/resultados/prueba/metricas_prueba.csv).
@@ -130,9 +138,13 @@ create table public.registro_predicciones (
   factores jsonb not null default '[]'::jsonb,
   fecha_corte date,
   solicitado_por uuid,
-  registrado_en timestamptz not null default clock_timestamp()
+  lote uuid not null,                       -- un lote por cálculo: agrupa sus filas y separa reintentos
+  solicitado_en timestamptz not null,       -- inicio de la solicitud (transacción)
+  registrado_en timestamptz not null default clock_timestamp(),
+  demora_ms integer not null                -- registrado_en − solicitado_en; > 8000 = respuesta tardía (el cliente ya no esperaba)
 );
 create index registro_predicciones_junta_idx on public.registro_predicciones (junta_id, registrado_en desc);
+create index registro_predicciones_lote_idx on public.registro_predicciones (lote);
 alter table public.registro_predicciones enable row level security;
 revoke all on public.registro_predicciones from anon, authenticated;
 grant select on public.registro_predicciones to authenticated;
@@ -162,11 +174,15 @@ set search_path = ''
 as $$
 begin
   insert into public.registro_predicciones (junta_id, tipo, prediccion_id, cuota_id, unidad_ref, periodo, modelo_version,
-    origen, motivo_respaldo, entrada, probabilidad, prediccion, nivel_riesgo, umbral, factores, fecha_corte, solicitado_por)
+    origen, motivo_respaldo, entrada, probabilidad, prediccion, nivel_riesgo, umbral, factores, fecha_corte, solicitado_por,
+    lote, solicitado_en, demora_ms)
   select new.junta_id, 'cuota', new.id, new.cuota_id, public.ml_unidad_ref(c.unidad_id), c.periodo, m.version,
     new.origen, new.motivo_respaldo, new.entrada, new.probabilidad, new.prediccion, new.nivel_riesgo,
     case when new.origen = 'modelo' then (m.parametros ->> 'umbral')::double precision end,
-    new.factores, new.fecha_corte, new.solicitado_por
+    new.factores, new.fecha_corte, new.solicitado_por,
+    -- ml_calcular fija el lote de la transacción; una escritura directa (mantenimiento) recibe un lote propio.
+    coalesce(nullif(current_setting('arcomunity.lote_prediccion', true), '')::uuid, gen_random_uuid()),
+    now(), round(extract(epoch from clock_timestamp() - now()) * 1000)::integer
   from public.modelos_ml m left join public.cuotas c on c.id = new.cuota_id
   where m.id = new.modelo_id;
   return new;
@@ -251,7 +267,12 @@ declare
   v_res jsonb;
   n integer := 0; n_alto integer := 0; n_medio integer := 0; n_respaldo integer := 0;
   v_motivos text[] := '{}';
+  v_lote uuid := gen_random_uuid();
 begin
+  -- Un cálculo a la vez por junta: los reintentos esperan su turno, nunca se mezclan, y el último en ejecutarse define
+  -- la predicción vigente. El bloqueo se libera al terminar la transacción.
+  perform pg_advisory_xact_lock(hashtextextended('arcomunity.ml_calcular:' || p_junta::text, 0));
+  perform set_config('arcomunity.lote_prediccion', v_lote::text, true);
   select * into v_modelo from public.modelos_ml where activo;
   if not found or v_modelo.parametros is null then
     v_forzado := 'modelo_no_disponible';
@@ -272,10 +293,10 @@ begin
     values (p_junta, r.cuota_id, case when v_res ->> 'origen' = 'modelo' then v_modelo.id else v_respaldo end, p_corte,
       (v_res ->> 'probabilidad')::numeric, (v_res ->> 'prediccion')::smallint, v_res ->> 'nivel_riesgo', v_res -> 'factores',
       v_entrada, v_res ->> 'origen', v_res ->> 'motivo_respaldo', auth.uid())
-    on conflict (cuota_id, modelo_id, fecha_corte) do update set
-      probabilidad = excluded.probabilidad, prediccion = excluded.prediccion, nivel_riesgo = excluded.nivel_riesgo,
-      factores = excluded.factores, entrada = excluded.entrada, origen = excluded.origen,
-      motivo_respaldo = excluded.motivo_respaldo, solicitado_por = excluded.solicitado_por, generado_en = now();
+    on conflict (cuota_id, fecha_corte) do update set
+      modelo_id = excluded.modelo_id, probabilidad = excluded.probabilidad, prediccion = excluded.prediccion,
+      nivel_riesgo = excluded.nivel_riesgo, factores = excluded.factores, entrada = excluded.entrada, origen = excluded.origen,
+      motivo_respaldo = excluded.motivo_respaldo, solicitado_por = excluded.solicitado_por, generado_en = clock_timestamp();
     n := n + 1;
     if v_res ->> 'nivel_riesgo' = 'alto' then n_alto := n_alto + 1; elsif v_res ->> 'nivel_riesgo' = 'medio' then n_medio := n_medio + 1; end if;
     if v_res ->> 'origen' = 'regla_respaldo' then
@@ -288,7 +309,7 @@ begin
     'umbral', case when v_forzado is null then (v_modelo.parametros ->> 'umbral')::double precision end,
     'fecha_corte', p_corte, 'periodo', p_periodo, 'cuotas', n, 'alto', n_alto, 'medio', n_medio,
     'bajo', n - n_alto - n_medio, 'respaldo', n_respaldo, 'motivos_respaldo', to_jsonb(v_motivos),
-    'duracion_ms', round(extract(epoch from clock_timestamp() - v_inicio) * 1000));
+    'lote', v_lote, 'duracion_ms', round(extract(epoch from clock_timestamp() - v_inicio) * 1000));
 end $$;
 
 -- calcular_riesgo_morosidad: misma firma y permisos de la migración 1200; ahora no falla si el modelo no responde.
@@ -402,11 +423,11 @@ begin
   end if;
   v_res := public.ml_evaluar(case when v_forzado is null then v_modelo.parametros end, p_entrada, v_forzado);
   insert into public.registro_predicciones (junta_id, tipo, modelo_version, origen, motivo_respaldo, entrada, probabilidad,
-    prediccion, nivel_riesgo, umbral, factores, fecha_corte, solicitado_por)
+    prediccion, nivel_riesgo, umbral, factores, fecha_corte, solicitado_por, lote, solicitado_en, demora_ms)
   values (p_junta, 'caso_manual', case when v_res ->> 'origen' = 'modelo' then v_modelo.version else 'regla-respaldo' end,
     v_res ->> 'origen', v_res ->> 'motivo_respaldo', p_entrada, (v_res ->> 'probabilidad')::numeric,
     (v_res ->> 'prediccion')::smallint, v_res ->> 'nivel_riesgo', (v_res ->> 'umbral')::double precision, v_res -> 'factores',
-    public.hoy_lima(), auth.uid());
+    public.hoy_lima(), auth.uid(), gen_random_uuid(), now(), round(extract(epoch from clock_timestamp() - now()) * 1000)::integer);
   return v_res || jsonb_build_object('modelo_version', case when v_res ->> 'origen' = 'modelo' then v_modelo.version else 'regla-respaldo' end);
 end $$;
 

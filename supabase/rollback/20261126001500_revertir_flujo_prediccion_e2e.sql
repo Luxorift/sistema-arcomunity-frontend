@@ -134,6 +134,7 @@ drop function public.bloquear_modificacion_registro_predicciones();
 
 -- 7) Predicciones de respaldo, columnas nuevas y versión «regla-respaldo».
 delete from public.predicciones_morosidad where origen = 'regla_respaldo';
+drop index public.predicciones_una_por_cuota_y_corte;
 alter table public.predicciones_morosidad drop constraint predicciones_probabilidad_segun_origen;
 alter table public.predicciones_morosidad alter column probabilidad set not null;
 alter table public.predicciones_morosidad drop column origen, drop column motivo_respaldo, drop column solicitado_por;
