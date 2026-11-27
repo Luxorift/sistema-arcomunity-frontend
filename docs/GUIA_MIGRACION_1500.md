@@ -19,6 +19,26 @@
 >   `calcular_riesgo_morosidad`, `predicciones_vigentes` y `restaurar_demo_datos`.
 > - Si algo no coincide con lo esperado, **detente**: no improvises cambios en producción.
 
+> **Validación previa (27/11/2026).** Esta guía se ejecutó completa, bloque por bloque, en un PostgreSQL 16.16 real
+> con las migraciones 0100–1400 y datos de demostración. Los resultados coincidieron con todos los valores
+> esperados, salvo pg_cron (4.7), que ese servidor no tiene.
+>
+> En ese mismo PostgreSQL, con conexiones independientes, se comprobaron 23 casos:
+>
+> - el bloqueo por junta y los reintentos;
+> - la respuesta tardía de más de 8 s;
+> - el índice único;
+> - los recordatorios;
+> - RLS y los permisos;
+> - la compatibilidad con el frontend publicado;
+> - la purga.
+>
+> El retorno dejó el esquema idéntico al de la 1400. Las evidencias están en la carpeta del equipo:
+> `evidencias_proy/postgresql_real_2026-11-27`.
+>
+> **Lo que solo se puede comprobar en Supabase:** pg_cron (4.7) y el panel de la app conectado a la base real (4.8 y
+> 7.2).
+
 ## Resumen del procedimiento
 
 | Etapa | Qué se comprueba | Si falla |
@@ -28,6 +48,7 @@
 | 3. Aplicación segura | Todo dentro de `begin … commit` en el SQL Editor | `rollback;`: la base queda como estaba |
 | 4. Validaciones posteriores | Datos intactos, objetos nuevos, modelo, permisos y RLS, pg_cron y la app anterior | Ver la tabla de problemas o usar el retorno |
 | 5. Retorno, si hace falta | Volver al esquema de la 1400 | Seguir el apartado 6 y conocer sus limitaciones |
+| 6. Puertas para publicar | Cuándo integrar en `dev`, probar la vista previa y promover a `main` | Apartado 7 |
 
 ## 1. Comprobaciones previas (5 min, solo lectura)
 
@@ -40,10 +61,11 @@ select
   exists (select 1 from public.modelos_ml where version = 'v1' and activo)  as v1_activo,
   exists (select 1 from pg_extension where extname = 'pg_cron')             as pg_cron_instalado,
   (select count(*) from (select cuota_id, fecha_corte from public.predicciones_morosidad
-                         group by 1, 2 having count(*) > 1) d)              as duplicados_cuota_corte;
+                         group by 1, 2 having count(*) > 1) d)              as duplicados_cuota_corte,
+  current_setting('server_version_num')::int >= 150000                      as postgres_15_o_superior;
 ```
 
-**Resultado esperado:** `true`, `true`, `true`, `true` y `0`.
+**Resultado esperado:** `true`, `true`, `true`, `true`, `0` y `true`.
 
 - Si `la_1500_no_esta_aplicada` = `false`: la migración ya se aplicó, al menos en parte. No continúes; avísame.
 - Si `duplicados_cuota_corte` > 0: el índice único fallaría. No continúes; avísame con el resultado.
@@ -112,6 +134,13 @@ Usa el **SQL Editor**.
 3. Busca el mensaje en el apartado 5.
 
 Un error dentro de `begin … commit` deja la base exactamente como estaba.
+
+> **Si en lugar del SQL Editor usas `psql` en Windows:**
+>
+> 1. Antes de conectarte, ejecuta `$env:PGCLIENTENCODING = "UTF8"`.
+> 2. Aplica con `psql -v ON_ERROR_STOP=1 -1 -f archivo.sql`.
+>
+> Sin UTF8, las tildes de los mensajes quedan dañadas, por ejemplo «predicciÃ³n». Así ocurrió en la prueba previa.
 
 ## 4. Validaciones posteriores (15 min)
 
@@ -234,8 +263,8 @@ select cron.schedule('arcomunity-purgar-registro-predicciones', '30 8 1 * *', $c
    mostrar un error.
 2. Entra con `casa12@arcomunity.demo`. Debe ver su cuota por pagar y no tener acceso a Predicción.
 
-**Si todo coincide, la migración quedó bien aplicada.** Avísame con los resultados para el siguiente paso: integrar los
-PR, publicar el frontend nuevo, grabar el video oficial y tomar las capturas de producción.
+**Si todo coincide, la migración quedó bien aplicada.** Mándame los resultados de 1 a 4.8, en texto o capturas, sin
+contraseñas. Los revisamos juntos antes del apartado 7.
 
 ## 5. Problemas posibles
 
@@ -251,6 +280,8 @@ PR, publicar el frontend nuevo, grabar el video oficial y tomar las capturas de 
 | La app anterior muestra «< 1 %» con riesgo alto | Hay filas de respaldo (solo si el modelo falla) | Esperable hasta publicar el frontend del PR #38, que muestra «Regla manual» |
 
 ## 6. Retorno: cuándo usarlo y sus limitaciones
+
+> **El retorno nunca se ejecuta automáticamente.** Es una decisión tuya, tomada después de leer sus consecuencias.
 
 **Úsalo si ocurre cualquiera de estas situaciones:**
 
@@ -270,13 +301,44 @@ PR, publicar el frontend nuevo, grabar el video oficial y tomar las capturas de 
    - 4.1 ya no muestra `regla-respaldo`;
    - la app anterior funciona como en 4.8.
 
-**Limitaciones del retorno:**
+**Consecuencias sobre los datos creados después de aplicar la 1500:**
 
-- **Elimina la bitácora y los recordatorios.** Solo quedan los CSV del paso 2.
-- **Elimina las predicciones de respaldo** (las que no tienen probabilidad), porque el esquema anterior exige una
-  probabilidad. Las del modelo se conservan.
-- **No deshace las acciones normales hechas con la app mientras la 1500 estuvo aplicada:** cuotas generadas, pagos y
-  otras. Esos datos pertenecen al esquema anterior y siguen siendo válidos.
-- **Quita la purga programada de pg_cron.** La restauración nocturna de la demo no cambia.
-- **Probado solo en PGlite**, que no reproduce pg_cron ni la concurrencia: aplicar, usar y revertir deja el esquema
-  idéntico al de la 1400 (`supabase/tests/retorno-migracion-1500.test.ts`).
+| Dato | Qué le pasa con el retorno | ¿Se puede recuperar? |
+| --- | --- | --- |
+| Bitácora `registro_predicciones`, con lote y demora | Se elimina la tabla | Solo desde el CSV del paso 2 (como archivo, no vuelve a la base) |
+| Recordatorios registrados | Se elimina la tabla | Solo desde el CSV |
+| Predicciones de respaldo (sin probabilidad) | Se eliminan, porque el esquema anterior exige probabilidad | No. Se recalculan con «Calcular riesgo de hoy» |
+| Predicciones del modelo | Se conservan, sin las columnas nuevas (origen, motivo y solicitante) | Sí: quedan en la base |
+| Fila `regla-respaldo` de `modelos_ml` | Se elimina | No hace falta |
+| Cuotas, pagos, egresos y auditoría | No cambian: el retorno no los toca | Sí: quedan en la base |
+| Falla simulada de la demo (`demo_ajustes`) | Se elimina | No hace falta |
+| Purga programada en pg_cron | Se quita | Se vuelve a programar si se reaplica la 1500 |
+
+**Limitaciones:**
+
+- El retorno no deshace las acciones normales hechas con la app mientras la 1500 estuvo aplicada, como generar cuotas
+  o registrar pagos. Esos datos pertenecen al esquema anterior y siguen siendo válidos.
+- Se probó en PGlite (`supabase/tests/retorno-migracion-1500.test.ts`) y en PostgreSQL 16.16 real. En los dos casos,
+  aplicar, usar y revertir dejó el esquema idéntico al de la 1400 (comparación con `pg_dump`), y la 1500 se pudo
+  volver a aplicar. No se probó en Supabase.
+
+## 7. Cuándo integrar y publicar el frontend (puertas)
+
+Cada puerta exige que la anterior esté cumplida y **tu autorización explícita**.
+
+| Puerta | Condición para pasar | Qué se hace | Quién |
+| --- | --- | --- | --- |
+| 7.1 Integrar en `dev` | Revisión de esta guía y del respaldo (apartado 2) | Fusionar #37, luego #38 y luego #39 en `dev`. No despliega nada en producción | Claude, con tu autorización |
+| 7.2 Aplicar la 1500 | Apartados 1 a 3 sin errores | Aplicación en el SQL Editor | Tú |
+| 7.3 Verificar | 4.1 a 4.8 coinciden y la app publicada (anterior) funciona | Revisamos los resultados juntos | Tú y Claude |
+| 7.4 Probar la vista previa de `dev` | 7.1 y 7.3 cumplidas | Abrir la vista previa de Vercel de `dev` (con tu sesión de Vercel) y recorrer el flujo nuevo: generar cuotas, predicción, recordatorio, falla simulada y entrada inválida. Usa la misma base de producción, en la junta demo, y la restauración nocturna revierte el ensayo | Tú, guiado por Claude |
+| 7.5 Promover `dev` → `main` | 7.4 sin errores | PR `dev` → `main`, fusión y despliegue automático | Claude, con tu autorización |
+| 7.6 Evidencias de producción | 7.5 publicado | Probar la URL pública, grabar el video oficial (`npm run grabar:demo-proy` con `APP_URL`) y tomar las capturas | Claude, con tu autorización para escribir en la junta demo |
+
+**Por qué este orden:**
+
+1. La migración es compatible con el frontend publicado (verificado), así que puede aplicarse antes de publicar el
+   frontend nuevo.
+2. La vista previa de `dev` es la primera prueba del flujo nuevo contra Supabase real, sin exponerlo todavía en la URL
+   pública.
+3. Si algo falla en 7.4, `main` no cambió y basta con corregir en una rama nueva.
