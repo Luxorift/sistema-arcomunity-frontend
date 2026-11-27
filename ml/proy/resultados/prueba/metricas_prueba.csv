@@ -1,0 +1,9 @@
+modelo,fuente,accuracy,precision,recall,f1,f2,vp,fn,fp,vn,recordatorios,avg_precision
+"APF3 entregado (referencia, informe APF3)",modelo_morosidad_v1.json,0.847,0.611,0.846,0.71,,,,,,,
+Dummy (clase mayoritaria),línea base,0.7797,0.0,0.0,0.0,0.0,0.0,13.0,0.0,46.0,0.0,
+Dummy (estratificado),línea base,0.6441,0.1667,0.1538,0.16,0.1562,2.0,11.0,10.0,36.0,12.0,
+Regla: atraso en 3 meses previos,línea base,0.7458,0.45,0.6923,0.5455,0.625,9.0,4.0,11.0,35.0,20.0,
+APF3 corregido (servido),pipeline PROY · C=10 · class_weight=None · umbral=0.2258,0.8475,0.6111,0.8462,0.7097,0.7857,11.0,2.0,7.0,39.0,18.0,0.8095
+PROY-A · recencia,pipeline PROY · C=1 · class_weight=balanced · umbral=0.4155,0.8814,0.6875,0.8462,0.7586,0.8088,11.0,2.0,5.0,41.0,16.0,0.831
+PROY-B · reajuste,pipeline PROY · C=10 · class_weight=None · umbral=0.2258,0.8475,0.6111,0.8462,0.7097,0.7857,11.0,2.0,7.0,39.0,18.0,0.8095
+PROY-C · recencia + reajuste,pipeline PROY · C=1 · class_weight=balanced · umbral=0.4155,0.8814,0.6875,0.8462,0.7586,0.8088,11.0,2.0,5.0,41.0,16.0,0.831

@@ -1,0 +1,30 @@
+{
+  "entorno": {
+    "fecha_utc": "2026-11-27T03:37:21+00:00",
+    "python": "3.12.10",
+    "sistema": "Windows-11-10.0.26300-SP0",
+    "commit": "e128dd9",
+    "versiones_cargadas": {
+      "numpy": "2.5.5",
+      "pandas": "3.1.1",
+      "scikit-learn": "1.9.1"
+    },
+    "versiones_instaladas": {
+      "numpy": "2.5.5",
+      "pandas": "3.1.1",
+      "scikit-learn": "1.9.1"
+    },
+    "versiones_coinciden": true,
+    "dataset": {
+      "archivo": "ml/dataset_apf3/dataset_arcomunity_apf3.csv",
+      "sha256_lf": "53e1136b2cb99047d29847f60510e55d3e727c1b33205489b7e4666ce407756f"
+    }
+  },
+  "decision_leida": {
+    "modelo_servido": "APF3 corregido",
+    "reemplaza_a_apf3_corregido": false,
+    "motivo": "ningún candidato PROY supera a APF3 corregido fuera del empate práctico: se conserva v1"
+  },
+  "max_dif_probabilidad_apf3_corregido_vs_joblib_v1": 0.0,
+  "nota": "Los meses 11–12 ya se observaron en APF3 con v1; para los modelos PROY es su primera evaluación."
+}
