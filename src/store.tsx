@@ -7,6 +7,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { Session } from '@supabase/supabase-js'
 import { BUCKET_COMPROBANTES, BUCKET_JUNTA, supabase } from './lib/supabase'
 import { mensajeError } from './lib/errores'
+import { conLimite } from './lib/limiteTiempo'
 import type { Auditoria, Camara, ConceptoEgreso, Configuracion, Cuota, Egreso, MetodoPago, Pago, Rol, TipoCamara, Unidad } from './model'
 
 export type Usuario = {
@@ -48,6 +49,10 @@ export type PagoEntrada = {
 }
 export type ResultadoPago = { estado: Pago['estado']; alertas: string[] }
 export type Resultado<T = null> = { ok: true; data: T } | { ok: false; error: string }
+/** Resumen del riesgo calculado en la base (calcular_riesgo_periodo / calcular_riesgo_morosidad). */
+export type RiesgoCalculado = { cuotas: number; alto: number; medio: number; bajo: number; respaldo: number; motivos_respaldo: string[]; modelo_version: string; aviso?: string }
+/** Cuotas generadas y, a continuación, el riesgo de ese periodo (registro nuevo → predicción). */
+export type CuotasGeneradas = { periodo: string; creadas: number; existentes: number; riesgo: Resultado<RiesgoCalculado> | null }
 export type EscenarioDemo = { cuenta: string; unidad: string | null; espera: 'cuota_por_pagar' | 'pago_en_revision' | 'al_dia'; ok: boolean; vencidas: number; por_vencer: number; en_revision: number }
 export type PreparacionDemo = { periodo: string; cuotas_creadas: number; cuotas_existentes: number; modelo: string; fecha_corte: string; predicciones: number; alto: number; medio: number; bajo: number; escenarios: EscenarioDemo[]; avisos: string[] }
 export type ReinicioDemo = { pagosQuitados: number; prediccionesQuitadas: number; desvinculados: number; archivosBorrados: number; archivosPendientes: number }
@@ -164,7 +169,7 @@ type Contexto = {
   guardarCamara: (c: CamaraEdicion) => Promise<string | null>
   eliminarCamara: (camaraId: string) => Promise<string | null>
   registrarVistaCamaras: (detalle: string) => void
-  generarCuotas: (periodo?: string) => Promise<Resultado<{ creadas: number; existentes: number }>>
+  generarCuotas: (periodo?: string) => Promise<Resultado<CuotasGeneradas>>
   enviarPago: (entrada: PagoEntrada) => Promise<Resultado<ResultadoPago>>
   revisarPago: (pagoId: string, decision: 'aprobar' | 'rechazar', motivo?: string) => Promise<string | null>
   pagoManual: (e: { cuotaId: string; metodo: 'efectivo' | 'transferencia' | 'yape_qr'; monto: number; fecha: string; operacion?: string; nota?: string }) => Promise<string | null>
@@ -420,10 +425,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       registrarVistaCamaras: detalle => { void supabase.rpc('registrar_vista_camaras', { p_junta: junta(), p_detalle: detalle }) },
 
       generarCuotas: async periodo => {
-        const r = await rpc<{ creadas: number; existentes: number }>('generar_cuotas', { p_junta: junta(), p_periodo: periodo ?? null })
+        const r = await rpc<{ periodo: string; creadas: number; existentes: number }>('generar_cuotas', { p_junta: junta(), p_periodo: periodo ?? null })
         if (!r.ok) { mostrar(r.error, 'error'); return r }
+        // Registro nuevo → predicción: el riesgo de las cuotas de ese periodo se calcula enseguida en la base. Si el
+        // modelo no responde a tiempo, las cuotas ya quedaron creadas y la pantalla lo explica (degradación).
+        const riesgo = r.data.creadas > 0
+          ? await conLimite(rpc<RiesgoCalculado>('calcular_riesgo_periodo', { p_junta: junta(), p_periodo: r.data.periodo }))
+          : null
         await recargar()
-        return r
+        return { ok: true, data: { ...r.data, riesgo } }
       },
       enviarPago: async e => {
         const u = usuarioRef.current
