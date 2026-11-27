@@ -1,0 +1,7 @@
+{
+  "descripcion": "Se cambió el desenlace de las 30 cuotas del mes 10 (impagas y morosas). Las variables de los meses 1–10, incluidas las de ese mes, deben quedar iguales porque solo usan cuotas anteriores al corte. No se usan los meses 11–12.",
+  "cuotas_alteradas": 30,
+  "filas_comparadas": 300,
+  "filas_con_variables_distintas": 0,
+  "resultado": "pasó"
+}

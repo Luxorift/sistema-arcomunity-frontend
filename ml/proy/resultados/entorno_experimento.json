@@ -1,0 +1,21 @@
+{
+  "fecha_utc": "2026-11-27T03:36:16+00:00",
+  "python": "3.12.10",
+  "sistema": "Windows-11-10.0.26300-SP0",
+  "commit": "ff002d6",
+  "versiones_cargadas": {
+    "numpy": "2.5.5",
+    "pandas": "3.1.1",
+    "scikit-learn": "1.9.1"
+  },
+  "versiones_instaladas": {
+    "numpy": "2.5.5",
+    "pandas": "3.1.1",
+    "scikit-learn": "1.9.1"
+  },
+  "versiones_coinciden": true,
+  "dataset": {
+    "archivo": "ml/dataset_apf3/dataset_arcomunity_apf3.csv",
+    "sha256_lf": "53e1136b2cb99047d29847f60510e55d3e727c1b33205489b7e4666ce407756f"
+  }
+}

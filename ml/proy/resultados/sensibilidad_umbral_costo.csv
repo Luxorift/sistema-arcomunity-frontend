@@ -1,0 +1,4 @@
+razon_costo_fn_fp,costo_con_regla_del_umbral,costo_minimo_posible,umbral_que_lo_logra,recall_en_ese_umbral
+2,30,15,0.1963,0.919
+5,33,24,0.1963,0.919
+10,38,39,0.1963,0.919
