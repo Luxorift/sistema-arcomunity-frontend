@@ -28,7 +28,8 @@
     "grabar:demo": "node scripts/grabar-demo.ts",
     "test:herramientas": "node --env-file=.env.local scripts/prueba-herramientas-demo.ts",
     "local:supabase": "node scripts/entorno-local.ts",
-    "local:web": "vite --mode pruebas --port 5174 --strictPort"
+    "local:web": "vite --mode pruebas --port 5174 --strictPort",
+    "grabar:demo-proy": "node scripts/grabar-demo-proy.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
