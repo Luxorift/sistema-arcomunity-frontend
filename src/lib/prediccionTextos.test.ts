@@ -1,6 +1,6 @@
 // Degradación controlada en el cliente: tiempo límite del modelo y mensajes de negocio tras generar cuotas.
 import { describe, expect, it, vi } from 'vitest'
-import { conLimite, REGLA_MANUAL } from './limiteTiempo'
+import { conLimite, esTiempoAgotado, REGLA_MANUAL, RESULTADO_TARDIO } from './limiteTiempo'
 import { mensajeCuotasGeneradas, resumenRiesgo } from './prediccionTextos'
 import type { RiesgoCalculado } from '../store'
 
@@ -17,7 +17,10 @@ describe('conLimite', () => {
     const lento = new Promise<{ ok: true; data: number }>(() => {})
     const r = conLimite(lento, 8000)
     await vi.advanceTimersByTimeAsync(8000)
-    await expect(r).resolves.toEqual({ ok: false, error: `El modelo tardó más de 8 segundos en responder. ${REGLA_MANUAL}` })
+    await expect(r).resolves.toEqual({ ok: false, error: `El modelo tardó más de 8 segundos en responder. ${RESULTADO_TARDIO} ${REGLA_MANUAL}` })
+    const res = await r
+    expect(!res.ok && esTiempoAgotado(res.error)).toBe(true)
+    expect(esTiempoAgotado('No tienes permiso para realizar esta acción.')).toBe(false)
     vi.useRealTimers()
   })
 })

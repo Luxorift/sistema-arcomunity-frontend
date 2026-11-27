@@ -8,7 +8,7 @@ import { fechaVisible, mesVisible, mes, periodoAnterior } from './model'
 import { supabase } from './lib/supabase'
 import { useApp, type RiesgoCalculado } from './store'
 import { useRpc } from './lib/usarRpc'
-import { conLimite, REGLA_MANUAL } from './lib/limiteTiempo'
+import { conLimite, esTiempoAgotado, REGLA_MANUAL } from './lib/limiteTiempo'
 import { MOTIVO_RESPALDO, resumenRiesgo } from './lib/prediccionTextos'
 import { Ayuda, Cargando, ConfirmDialog, Empty, PageHead, Stat } from './ui'
 
@@ -177,7 +177,13 @@ export function PrediccionPage() {
     setCalculando(true)
     const r = await conLimite(rpc<RiesgoCalculado>('calcular_riesgo_morosidad', { p_junta: usuario.juntaId }))
     setCalculando(false)
-    if (!r.ok) { mostrar(r.error.includes(REGLA_MANUAL) ? r.error : `${r.error} ${REGLA_MANUAL}`, 'error'); setVersion(v => v + 1); return r.error }
+    if (!r.ok) {
+      mostrar(r.error.includes(REGLA_MANUAL) ? r.error : `${r.error} ${REGLA_MANUAL}`, 'error')
+      setVersion(v => v + 1)
+      // Tiempo agotado: el servidor puede terminar después; la lista se vuelve a consultar sola para mostrar el estado final.
+      if (esTiempoAgotado(r.error)) for (const ms of [10000, 25000]) setTimeout(() => setVersion(v => v + 1), ms)
+      return r.error
+    }
     mostrar(r.data.cuotas ? resumenRiesgo(r.data) : 'No hay cuotas por vencer en los próximos 31 días.', r.data.cuotas && !r.data.respaldo ? 'ok' : 'info')
     setVersion(v => v + 1)
     return null
