@@ -157,6 +157,7 @@ async function llamar(fn: string, args: Record<string, unknown>) {
 }
 
 // ------------------------------------------------------------------------------------------------- servidor
+let retraso: { ms: number; funciones: string[] } = { ms: 0, funciones: [] }
 function responder(res: ServerResponse, estado: number, cuerpo?: unknown) {
   res.writeHead(estado, { 'content-type': 'application/json', 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' })
   res.end(cuerpo === undefined ? '' : JSON.stringify(cuerpo))
@@ -187,9 +188,18 @@ createServer(async (req, res) => {
     }
     if (url.pathname === '/auth/v1/logout') { if (token) cerrados.add(token); return responder(res, 204) }
     if (url.pathname.startsWith('/auth/v1/')) return responder(res, 200, {})
+    // Solo pruebas: demora controlada de algunas RPC para comprobar el tiempo límite del cliente (8 s).
+    // POST /__pruebas/retraso {"ms": 12000, "funciones": ["calcular_riesgo_morosidad"]}  ·  {"ms": 0} lo quita.
+    if (url.pathname === '/__pruebas/retraso' && req.method === 'POST') {
+      const b = await leerCuerpo(req)
+      retraso = { ms: Math.max(0, Math.min(60000, Number(b.ms) || 0)), funciones: Array.isArray(b.funciones) ? b.funciones.map(String) : [] }
+      console.log(`${new Date().toISOString()} retraso de prueba: ${retraso.ms} ms en ${retraso.funciones.join(', ') || '(ninguna)'}`)
+      return responder(res, 200, retraso)
+    }
     const rpc = /^\/rest\/v1\/rpc\/([a-z_0-9]+)$/.exec(url.pathname)
     if (rpc && req.method === 'POST') {
       const args = await leerCuerpo(req)
+      if (retraso.ms && retraso.funciones.includes(rpc[1])) await new Promise(ok => setTimeout(ok, retraso.ms))
       const r = await comoUsuario(token, () => llamar(rpc[1], args))
       console.log(`${new Date().toISOString()} rpc ${rpc[1]} ${Date.now() - t0} ms`)
       return responder(res, 200, r)
