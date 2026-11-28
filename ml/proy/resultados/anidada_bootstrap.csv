@@ -1,0 +1,4 @@
+modelo,dif_f1_vs_apf3_corregido,ic95_inf,ic95_sup,excluye_cero
+PROY-A · recencia,-0.0729,-0.1423,-0.0136,True
+PROY-B · reajuste,0.0,0.0,0.0,False
+PROY-C · recencia + reajuste,-0.0729,-0.1423,-0.0136,True

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "arcomunity/modelo_morosidad/v1/salida",
+  "title": "Salida del modelo de riesgo de morosidad v1",
+  "description": "Resultado por cuota de calcular_riesgo_morosidad (PostgreSQL) o de inferencia.py (Python). El umbral es configurable: se lee de modelos_ml.umbral de la versión activa.",
+  "type": "object",
+  "required": ["cuota_id", "modelo_version", "probabilidad", "prediccion", "nivel_riesgo", "umbral", "factores"],
+  "properties": {
+    "cuota_id": {"type": "string", "format": "uuid"},
+    "modelo_version": {"type": "string", "examples": ["v1"]},
+    "probabilidad": {"type": "number", "minimum": 0, "maximum": 1},
+    "prediccion": {"type": "integer", "enum": [0, 1], "description": "1 si probabilidad ≥ umbral"},
+    "nivel_riesgo": {"type": "string", "enum": ["bajo", "medio", "alto"], "description": "alto ≥ umbral; medio ≥ umbral / 2; bajo en otro caso"},
+    "umbral": {"type": "number", "minimum": 0, "maximum": 1, "examples": [0.2258]},
+    "factores": {
+      "type": "array", "maxItems": 3,
+      "items": {"type": "object", "required": ["variable", "aporte"],
+                "properties": {"variable": {"type": "string"}, "aporte": {"type": "number"}}}
+    },
+    "fecha_corte": {"type": "string", "format": "date"}
+  }
+}

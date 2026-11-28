@@ -1,0 +1,5 @@
+modelo,C,class_weight,umbral,val_accuracy,val_precision,val_recall,val_f1,val_f2,val_vp,val_fn,val_fp,val_vn,val_recordatorios,val_avg_precision
+APF3 corregido,10,None,0.2258,0.9333,0.75,1.0,0.8571,0.9375,6,0,2,22,8,0.9583
+PROY-A · recencia,1,balanced,0.4155,0.9333,0.75,1.0,0.8571,0.9375,6,0,2,22,8,0.9583
+PROY-B · reajuste,10,None,0.2258,0.9333,0.75,1.0,0.8571,0.9375,6,0,2,22,8,0.9583
+PROY-C · recencia + reajuste,1,balanced,0.4155,0.9333,0.75,1.0,0.8571,0.9375,6,0,2,22,8,0.9583

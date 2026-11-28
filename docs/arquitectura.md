@@ -34,7 +34,10 @@ Supabase
    ├─ Storage privado (comprobantes, QR) con URLs firmadas
    └─ Realtime (cambios de cuotas y pagos, respetando RLS)
 
-Futuro (APF3/PROY): Edge Function "predecir-morosidad" → servicio FastAPI (scikit-learn)
+Inferencia ML (APF3, publicada): el modelo v1 (regresión logística) se calcula dentro de PostgreSQL
+con los coeficientes exportados desde scikit-learn (calcular_riesgo_morosidad); no hay un servicio aparte.
+PROY (PR #38, migración 1500, pendiente): predicción al generar cuotas, regla de respaldo, bitácora
+registro_predicciones y recordatorios. Diagrama final: docs/arquitectura-final/.
 ```
 
 Motivos: sin servidor propio que mantener ni pagar (plan gratuito), autorización centralizada en la
@@ -49,7 +52,8 @@ Repositorio único: frontend en la raíz (Vercel no cambia), `supabase/` con mig
 
 `juntas` · `juntas_invitacion` · `perfiles` (1:1 con `auth.users`) · `miembros_junta` (rol por
 junta) · `unidades` · `unidad_propietarios` (propietario vigente) · `cuotas` · `pagos` · `egresos` ·
-`camaras` · `auditoria` · `modelos_ml` · `predicciones_morosidad`.
+`camaras` · `auditoria` · `modelos_ml` · `predicciones_morosidad`. Con la migración 1500 (PROY):
+`registro_predicciones` (bitácora de solo inserción), `recordatorios` y `demo_ajustes`.
 
 Integridad:
 

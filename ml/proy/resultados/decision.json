@@ -1,0 +1,72 @@
+{
+  "regla": "ml/proy/REGLA_DE_MEJORA.md",
+  "fecha_utc": "2026-11-27T03:36:16+00:00",
+  "commit_del_codigo": "ff002d6",
+  "datos": "meses 1–10 (300 cuotas); 180 predicciones externas (meses 5–10); prueba no usada",
+  "f1_regla_manual": 0.5833,
+  "candidatos": {
+    "APF3 corregido": {
+      "f1": 0.7129,
+      "recall": 0.973,
+      "precision": 0.5625,
+      "fn": 1,
+      "recordatorios": 64,
+      "elegible": true,
+      "auditar": false
+    },
+    "PROY-A · recencia": {
+      "f1": 0.64,
+      "recall": 0.8649,
+      "precision": 0.5079,
+      "fn": 5,
+      "recordatorios": 63,
+      "elegible": true,
+      "auditar": false
+    },
+    "PROY-B · reajuste": {
+      "f1": 0.7129,
+      "recall": 0.973,
+      "precision": 0.5625,
+      "fn": 1,
+      "recordatorios": 64,
+      "elegible": true,
+      "auditar": false
+    },
+    "PROY-C · recencia + reajuste": {
+      "f1": 0.64,
+      "recall": 0.8649,
+      "precision": 0.5079,
+      "fn": 5,
+      "recordatorios": 63,
+      "elegible": true,
+      "auditar": false
+    }
+  },
+  "mejor_candidato_proy": "PROY-B · reajuste",
+  "reemplaza_a_apf3_corregido": false,
+  "modelo_servido": "APF3 corregido",
+  "configuracion_final": {
+    "APF3 corregido": {
+      "C": 10,
+      "class_weight": null,
+      "umbral": 0.2258
+    },
+    "PROY-A · recencia": {
+      "C": 1,
+      "class_weight": "balanced",
+      "umbral": 0.4155
+    },
+    "PROY-B · reajuste": {
+      "C": 10,
+      "class_weight": null,
+      "umbral": 0.2258
+    },
+    "PROY-C · recencia + reajuste": {
+      "C": 1,
+      "class_weight": "balanced",
+      "umbral": 0.4155
+    }
+  },
+  "motivo": "ningún candidato PROY supera a APF3 corregido fuera del empate práctico: se conserva v1",
+  "duracion_s": 33.7
+}

@@ -1,0 +1,21 @@
+modelo,variable,coeficiente
+APF3 corregido,pagos_atrasados_previos,-1.8673
+APF3 corregido,atrasos_previos_total,1.5046
+APF3 corregido,tasa_atraso_previa,1.5125
+APF3 corregido,dias_atraso_promedio_previo,0.9974
+PROY-A · recencia,pagos_atrasados_previos,-1.5475
+PROY-A · recencia,atrasos_previos_total,1.4151
+PROY-A · recencia,tasa_atraso_previa,1.5821
+PROY-A · recencia,dias_atraso_promedio_previo,1.1417
+PROY-A · recencia,atraso_mes_anterior,-0.3497
+PROY-A · recencia,meses_desde_ultimo_atraso,0.2229
+PROY-B · reajuste,pagos_atrasados_previos,-1.8673
+PROY-B · reajuste,atrasos_previos_total,1.5046
+PROY-B · reajuste,tasa_atraso_previa,1.5125
+PROY-B · reajuste,dias_atraso_promedio_previo,0.9974
+PROY-C · recencia + reajuste,pagos_atrasados_previos,-1.5475
+PROY-C · recencia + reajuste,atrasos_previos_total,1.4151
+PROY-C · recencia + reajuste,tasa_atraso_previa,1.5821
+PROY-C · recencia + reajuste,dias_atraso_promedio_previo,1.1417
+PROY-C · recencia + reajuste,atraso_mes_anterior,-0.3497
+PROY-C · recencia + reajuste,meses_desde_ultimo_atraso,0.2229

@@ -371,6 +371,11 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
 .model-note{margin-top:18px}
 .celda-factores{white-space:normal!important;min-width:200px;max-width:300px;line-height:1.45}
 .aviso-experimental{margin:0 0 18px;background:#fff4e5;color:#7a4f12;border:1px solid #f1d3a1;font-size:13px}
+/* PROY: formulario «Probar con un caso», estado del recordatorio y prueba de fallas */
+.ml-probar{padding:20px 24px}
+.celda-recordado{display:inline-block;white-space:normal;min-width:150px;line-height:1.4}
+.ml-prueba-fallas{margin:0 0 18px}
+@media (max-width:600px){.ml-probar{padding:16px}}
 
 /* ==========================================================================================
    Accesibilidad para personas mayores (APF3, segunda etapa)
