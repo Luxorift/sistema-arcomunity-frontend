@@ -143,10 +143,49 @@ Con la autorización del responsable:
 7. **Reproducibilidad del ML desde `main`:** al ejecutar de nuevo `coherencia.py`, `experimento.py` y `robustez.py`,
    los resultados coinciden con los publicados. Solo cambian la fecha y el commit.
 
-**Pendiente** (lo ejecuta el responsable, porque inicia sesión en la URL pública):
+8. **Pruebas de la URL pública** (27/11/2026, de 23:52 a 00:09 del 28/11, hora de Lima): **10 de 10 etapas
+   aprobadas**.
+   - Las ejecutó el responsable, porque las suites inician sesión con las cuentas demo.
+   - La auditoría posterior revisó los registros, las capturas y el video.
 
-- recorrido de la interfaz publicada con las suites `test:acceso`, `test:navegadores`, `test:ui` y `test:responsive`;
-- video oficial (`grabar:demo-proy` con `APP_URL`).
+   | # | Etapa | Suite | Resultado |
+   | --- | --- | --- | --- |
+   | 1 | Acceso en Vercel (cuatro cuentas, Chrome y Edge, escritorio y celular) | `test:acceso` | 68 de 68 |
+   | 2 | Acceso en Cloudflare Workers | `test:acceso` | 68 de 68 |
+   | 3 | Protección de las cuentas demo | `test:demo` | 32 de 32 |
+   | 4 | Integración remota: Auth, API, RLS, Storage, Realtime y auditoría | `test:remoto` | 80 de 80 |
+   | 5 | Límite de intentos del código de invitación | `test:limite` | 6 de 6 |
+   | 6 | Pago con comprobante y conciliación en tiempo real (Edge y Chrome) | `test:navegadores` | 10 de 10 |
+   | 7 | Pantallas por rol, en escritorio y celular: consola, peticiones, desborde y accesibilidad básica | `test:ui` | 0 problemas, 0 avisos |
+   | 8 | Responsive: 10 tamaños en Chrome y Edge | `test:responsive` | 420 vistas, 0 problemas, 0 avisos |
+   | 9 | Video oficial del flujo del PROY | `grabar:demo-proy` | 95 s y 7 capturas |
+   | 10 | Restauración de la demostración | `demo:restaurar` | Correcta; las 4 cuentas entran |
+
+   **Tipos de verificación:**
+
+   - **Automática.** Etapas 1 a 8 y 10: las suites comprueban por sí solas y cuentan los aciertos y los fallos.
+   - **Revisión visual.** Las 7 capturas del video, fotogramas del propio video y las 36 pantallas de la auditoría de
+     interfaz. Todas muestran la versión 3.0.0, con el rótulo «Versión publicada».
+   - **Estado final.** Una consulta de solo lectura confirmó que la junta demo quedó como la foto del respaldo: 360
+     cuotas, 346 pagos, 4 cuentas, sin recordatorios ni fallas simuladas.
+
+   **Limitaciones:**
+
+   - La suite responsive solo guarda capturas cuando encuentra problemas, así que no hay capturas de las 420 vistas.
+   - El tiempo límite de 8 s de la interfaz solo se pudo provocar en el entorno local. En producción se comprobó la
+     respuesta tardía en la base (9 066 ms, marcada y sin contradicciones).
+   - La bitácora `registro_predicciones` conserva las filas de estas pruebas, porque es inmutable. La purga mensual las
+     eliminará a los 12 meses.
+
+   **Evidencias** (en la carpeta del equipo, `Proyecto_Final/evidencias_proy/produccion_2026-11-27`):
+
+   - `RESUMEN_URL_PUBLICA.txt` y `logs_url_publica/`: resumen y registro de cada etapa;
+   - `AUDITORIA_URL_PUBLICA.md`: la auditoría;
+   - `video_url_publica/`: el video y las capturas paso a paso;
+   - `capturas_ui/`: las pantallas de la auditoría de interfaz.
+
+Con esto, la versión 3.0.0 queda verificada en la base de producción y en la URL pública. No queda ninguna prueba de
+producción pendiente.
 
 ### Pruebas del PROY
 
