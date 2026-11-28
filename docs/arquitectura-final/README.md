@@ -14,9 +14,11 @@
 
 **Convención:**
 
-- **Borde continuo:** lo publicado hoy (`main` en `33acc2f`, migraciones 0100–1400).
-- **Borde naranja discontinuo:** lo pendiente del PROY (PR #37, PR #38 y migración 1500).
+Estado al 27/11/2026: todo el diagrama está publicado en la versión `v3.0.0` (`main` en `4d64550`, migraciones
+0100–1500 aplicadas en Supabase).
+
+- **Borde verde:** lo que ya existía antes del PROY (APF2 y APF3, migraciones 0100–1400).
+- **Borde naranja:** lo nuevo del PROY, publicado en `v3.0.0` (PR #37, #38 y #39, migración 1500).
 - **Gris:** el entrenamiento fuera de línea y las herramientas.
 
-Cuando se integren los PR y se aplique la migración 1500, se cambia el estilo de esas cajas a «publicado» en `CAJAS` y
-se regenera.
+Hasta el 27/11/2026, antes de publicar, lo nuevo del PROY se dibujaba con borde naranja discontinuo («pendiente»).
