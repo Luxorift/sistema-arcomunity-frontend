@@ -4,6 +4,7 @@
 >
 > - Se aplicó dentro de una sola transacción, después de un respaldo verificado.
 > - Las validaciones del apartado 4 dieron 15 de 15.
+> - La URL pública pasó las 10 etapas de prueba el 27–28/11/2026, incluidos los pasos 7.4 y 7.6.
 > - El registro completo está en el apartado 8.
 >
 > Esta guía se conserva para volver a aplicarla en otro proyecto y para el retorno (apartado 6).
@@ -368,9 +369,15 @@ sin escribir la contraseña de la base. No se usó `supabase db push`.
 | 4.8 y pruebas funcionales | 22:59–23:02 | 27 de 27 en la base de producción, solo en la junta de demostración (ver el CHANGELOG, versión 3.0.0). La junta quedó reiniciada a su foto |
 | 7.1 Integrar en `dev` | 22:54 | PR #37, #38 y #39 fusionados. 151 de 151 pruebas y build correcto |
 | 7.5 Publicar | 23:04 | PR #40 `dev` → `main` (`4d64550`), etiqueta `v3.0.0`. Vercel y Cloudflare sirven el bundle nuevo |
+| 7.4 y 7.6 Interfaz publicada y evidencias | 23:52–00:09 (28/11) | 10 de 10 etapas en la URL pública, ejecutadas por el responsable: acceso en los dos dominios (68 + 68), cuentas demo (32), integración remota (80), límite de invitaciones (6), pago entre navegadores (10), interfaz (0 problemas), responsive (420 vistas, 0 problemas), video oficial (95 s) y restauración. El detalle está en el CHANGELOG, versión 3.0.0 |
 
-**No se probó la interfaz publicada con sesión iniciada:** las suites con contraseña de las cuentas demo las ejecuta el
-responsable. Corresponde a los pasos 7.4 y 7.6.
+La verificación de la interfaz publicada se hizo después de publicar, y no antes como pedía la puerta 7.4, por dos
+motivos:
+
+- la base ya estaba validada (15 de 15 y 27 de 27);
+- el frontend anterior seguía siendo compatible.
+
+No apareció ninguna regresión.
 
 **Evidencias:** en la carpeta del equipo, `Proyecto_Final/evidencias_proy/produccion_2026-11-27`, con los resultados
 JSON y los scripts.
