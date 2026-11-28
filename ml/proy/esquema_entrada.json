@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "arcomunity/modelo_morosidad/v1/entrada",
+  "title": "Entrada del modelo de riesgo de morosidad v1",
+  "description": "Una cuota al corte (primer día del periodo, antes del vencimiento). Es la fila que devuelve ml_caracteristicas_cuotas en Supabase. No admite campos del desenlace de la cuota (fecha_pago, dias_atraso, metodo_pago, moroso).",
+  "type": "object",
+  "required": ["cuota_id", "pagos_atrasados_previos", "atrasos_previos_total", "tasa_atraso_previa", "dias_atraso_promedio_previo"],
+  "properties": {
+    "cuota_id": {"type": "string", "format": "uuid"},
+    "unidad_ref": {"type": "string", "pattern": "^U-[0-9a-f]{10}$", "description": "Seudónimo SHA-256 de la unidad"},
+    "periodo": {"type": "string", "format": "date"},
+    "fecha_corte": {"type": "string", "format": "date"},
+    "pagos_atrasados_previos": {"type": "integer", "minimum": 0, "maximum": 3, "description": "Atrasos en los 3 meses anteriores"},
+    "atrasos_previos_total": {"type": "integer", "minimum": 0, "description": "Atrasos en todo el historial previo; ≥ pagos_atrasados_previos"},
+    "tasa_atraso_previa": {"type": "number", "minimum": 0, "maximum": 1},
+    "dias_atraso_promedio_previo": {"type": "number", "minimum": 0},
+    "cuotas_previas": {"type": "integer", "minimum": 0},
+    "es_simulado": {"type": "boolean"}
+  },
+  "not": {"anyOf": [{"required": ["fecha_pago"]}, {"required": ["dias_atraso"]}, {"required": ["metodo_pago"]}, {"required": ["moroso"]}]},
+  "x-rango_entrenamiento": {
+    "nota": "Rango observado en los meses 1–10 del dataset de APF3 (informativo). Los conteos crecen con el historial, por eso solo los valores que violan el dominio (negativos, tasa > 1, atrasos de 3 meses > 3 o mayores que el total) activan la regla manual de respaldo.",
+    "pagos_atrasados_previos": [0, 3],
+    "atrasos_previos_total": [0, 9],
+    "tasa_atraso_previa": [0, 1],
+    "dias_atraso_promedio_previo": [0, 36.33]
+  }
+}

@@ -1,0 +1,25 @@
+modelo,mes_externo,C,class_weight,umbral,ap_interna
+APF3 corregido,5,10.0,None,0.1178,0.763889
+PROY-A · recencia,5,10.0,None,0.1208,0.766026
+PROY-B · reajuste,5,10.0,None,0.1178,0.763889
+PROY-C · recencia + reajuste,5,10.0,None,0.1208,0.766026
+APF3 corregido,6,10.0,None,0.1228,0.761077
+PROY-A · recencia,6,1.0,None,0.1237,0.759096
+PROY-B · reajuste,6,10.0,None,0.1228,0.761077
+PROY-C · recencia + reajuste,6,1.0,None,0.1237,0.759096
+APF3 corregido,7,10.0,None,0.1228,0.80777
+PROY-A · recencia,7,0.1,balanced,0.3479,0.776418
+PROY-B · reajuste,7,10.0,None,0.1228,0.80777
+PROY-C · recencia + reajuste,7,0.1,balanced,0.3479,0.776418
+APF3 corregido,8,10.0,None,0.1963,0.846216
+PROY-A · recencia,8,1.0,balanced,0.4034,0.813562
+PROY-B · reajuste,8,10.0,None,0.1963,0.846216
+PROY-C · recencia + reajuste,8,1.0,balanced,0.4034,0.813562
+APF3 corregido,9,10.0,None,0.1963,0.818374
+PROY-A · recencia,9,1.0,balanced,0.4034,0.791163
+PROY-B · reajuste,9,10.0,None,0.1963,0.818374
+PROY-C · recencia + reajuste,9,1.0,balanced,0.4034,0.791163
+APF3 corregido,10,10.0,None,0.2147,0.840104
+PROY-A · recencia,10,1.0,balanced,0.4034,0.820997
+PROY-B · reajuste,10,10.0,None,0.2147,0.840104
+PROY-C · recencia + reajuste,10,1.0,balanced,0.4034,0.820997

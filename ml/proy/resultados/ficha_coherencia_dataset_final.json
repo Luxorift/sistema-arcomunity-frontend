@@ -1,0 +1,186 @@
+{
+  "entorno": {
+    "fecha_utc": "2026-11-27T03:33:01+00:00",
+    "python": "3.12.10",
+    "sistema": "Windows-11-10.0.26300-SP0",
+    "commit": "f542c91",
+    "versiones_cargadas": {
+      "numpy": "2.5.5",
+      "pandas": "3.1.1",
+      "scikit-learn": "1.9.1"
+    },
+    "versiones_instaladas": {
+      "numpy": "2.5.5",
+      "pandas": "3.1.1",
+      "scikit-learn": "1.9.1"
+    },
+    "versiones_coinciden": true,
+    "dataset": {
+      "archivo": "ml/dataset_apf3/dataset_arcomunity_apf3.csv",
+      "sha256_lf": "53e1136b2cb99047d29847f60510e55d3e727c1b33205489b7e4666ce407756f"
+    },
+    "archivo_evaluado": "dataset_arcomunity_apf3.csv",
+    "sha256_lf_evaluado": "53e1136b2cb99047d29847f60510e55d3e727c1b33205489b7e4666ce407756f"
+  },
+  "veredicto": {
+    "1. Escala del negocio": "cumple",
+    "2. Rangos y unidades": "cumple",
+    "3. Consistencia lógica y temporal": "cumple",
+    "4. Relaciones plausibles": "cumple",
+    "5. Señal ni nula ni perfecta": "cumple",
+    "6. Coherencia con el Contrato de Datos": "cumple",
+    "7. Mezcla real + simulado": "cumple con limitación declarada"
+  },
+  "criterios": [
+    {
+      "criterio": "1. Escala del negocio",
+      "comprobaciones": [
+        {
+          "comprobacion": "30 unidades y 12 meses consecutivos",
+          "resultado": "cumple",
+          "evidencia": "30 unidades, 12 periodos, 359 cuotas"
+        },
+        {
+          "comprobacion": "Una cuota por unidad y mes",
+          "resultado": "cumple",
+          "evidencia": "máximo 1 por unidad y mes"
+        },
+        {
+          "comprobacion": "Monto emitido por mes coherente con el piloto (S/ 3 000–6 000)",
+          "resultado": "cumple",
+          "evidencia": "S/ 4,350 a S/ 4,500 por mes"
+        }
+      ]
+    },
+    {
+      "criterio": "2. Rangos y unidades",
+      "comprobaciones": [
+        {
+          "comprobacion": "Monto en soles > 0 con 2 decimales",
+          "resultado": "cumple",
+          "evidencia": "monto entre 150.00 y 150.00"
+        },
+        {
+          "comprobacion": "dias_atraso entero ≥ 0",
+          "resultado": "cumple",
+          "evidencia": "0 a 15 días"
+        },
+        {
+          "comprobacion": "pagos_atrasados_previos entre 0 y 3",
+          "resultado": "cumple",
+          "evidencia": "valores [0, 1, 2, 3]"
+        },
+        {
+          "comprobacion": "moroso y es_simulado binarios",
+          "resultado": "cumple",
+          "evidencia": "moroso [0, 1], es_simulado [1]"
+        },
+        {
+          "comprobacion": "Periodo el día 1 y vencimiento el día 10 del mismo mes",
+          "resultado": "cumple",
+          "evidencia": "periodo AAAA-MM-01 y vencimiento AAAA-MM-10"
+        },
+        {
+          "comprobacion": "Método de pago dentro del catálogo",
+          "resultado": "cumple",
+          "evidencia": "métodos ['efectivo', 'yape_captura', 'yape_qr']"
+        }
+      ]
+    },
+    {
+      "criterio": "3. Consistencia lógica y temporal",
+      "comprobaciones": [
+        {
+          "comprobacion": "dias_atraso = max(0, fecha_pago − vencimiento)",
+          "resultado": "cumple",
+          "evidencia": "0 diferencias"
+        },
+        {
+          "comprobacion": "moroso = pagó tarde o sigue impaga",
+          "resultado": "cumple",
+          "evidencia": "0 diferencias"
+        },
+        {
+          "comprobacion": "Cuotas impagas sin método de pago",
+          "resultado": "cumple",
+          "evidencia": "14 impagas"
+        },
+        {
+          "comprobacion": "pagos_atrasados_previos recalculado con información anterior al corte",
+          "resultado": "cumple",
+          "evidencia": "0 diferencias"
+        },
+        {
+          "comprobacion": "Ningún pago anterior a la emisión del periodo",
+          "resultado": "cumple",
+          "evidencia": "primer día de pago relativo al periodo: 1"
+        }
+      ]
+    },
+    {
+      "criterio": "4. Relaciones plausibles",
+      "comprobaciones": [
+        {
+          "comprobacion": "Morosidad entre 10 % y 35 %",
+          "resultado": "cumple",
+          "evidencia": "20.9% (75 de 359)"
+        },
+        {
+          "comprobacion": "Quien se atrasó antes se atrasa más",
+          "resultado": "cumple",
+          "evidencia": "48.1% con atraso previo frente a 9.8% sin atraso"
+        },
+        {
+          "comprobacion": "Concentración de la morosidad (se reporta)",
+          "resultado": "cumple",
+          "evidencia": "las 5 unidades con más atrasos suman 54 de 75 (72%); perfil determinista de la semilla, ver robustez"
+        }
+      ]
+    },
+    {
+      "criterio": "5. Señal ni nula ni perfecta",
+      "comprobaciones": [
+        {
+          "comprobacion": "AP fuera de muestra (meses 5–10) mayor que la prevalencia y menor que 0,95",
+          "resultado": "cumple",
+          "evidencia": "AP 0.837 frente a prevalencia 0.206; sin la prueba"
+        }
+      ]
+    },
+    {
+      "criterio": "6. Coherencia con el Contrato de Datos",
+      "comprobaciones": [
+        {
+          "comprobacion": "Los 10 campos del contrato presentes",
+          "resultado": "cumple",
+          "evidencia": "10 de 10"
+        },
+        {
+          "comprobacion": "Columna origen presente y coherente con es_simulado",
+          "resultado": "cumple",
+          "evidencia": "origen ∈ {real, simulado}"
+        },
+        {
+          "comprobacion": "unidad_ref seudónima (sin datos personales)",
+          "resultado": "cumple",
+          "evidencia": "formato U- + 10 hexadecimales (SHA-256)"
+        }
+      ]
+    },
+    {
+      "criterio": "7. Mezcla real + simulado",
+      "comprobaciones": [
+        {
+          "comprobacion": "Mínimo de 30 registros reales (condición 5)",
+          "resultado": "no aplicable",
+          "evidencia": "0 registros reales y 359 simulados. Arcomunity es una empresa ficticia autorizada: no existen registros reales. Limitación declarada en la tabla de trazabilidad"
+        },
+        {
+          "comprobacion": "Ningún registro simulado presentado como real",
+          "resultado": "cumple",
+          "evidencia": "todas las filas con es_simulado = 1 tienen origen = simulado"
+        }
+      ]
+    }
+  ]
+}
