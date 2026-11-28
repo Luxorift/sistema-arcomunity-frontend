@@ -5,6 +5,7 @@ import { AlertCircle, ArrowDownToLine, ArrowRight, Banknote, CalendarCheck, Cale
 import { dinero, estadoVisible, fechaVisible, hoy, mes, mesVisible, periodoAnterior, type Camara, type ConceptoEgreso, type Configuracion, type Pago, type TipoCamara, type Unidad } from './model'
 import { useApp, type CamaraEdicion } from './store'
 import { useRpc } from './lib/usarRpc'
+import { mensajeCuotasGeneradas } from './lib/prediccionTextos'
 import { optimizarImagen, dataUrlABlob } from './image'
 import { Ayuda, Badge, Cargando, ConfirmDialog, DateText, Empty, Modal, Money, PageHead, Simulado, Stat } from './ui'
 import { useTema } from './lib/tema'
@@ -238,7 +239,7 @@ export function CuotasPage() {
       {cuotas.length ? <div className="table-wrap" tabIndex={0} role="region" aria-label="Tabla con desplazamiento horizontal"><table><thead><tr><th>Unidad</th><th>Vencimiento</th><th>Monto</th><th>Estado</th><th>Fecha de pago</th><th>Atraso</th></tr></thead><tbody>{cuotas.map(c => <tr key={c.id}><td className="strong">{nombreUnidad(datos.unidades, c.unidadId)}</td><td><DateText value={c.vencimiento} /></td><td><Money value={c.monto} /></td><td><Badge estado={estadoVisible(c)} /></td><td><DateText value={c.fechaPago} /></td><td>{c.diasAtraso ? `${c.diasAtraso} días` : '—'}</td></tr>)}</tbody></table></div>
         : <Empty title={delPeriodo.length ? 'Sin cuotas con este filtro' : 'Aún no hay cuotas este mes'} text={delPeriodo.length ? 'Prueba con otro estado.' : 'Pulsa «Generar cuotas» para crear una cuota por cada unidad activa.'} />}
     </div>
-    {generar && <ConfirmDialog titulo={`¿Generar las cuotas de ${mesVisible(periodo)}?`} icono={<CalendarCheck size={22} />} descripcion={<>Se creará una cuota de <strong>{dinero(datos.configuracion.cuotaMensual)}</strong> por cada unidad activa ({activas}), con vencimiento el día {datos.configuracion.diaVencimiento}.</>} advertencias={['Las cuotas que ya existan no se duplican.', 'Los vecinos verán la nueva cuota en su cuenta.']} textoConfirmar="Generar cuotas" textoProcesando="Generando…" onCerrar={() => setGenerar(false)} onConfirmar={async () => { const r = await generarCuotas(periodo); if (!r.ok) return r.error; mostrar(`Listo: ${r.data.creadas} cuotas creadas y ${r.data.existentes} ya existían.`); return null }} />}
+    {generar && <ConfirmDialog titulo={`¿Generar las cuotas de ${mesVisible(periodo)}?`} icono={<CalendarCheck size={22} />} descripcion={<>Se creará una cuota de <strong>{dinero(datos.configuracion.cuotaMensual)}</strong> por cada unidad activa ({activas}), con vencimiento el día {datos.configuracion.diaVencimiento}.</>} advertencias={['Las cuotas que ya existan no se duplican.', 'Los vecinos verán la nueva cuota en su cuenta.']} textoConfirmar="Generar cuotas" textoProcesando="Generando…" onCerrar={() => setGenerar(false)} onConfirmar={async () => { const r = await generarCuotas(periodo); if (!r.ok) return r.error; const m = mensajeCuotasGeneradas(r.data); mostrar(m.texto, m.tipo); return null }} />}
   </>
 }
 
