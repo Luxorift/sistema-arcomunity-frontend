@@ -1,12 +1,20 @@
 # Guía para aplicar la migración 1500 en Supabase (producción)
 
+> **Estado: APLICADA en producción el 27/11/2026 a las 22:55, hora de Lima** (03:55 UTC del 28/11).
+>
+> - Se aplicó dentro de una sola transacción, después de un respaldo verificado.
+> - Las validaciones del apartado 4 dieron 15 de 15.
+> - El registro completo está en el apartado 8.
+>
+> Esta guía se conserva para volver a aplicarla en otro proyecto y para el retorno (apartado 6).
+
 **Archivos:**
 
 - **Migración:** `supabase/migrations/20261126001500_flujo_prediccion_e2e.sql`, del PR #38, en su **último commit**
   (incluye la corrección de la auditoría del tiempo límite).
 - **Retorno:** `supabase/rollback/20261126001500_revertir_flujo_prediccion_e2e.sql`.
 
-**Quién la ejecuta:** el responsable del proyecto, desde su cuenta de Supabase. Ningún agente ni script la aplica.
+**Quién la ejecuta:** el responsable del proyecto, desde su cuenta de Supabase. El 27/11/2026, con su autorización expresa, la aplicó el asistente de desarrollo con la CLI de Supabase ya vinculada (apartado 8).
 
 **Tiempo estimado:** 30 a 40 minutos, con el respaldo y todas las verificaciones.
 
@@ -342,3 +350,28 @@ Cada puerta exige que la anterior esté cumplida y **tu autorización explícita
 2. La vista previa de `dev` es la primera prueba del flujo nuevo contra Supabase real, sin exponerlo todavía en la URL
    pública.
 3. Si algo falla en 7.4, `main` no cambió y basta con corregir en una rama nueva.
+
+## 8. Registro de la aplicación en producción (27/11/2026)
+
+**Proyecto:** `arcomunity`, con PostgreSQL 17.11. Las pruebas previas se hicieron en PostgreSQL 16.16; la migración no
+usa nada propio de una versión.
+
+**Método:** `supabase db query --linked`, con la CLI ya autenticada y vinculada al proyecto. Se usa la API de gestión,
+sin escribir la contraseña de la base. No se usó `supabase db push`.
+
+| Paso | Hora (Lima) | Resultado |
+| --- | --- | --- |
+| 1. Comprobaciones previas | 22:51 | `true`, `true`, `true`, `true`, `0`, `true`, como se esperaba |
+| 2. Respaldo verificable | 22:51 | Las 15 tablas de `public` exportadas a JSON; cada archivo tiene las mismas filas que su conteo (por ejemplo, cuotas 360, pagos 346, auditoría 381 y predicciones 0). También se guardaron funciones, políticas, permisos, índices y pg_cron. Queda fuera del repositorio porque contiene datos |
+| 3. Aplicación | 22:55 | Sin errores. Un solo bloque `begin; …; commit;` aplicó la migración y la registró en `supabase_migrations.schema_migrations` (`20261126001500 flujo_prediccion_e2e`) |
+| 4. Validaciones 4.1 a 4.7 | 22:56 | 15 de 15. La purga quedó programada en pg_cron con `30 8 1 * *` |
+| 4.8 y pruebas funcionales | 22:59–23:02 | 27 de 27 en la base de producción, solo en la junta de demostración (ver el CHANGELOG, versión 3.0.0). La junta quedó reiniciada a su foto |
+| 7.1 Integrar en `dev` | 22:54 | PR #37, #38 y #39 fusionados. 151 de 151 pruebas y build correcto |
+| 7.5 Publicar | 23:04 | PR #40 `dev` → `main` (`4d64550`), etiqueta `v3.0.0`. Vercel y Cloudflare sirven el bundle nuevo |
+
+**No se probó la interfaz publicada con sesión iniciada:** las suites con contraseña de las cuentas demo las ejecuta el
+responsable. Corresponde a los pasos 7.4 y 7.6.
+
+**Evidencias:** en la carpeta del equipo, `Proyecto_Final/evidencias_proy/produccion_2026-11-27`, con los resultados
+JSON y los scripts.
+

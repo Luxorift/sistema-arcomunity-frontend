@@ -2,7 +2,7 @@
 <defs><marker id="m2F6B5A" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2F6B5A"/></marker><marker id="mD9822B" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#D9822B"/></marker><marker id="m7A8885" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7A8885"/></marker><marker id="m3C7090" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3C7090"/></marker></defs>
 <rect width="1700" height="1030" fill="#FFFFFF"/>
 <text x="10" y="32" font-size="21" font-weight="700" fill="#173A33">Arquitectura final de Arcomunity · Proyecto Final</text>
-<text x="10" y="52" font-size="12" fill="#4A5D58">Estado al 27/11/2026. Borde continuo: publicado (main 33acc2f). Borde naranja discontinuo: pendiente de integración (PR #37 y #38, migración 1500).</text>
+<text x="10" y="52" font-size="12" fill="#4A5D58">Estado al 27/11/2026: todo publicado en v3.0.0 (main 4d64550, migraciones 0100–1500). Borde verde: anterior al PROY. Borde naranja: nuevo del PROY.</text>
 <rect x="10" y="100" width="225" height="310" rx="12" fill="#EEF5F1" stroke="#9DB8AD" stroke-width="1.4"/>
 <text x="22" y="120" font-size="12.5" font-weight="700" fill="#2A4A55">Usuarios</text>
 <rect x="250" y="100" width="335" height="600" rx="12" fill="#EEF5F1" stroke="#9DB8AD" stroke-width="1.4"/>
@@ -14,9 +14,9 @@
 <rect x="645" y="305" width="690" height="130" rx="12" fill="none" stroke="#C3D5DE" stroke-width="1.4"/>
 <text x="657" y="325" font-size="12.5" font-weight="700" fill="#2A4A55">Datos del negocio</text>
 <rect x="645" y="448" width="690" height="222" rx="12" fill="none" stroke="#2F6B5A" stroke-width="1.4"/>
-<text x="657" y="468" font-size="12.5" font-weight="700" fill="#2A4A55">Inferencia ML dentro de la base · APF3 (publicado)</text>
-<rect x="645" y="683" width="690" height="210" rx="12" fill="#FFF9F0" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="8 5"/>
-<text x="657" y="703" font-size="12.5" font-weight="700" fill="#2A4A55">Flujo E2E · PROY (migración 1500, PR #38, pendiente)</text>
+<text x="657" y="468" font-size="12.5" font-weight="700" fill="#2A4A55">Inferencia ML dentro de la base · APF3</text>
+<rect x="645" y="683" width="690" height="210" rx="12" fill="#FFF9F0" stroke="#D9822B" stroke-width="1.4"/>
+<text x="657" y="703" font-size="12.5" font-weight="700" fill="#2A4A55">Flujo E2E · PROY (migración 1500 · publicado en v3.0.0)</text>
 <rect x="1395" y="60" width="295" height="420" rx="12" fill="#F2F4F3" stroke="#8A9894" stroke-width="1.4"/>
 <text x="1407" y="80" font-size="12.5" font-weight="700" fill="#2A4A55">Entrenamiento del modelo (fuera de línea)</text>
 <rect x="1395" y="500" width="295" height="300" rx="12" fill="#F2F4F3" stroke="#8A9894" stroke-width="1.4"/>
@@ -44,10 +44,10 @@
 <rect x="268" y="360" width="300" height="60" rx="9" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
 <text x="418.0" y="387.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">supabase-js</text>
 <text x="418.0" y="404.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">clave pública + JWT del usuario</text>
-<rect x="268" y="440" width="300" height="60" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<rect x="268" y="440" width="300" height="60" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4"/>
 <text x="418.0" y="467.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5C3A0E">Interfaz PROY</text>
 <text x="418.0" y="484.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">recordatorio · probar un caso · prueba de fallas</text>
-<rect x="268" y="518" width="300" height="60" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<rect x="268" y="518" width="300" height="60" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4"/>
 <text x="418.0" y="545.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5C3A0E">Tiempo límite de 8 s</text>
 <text x="418.0" y="562.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">aviso + regla manual en pantalla</text>
 <rect x="268" y="598" width="300" height="82" rx="9" fill="#F7F9F6" stroke="#B9C7C0" stroke-width="1.4" stroke-dasharray="6 4"/>
@@ -94,21 +94,21 @@
 <text x="1157.5" y="608.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#173A33">predicciones_morosidad</text>
 <text x="1157.5" y="625.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">una vigente por cuota y corte</text>
 <text x="1157.5" y="639.0" text-anchor="middle" font-size="11" font-weight="400" fill="#173A33">PROY: origen modelo o respaldo</text>
-<rect x="660" y="720" width="315" height="60" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<rect x="660" y="720" width="315" height="60" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4"/>
 <text x="817.5" y="747.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5C3A0E">calcular_riesgo_periodo()</text>
 <text x="817.5" y="764.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">cuotas nuevas → predicción automática</text>
-<rect x="1000" y="720" width="315" height="60" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<rect x="1000" y="720" width="315" height="60" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4"/>
 <text x="1157.5" y="747.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5C3A0E">ml_evaluar()</text>
 <text x="1157.5" y="764.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">valida entrada y salida · regla de respaldo</text>
-<rect x="660" y="798" width="205" height="82" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<rect x="660" y="798" width="205" height="82" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4"/>
 <text x="762.5" y="829.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5C3A0E">probar_entrada_modelo()</text>
 <text x="762.5" y="846.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">rechaza entradas inválidas</text>
 <text x="762.5" y="860.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">simular_falla_modelo() (demo)</text>
-<rect x="880" y="798" width="205" height="82" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<rect x="880" y="798" width="205" height="82" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4"/>
 <text x="982.5" y="829.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5C3A0E">recordatorios</text>
 <text x="982.5" y="846.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">acción de la administración</text>
 <text x="982.5" y="860.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">auditada</text>
-<rect x="1100" y="798" width="215" height="82" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<rect x="1100" y="798" width="215" height="82" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4"/>
 <text x="1207.5" y="829.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5C3A0E">registro_predicciones</text>
 <text x="1207.5" y="846.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">solo inserción · lote y demora</text>
 <text x="1207.5" y="860.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">conservación de 12 meses</text>
@@ -121,7 +121,7 @@
 <rect x="1415" y="185" width="255" height="62" rx="9" fill="#F2F4F3" stroke="#8A9894" stroke-width="1.4"/>
 <text x="1542.5" y="213.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3B4A47">ml/modelo_morosidad</text>
 <text x="1542.5" y="230.0" text-anchor="middle" font-size="11" font-weight="400" fill="#3B4A47">v1: joblib + metadatos (APF3)</text>
-<rect x="1415" y="270" width="255" height="62" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
+<rect x="1415" y="270" width="255" height="62" rx="9" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4"/>
 <text x="1542.5" y="298.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5C3A0E">ml/proy · PR #37</text>
 <text x="1542.5" y="315.0" text-anchor="middle" font-size="11" font-weight="400" fill="#5C3A0E">corrección, mejora y robustez</text>
 <rect x="1415" y="355" width="255" height="100" rx="9" fill="#F2F4F3" stroke="#8A9894" stroke-width="1.4"/>
@@ -156,13 +156,13 @@
 <polyline points="1157,545 1157,561 900,561 900,578" fill="none" stroke="#2F6B5A" stroke-width="1.6" marker-end="url(#m2F6B5A)"/>
 <text x="1010" y="556" font-size="10.5" fill="#2F6B5A" font-style="italic">parámetros v1</text>
 <polyline points="975,618 1000,618" fill="none" stroke="#2F6B5A" stroke-width="1.6" marker-end="url(#m2F6B5A)"/>
-<polyline points="975,750 1000,750" fill="none" stroke="#D9822B" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#mD9822B)"/>
-<polyline points="1157,720 1157,658" fill="none" stroke="#D9822B" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#mD9822B)"/>
+<polyline points="975,750 1000,750" fill="none" stroke="#D9822B" stroke-width="1.6" marker-end="url(#mD9822B)"/>
+<polyline points="1157,720 1157,658" fill="none" stroke="#D9822B" stroke-width="1.6" marker-end="url(#mD9822B)"/>
 <text x="1163" y="695" font-size="10.5" fill="#D9822B" font-style="italic">guarda: modelo o respaldo</text>
-<polyline points="1315,640 1340,640 1340,839 1315,839" fill="none" stroke="#D9822B" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#mD9822B)"/>
+<polyline points="1315,640 1340,640 1340,839 1315,839" fill="none" stroke="#D9822B" stroke-width="1.6" marker-end="url(#mD9822B)"/>
 <text x="1281" y="680" font-size="10.5" fill="#D9822B" font-style="italic">disparador</text>
 <polyline points="1542,162 1542,185" fill="none" stroke="#7A8885" stroke-width="1.6" marker-end="url(#m7A8885)"/>
-<polyline points="1542,247 1542,270" fill="none" stroke="#D9822B" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#mD9822B)"/>
+<polyline points="1542,247 1542,270" fill="none" stroke="#D9822B" stroke-width="1.6" marker-end="url(#mD9822B)"/>
 <polyline points="1542,332 1542,355" fill="none" stroke="#7A8885" stroke-width="1.6" marker-end="url(#m7A8885)"/>
 <polyline points="1415,405 1385,405 1385,514 1315,514" fill="none" stroke="#7A8885" stroke-width="1.6" marker-end="url(#m7A8885)"/>
 <text x="1322" y="508" font-size="10.5" fill="#7A8885" font-style="italic">migración SQL</text>
@@ -173,11 +173,11 @@
 <rect x="10" y="725" width="225" height="200" rx="10" fill="#FFFFFF" stroke="#B9C7C0"/>
 <text x="22" y="747" font-size="12.5" font-weight="700" fill="#173A33">Leyenda</text>
 <rect x="22" y="763" width="34" height="24" rx="5" fill="#FFFFFF" stroke="#2F6B5A" stroke-width="1.4"/>
-<text x="65" y="773" font-size="11.5" font-weight="700" fill="#173A33">Publicado hoy</text>
-<text x="65" y="787" font-size="10" fill="#4A5D58">main 33acc2f · migraciones 0100–1400</text>
-<rect x="22" y="813" width="34" height="24" rx="5" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4" stroke-dasharray="6 4"/>
-<text x="65" y="823" font-size="11.5" font-weight="700" fill="#173A33">PROY pendiente</text>
-<text x="65" y="837" font-size="10" fill="#4A5D58">PR #37, PR #38 · migración 1500</text>
+<text x="65" y="773" font-size="11.5" font-weight="700" fill="#173A33">Anterior al PROY</text>
+<text x="65" y="787" font-size="10" fill="#4A5D58">APF2 y APF3 · migraciones 0100–1400</text>
+<rect x="22" y="813" width="34" height="24" rx="5" fill="#FFF4E5" stroke="#D9822B" stroke-width="1.4"/>
+<text x="65" y="823" font-size="11.5" font-weight="700" fill="#173A33">Nuevo del PROY (publicado)</text>
+<text x="65" y="837" font-size="10" fill="#4A5D58">v3.0.0 · PR #37–#39 · migración 1500</text>
 <rect x="22" y="863" width="34" height="24" rx="5" fill="#F2F4F3" stroke="#8A9894" stroke-width="1.4"/>
 <text x="65" y="873" font-size="11.5" font-weight="700" fill="#173A33">Fuera de línea o herramienta</text>
 <text x="65" y="887" font-size="10" fill="#4A5D58">entrenamiento, repositorio, CI</text>
