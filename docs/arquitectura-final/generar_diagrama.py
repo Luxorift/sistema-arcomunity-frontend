@@ -5,8 +5,8 @@ Salida: arquitectura_final_proy.svg y arquitectura_final_proy.drawio en esta car
 del SVG (ver README de la carpeta). Una sola especificación alimenta los dos formatos, así no se desalinean.
 
 Convención visual:
-  - borde continuo = publicado hoy (main 33acc2f, migraciones 0100–1400);
-  - borde discontinuo naranja = PROY pendiente de integración (PR #37 y #38, migración 1500);
+  - borde verde = publicado antes del PROY (APF2 y APF3, migraciones 0100–1400);
+  - borde naranja = nuevo del PROY, publicado en v3.0.0 (main 4d64550; PR #37, #38 y #39; migración 1500);
   - gris = fuera de línea o herramientas de desarrollo.
 """
 from __future__ import annotations
@@ -18,7 +18,7 @@ AQUI = Path(__file__).resolve().parent
 ANCHO, ALTO = 1700, 1030
 
 PUB = {"fill": "#FFFFFF", "stroke": "#2F6B5A", "dash": False, "texto": "#173A33"}
-PROY = {"fill": "#FFF4E5", "stroke": "#D9822B", "dash": True, "texto": "#5C3A0E"}
+PROY = {"fill": "#FFF4E5", "stroke": "#D9822B", "dash": False, "texto": "#5C3A0E"}
 OFF = {"fill": "#F2F4F3", "stroke": "#8A9894", "dash": False, "texto": "#3B4A47"}
 NOTA = {"fill": "#F7F9F6", "stroke": "#B9C7C0", "dash": True, "texto": "#3B4A47"}
 
@@ -29,8 +29,8 @@ GRUPOS = [
     ("g_supa", 605, 60, 770, 925, "Supabase · un solo proyecto (plan gratuito)", "#E8F1F6", "#7FA7BC", False),
     ("g_pg", 628, 185, 726, 775, "PostgreSQL", "#F5FAFD", "#9CBBCC", False),
     ("g_neg", 645, 305, 690, 130, "Datos del negocio", "#FFFFFF00", "#C3D5DE", False),
-    ("g_ml", 645, 448, 690, 222, "Inferencia ML dentro de la base · APF3 (publicado)", "#FFFFFF00", "#2F6B5A", False),
-    ("g_proy", 645, 683, 690, 210, "Flujo E2E · PROY (migración 1500, PR #38, pendiente)", "#FFF9F0", "#D9822B", True),
+    ("g_ml", 645, 448, 690, 222, "Inferencia ML dentro de la base · APF3", "#FFFFFF00", "#2F6B5A", False),
+    ("g_proy", 645, 683, 690, 210, "Flujo E2E · PROY (migración 1500 · publicado en v3.0.0)", "#FFF9F0", "#D9822B", False),
     ("g_off", 1395, 60, 295, 420, "Entrenamiento del modelo (fuera de línea)", "#F2F4F3", "#8A9894", False),
     ("g_repo", 1395, 500, 295, 300, "Repositorio y entrega continua", "#F2F4F3", "#8A9894", False),
 ]
@@ -96,11 +96,11 @@ FLECHAS = [
     ([(760, 545), (760, 578)], "variables", (766, 566), False, VERDE),
     ([(1157, 545), (1157, 561), (900, 561), (900, 578)], "parámetros v1", (1010, 556), False, VERDE),
     ([(975, 618), (1000, 618)], "", None, False, VERDE),
-    ([(975, 750), (1000, 750)], "", None, True, NARANJA),
-    ([(1157, 720), (1157, 658)], "guarda: modelo o respaldo", (1163, 695), True, NARANJA),
-    ([(1315, 640), (1340, 640), (1340, 839), (1315, 839)], "disparador", (1281, 680), True, NARANJA),
+    ([(975, 750), (1000, 750)], "", None, False, NARANJA),
+    ([(1157, 720), (1157, 658)], "guarda: modelo o respaldo", (1163, 695), False, NARANJA),
+    ([(1315, 640), (1340, 640), (1340, 839), (1315, 839)], "disparador", (1281, 680), False, NARANJA),
     ([(1542, 162), (1542, 185)], "", None, False, GRIS),
-    ([(1542, 247), (1542, 270)], "", None, True, NARANJA),
+    ([(1542, 247), (1542, 270)], "", None, False, NARANJA),
     ([(1542, 332), (1542, 355)], "", None, False, GRIS),
     ([(1415, 405), (1385, 405), (1385, 514), (1315, 514)], "migración SQL", (1322, 508), False, GRIS),
     ([(1542, 600), (1542, 618)], "", None, False, GRIS),
@@ -131,8 +131,8 @@ def svg() -> str:
                               f'<path d="M0,0 L10,5 L0,10 z" fill="{c}"/></marker>' for c in (VERDE, NARANJA, GRIS, AZUL)) + '</defs>',
            f'<rect width="{ANCHO}" height="{ALTO}" fill="#FFFFFF"/>',
            '<text x="10" y="32" font-size="21" font-weight="700" fill="#173A33">Arquitectura final de Arcomunity · Proyecto Final</text>',
-           '<text x="10" y="52" font-size="12" fill="#4A5D58">Estado al 27/11/2026. Borde continuo: publicado (main 33acc2f). '
-           'Borde naranja discontinuo: pendiente de integración (PR #37 y #38, migración 1500).</text>']
+           '<text x="10" y="52" font-size="12" fill="#4A5D58">Estado al 27/11/2026: todo publicado en v3.0.0 (main 4d64550, '
+           'migraciones 0100–1500). Borde verde: anterior al PROY. Borde naranja: nuevo del PROY.</text>']
     for _, x, y, w, h, t, fondo, borde, dash in GRUPOS:
         d = ' stroke-dasharray="8 5"' if dash else ""
         relleno = "none" if fondo.endswith("00") else fondo
@@ -149,8 +149,8 @@ def svg() -> str:
     x, y, w, h = LEYENDA
     out.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="10" fill="#FFFFFF" stroke="#B9C7C0"/>')
     out.append(f'<text x="{x + 12}" y="{y + 22}" font-size="12.5" font-weight="700" fill="#173A33">Leyenda</text>')
-    items = [(PUB, "Publicado hoy", "main 33acc2f · migraciones 0100–1400"),
-             (PROY, "PROY pendiente", "PR #37, PR #38 · migración 1500"),
+    items = [(PUB, "Anterior al PROY", "APF2 y APF3 · migraciones 0100–1400"),
+             (PROY, "Nuevo del PROY (publicado)", "v3.0.0 · PR #37–#39 · migración 1500"),
              (OFF, "Fuera de línea o herramienta", "entrenamiento, repositorio, CI")]
     for i, (e, a, b) in enumerate(items):
         yy = y + 38 + i * 50
@@ -188,13 +188,13 @@ def drawio() -> str:
                       f'strokeColor={color};fontColor={color};fontSize=10;fontStyle=2;dashed={int(dash)};" edge="1" parent="1">'
                       f'<mxGeometry relative="1" as="geometry"><mxPoint x="{x0}" y="{y0}" as="sourcePoint"/>'
                       f'<mxPoint x="{x1}" y="{y1}" as="targetPoint"/><Array as="points">{wps}</Array></mxGeometry></mxCell>')
-    titulo = escape("<b>Arquitectura final de Arcomunity · Proyecto Final</b><br>Estado al 27/11/2026. Borde continuo: publicado "
-                    "(main 33acc2f). Borde naranja discontinuo: pendiente (PR #37 y #38, migración 1500).")
+    titulo = escape("<b>Arquitectura final de Arcomunity · Proyecto Final</b><br>Estado al 27/11/2026: todo publicado en v3.0.0 "
+                    "(main 4d64550, migraciones 0100–1500). Borde verde: anterior al PROY. Borde naranja: nuevo del PROY.")
     celdas.append(f'<mxCell id="{nid()}" value="{titulo}" style="text;html=1;align=left;verticalAlign=top;fontSize=13;" vertex="1" parent="1">'
                   '<mxGeometry x="10" y="10" width="1200" height="46" as="geometry"/></mxCell>')
     x, y, w, h = LEYENDA
-    ley = escape("<b>Leyenda</b><br>Borde verde continuo: publicado (main 33acc2f, migraciones 0100–1400)<br>"
-                 "Borde naranja discontinuo: PROY pendiente (PR #37, PR #38, migración 1500)<br>Gris: fuera de línea o herramienta")
+    ley = escape("<b>Leyenda</b><br>Borde verde: anterior al PROY (APF2 y APF3, migraciones 0100–1400)<br>"
+                 "Borde naranja: nuevo del PROY, publicado en v3.0.0 (PR #37–#39, migración 1500)<br>Gris: fuera de línea o herramienta")
     celdas.append(f'<mxCell id="{nid()}" value="{ley}" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=10;'
                   f'fillColor=#FFFFFF;strokeColor=#B9C7C0;fontSize=11;" vertex="1" parent="1"><mxGeometry x="{x}" y="{y}" width="{w}" height="{h}" as="geometry"/></mxCell>')
     return ('<mxfile host="app.diagrams.net"><diagram name="Arquitectura final PROY" id="arquitectura-final-proy">'
