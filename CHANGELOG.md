@@ -12,8 +12,8 @@ corresponden a la zona horaria de Lima.
 
 | Versión | Fecha | Estado | Referencia |
 | --- | --- | --- | --- |
-| PROY (en preparación) | 26–27/11/2026 | Pendiente de despliegue | PR #37 y PR #38 hacia `dev` |
-| APF3 · modelo v1 integrado | 18/11/2026 | Publicado | `main` en `33acc2f` (PR #28, #32 y #34) |
+| 3.0.0 · PROY: flujo de extremo a extremo | 27/11/2026 | Publicado | `main` en `4d64550`, etiqueta `v3.0.0` (PR #37 a #40) |
+| APF3 · modelo v1 integrado | 18/11/2026 | Publicado (sustituida por 3.0.0) | `main` en `33acc2f` (PR #28, #32 y #34) |
 | 2.1.0 · cuentas de demostración protegidas | 18/11/2026 | Publicado (sustituida por APF3) | etiqueta `v2.1.0` |
 | 2.0.1 · corrección del diseño móvil | 17/11/2026 | Publicado (sustituida) | etiqueta `v2.0.1` |
 | 2.0.0 · Arcomunity con Supabase | 17/11/2026 | Publicado (sustituida) | etiqueta `v2.0.0` |
@@ -21,7 +21,7 @@ corresponden a la zona horaria de Lima.
 
 ---
 
-## [PROY] — Pendiente de despliegue
+## [3.0.0] — 27/11/2026 · PROY · Publicado (`main` en `4d64550`, etiqueta `v3.0.0`)
 
 ### PR #37 · Corrección del modelo base y ciclo de mejora (`feat/modelo-mejora-proy`)
 
@@ -103,16 +103,54 @@ corresponden a la zona horaria de Lima.
 - La bitácora agrega `lote`, `solicitado_en` y `demora_ms` para separar reintentos y marcar las respuestas tardías.
 - Tras el aviso de 8 s, la pantalla de predicción se vuelve a consultar sola y pide no volver a pulsar.
 
-**Pendiente de despliegue**
+### Publicación (27/11/2026, hora de Lima)
 
-- Aplicar la migración 1500 en el Supabase de producción. La aplica el responsable, siguiendo
-  `docs/GUIA_MIGRACION_1500.md`.
-- Integrar los PR #37 y #38 en `dev` y publicar `dev` → `main`. Cada paso requiere autorización.
-- Verificar en producción la purga programada (pg_cron), que no se pudo probar en PGlite.
+Con la autorización del responsable:
+
+1. **Respaldo verificable** de las 15 tablas del esquema `public`: exportación JSON por tabla, con el mismo número de
+   filas que su conteo, más funciones, políticas, permisos, índices y pg_cron. Se guardó fuera del repositorio, porque
+   contiene datos.
+2. **Migración 1500 aplicada en Supabase** (22:55, hora de Lima):
+   - con la CLI ya vinculada (`supabase db query --linked`), sin contraseñas;
+   - dentro de una sola transacción;
+   - registrada en `supabase_migrations.schema_migrations`.
+3. **Validaciones posteriores de la guía** (apartado 4): 15 de 15. Incluyen:
+   - datos intactos;
+   - objetos nuevos;
+   - paridad del modelo;
+   - permisos;
+   - RLS;
+   - bitácora inmutable;
+   - **purga mensual programada en pg_cron** (`30 8 1 * *`).
+4. **Pruebas funcionales en la base de producción**, solo en la junta de demostración: 27 de 27. Cubren:
+   - generación de cuotas → predicción (30 cuotas: 12 alto, 0 medio, 18 bajo; 44 ms en el servidor);
+   - bitácora;
+   - recordatorio;
+   - entrada inválida;
+   - falla simulada y recuperación;
+   - roles y RLS;
+   - concurrencia: el segundo cálculo espera ~4,7 s el bloqueo de la junta;
+   - respuesta tardía de 9 066 ms marcada como tardía;
+   - seis cálculos simultáneos sin errores;
+   - índice único;
+   - compatibilidad con el frontend anterior.
+
+   La junta quedó reiniciada a su foto inicial.
+5. **Integración:** PR #37, #38 y #39 en `dev` (`32baf44`). `npm test` dio 151 de 151 y `npm run build` terminó bien.
+6. **Publicación:** PR #40 `dev` → `main` (`4d64550`), etiqueta `v3.0.0`.
+   - Vercel y Cloudflare Workers sirven el mismo bundle (`index-CldayUr-.js`).
+   - `dev` se avanzó por fast-forward hasta `main`, sin commits nuevos.
+7. **Reproducibilidad del ML desde `main`:** al ejecutar de nuevo `coherencia.py`, `experimento.py` y `robustez.py`,
+   los resultados coinciden con los publicados. Solo cambian la fecha y el commit.
+
+**Pendiente** (lo ejecuta el responsable, porque inicia sesión en la URL pública):
+
+- recorrido de la interfaz publicada con las suites `test:acceso`, `test:navegadores`, `test:ui` y `test:responsive`;
+- video oficial (`grabar:demo-proy` con `APP_URL`).
 
 ### Pruebas del PROY
 
-- `npm test`: 151 de 151 en la rama del PR #38 (antes, 114). Se agregaron:
+- `npm test`: 151 de 151 en la rama del PR #38 y de nuevo en `dev` integrado (antes, 114). Se agregaron:
   - 23 pruebas del flujo, la degradación y los permisos;
   - 6 pruebas de reintentos y respuestas tardías;
   - 1 prueba del retorno de la migración;
